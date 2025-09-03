@@ -48,7 +48,7 @@ def download(split):
 
 def render_example(example):
     """
-    Given the example as a dictionary, render it as three torch tensors:
+    Given the Hellaswag example as a dictionary, render it as three torch tensors:
     - tokens (the tokens of context + completion, of size 4xN, as there are always 4 candidates)
     - mask (is 1 in the region of the candidate completion, where we evaluate likelihoods)
     - label (the index of the correct completion, which we hope has the highest likelihood)
@@ -69,7 +69,7 @@ def render_example(example):
     data["ctx_tokens"] = ctx_tokens
     tok_rows = []
     mask_rows = []
-    for end in endings:
+    for end in endings: # sz=4
         end_tokens = enc.encode(" " + end) # note: prepending " " because GPT-2 tokenizer
         tok_rows.append(ctx_tokens + end_tokens)
         mask_rows.append([0]*len(ctx_tokens) + [1]*len(end_tokens))
@@ -109,27 +109,34 @@ def evaluate(model_name, device):
     for example in iterate_examples("val"):
         data, tokens, mask, label = render_example(example)
         tokens = tokens.to(device)
-        mask = mask.to(device)
+        mask = mask.to(device)          # (4, max_len)
 
         # get the logits
-        logits = model(tokens).logits
+        logits = model(tokens).logits   # (4, max_len, vocab_size)
+
         # evaluate the autoregressive loss at all positions
-        shift_logits = (logits[..., :-1, :]).contiguous()
-        shift_tokens = (tokens[..., 1:]).contiguous()
-        flat_shift_logits = shift_logits.view(-1, shift_logits.size(-1))
-        flat_shift_tokens = shift_tokens.view(-1)
-        shift_losses = F.cross_entropy(flat_shift_logits, flat_shift_tokens, reduction='none')
-        shift_losses = shift_losses.view(tokens.size(0), -1)
+        # last logit is prediction of next token, but next token after last does not exist
+        shift_logits = (logits[..., :-1, :]).contiguous()   # (4, max_len-1, vocab_size) 
+        shift_tokens = (tokens[..., 1:]).contiguous()       # (4, max_len-1)
+
+        flat_shift_logits = shift_logits.view(-1, shift_logits.size(-1))    # (4 * (max_len-1), vocab_size) 
+        flat_shift_tokens = shift_tokens.view(-1)                           # (4 * (max_len-1))
+
+        shift_losses = F.cross_entropy(flat_shift_logits, flat_shift_tokens, reduction='none')  # (4 * (max_len-1))
+        #print(shift_losses.cpu().numpy())
+
+        shift_losses = shift_losses.view(tokens.size(0), -1)    # (tokens.size(0)=4, max_len-1)
+
         # now get the average loss just for the completion region (where mask == 1), in each row
         shift_mask = (mask[..., 1:]).contiguous() # we must shift mask, so we start at the last prompt token
         masked_shift_losses = shift_losses * shift_mask
         # sum and divide by the number of 1s in the mask
-        sum_loss = masked_shift_losses.sum(dim=1)
-        avg_loss = sum_loss / shift_mask.sum(dim=1)
+        sum_loss = masked_shift_losses.sum(dim=1)       # (4,)
+        avg_loss = sum_loss / shift_mask.sum(dim=1)     # (4,)
         # now we have a loss for each of the 4 completions
         # the one with the lowest loss should be the most likely
-        pred = sum_loss.argmin().item()
-        pred_norm = avg_loss.argmin().item()
+        pred = sum_loss.argmin().item()                 # (4,) --> (1)
+        pred_norm = avg_loss.argmin().item()            # (4,) --> (1)
 
         # accumulate stats
         num_total += 1
@@ -150,6 +157,6 @@ def evaluate(model_name, device):
 if __name__ == "__main__":
 
     model_name = "gpt2"
-    model_name = "EleutherAI/gpt-neo-125M"
-    model_name = "rhysjones/gpt2-124M-edu-fineweb-10B" # Andrej Karpathy model
+    model_name = "EleutherAI/gpt-neo-125M"              # = 0.2936
+    model_name = "rhysjones/gpt2-124M-edu-fineweb-10B"  # = 0.3099 # Andrej Karpathy model
     evaluate(model_name, "cuda")
