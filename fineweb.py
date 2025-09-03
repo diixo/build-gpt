@@ -16,19 +16,21 @@ from tqdm import tqdm # pip install tqdm
 
 # ------------------------------------------
 local_dir = "edu_fineweb10B"
-remote_name = "sample-10BT"
 shard_size = int(1e8) # 100M tokens per shard, total of 100 shards
 
 # create the cache the local directory if it doesn't exist yet
 DATA_CACHE_DIR = os.path.join(os.path.dirname(__file__), local_dir)
 os.makedirs(DATA_CACHE_DIR, exist_ok=True)
 
+# C:\Users\diixo\.cache\huggingface\hub\datasets--HuggingFaceFW--fineweb-edu\snapshots
 # download the dataset
-fw = load_dataset("HuggingFaceFW/fineweb-edu", name=remote_name, split="train")
+fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
 # init the tokenizer
 enc = tiktoken.get_encoding("gpt2")
+
 eot = enc._special_tokens['<|endoftext|>'] # end of text token
+
 def tokenize(doc):
     # tokenizes a single document and returns a numpy array of uint16 tokens
     tokens = [eot] # the special <|endoftext|> token delimits all documents
