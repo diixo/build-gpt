@@ -12,13 +12,12 @@ from utils import generate_text
 max_lr = 6e-4
 min_lr = max_lr * 0.1
 warmup_steps = 715
-max_steps = 19073 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
 
 
-def get_lr(it):
+def get_lr(it, max_steps):
     # 1) linear warmup for warmup_iters steps
     if it < warmup_steps:
-        return max_lr * (it+1) / warmup_steps
+        return max_lr * (it + 1) / warmup_steps
     # 2) if it > lr_decay_iters, return min learning rate
     if it > max_steps:
         return min_lr
@@ -54,8 +53,10 @@ if __name__ == "__main__":
     enc = tiktoken.get_encoding("gpt2")
 
     model_config = GPTConfig(vocab_size=50304)
-    total_batch_size = 524288 # 2**19, ~0.5M, in number of tokens
-    B = 64 # micro batch size
+    total_batch_size = 65536 # 2**19, ~0.5M, in number of tokens
+    max_steps = int(10_000_000_000 // total_batch_size) # steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
+
+    B = 8 # micro batch size
     T = model_config.block_size # sequence_length=1024
     assert total_batch_size % (B * T * ddp_world_size) == 0, "make sure total_batch_size is divisible by B * T * ddp_world_size"
 
@@ -176,7 +177,7 @@ if __name__ == "__main__":
 
         norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         # determine and set the learning rate for this iteration
-        lr = get_lr(step)
+        lr = get_lr(step, max_steps)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
         optimizer.step()
@@ -186,6 +187,8 @@ if __name__ == "__main__":
         dt = t1 - t0 # time difference in seconds
         tokens_processed = train_loader.B * train_loader.T * grad_accum_steps * ddp_world_size
         tokens_per_sec = tokens_processed / dt
+
+        torch.cuda.empty_cache()
 
         if master_process:
             print(f"step {step:5d} | loss: {loss_accum.item():.6f} | lr: {lr:.4e} | norm: {norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f}")
