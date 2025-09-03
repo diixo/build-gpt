@@ -57,7 +57,7 @@ if __name__ == "__main__":
             # is there enough space in the current shard for the new tokens?
             if token_count + len(tokens) < shard_size:
                 # simply append tokens to current shard
-                all_tokens_np[token_count:token_count+len(tokens)] = tokens
+                all_tokens_np[token_count:token_count + len(tokens)] = tokens
                 token_count += len(tokens)
                 # update progress bar
                 if progress_bar is None:
@@ -75,7 +75,7 @@ if __name__ == "__main__":
                 shard_index += 1
                 progress_bar = None
                 # populate the next shard with the leftovers of the current doc
-                all_tokens_np[0:len(tokens)-remainder] = tokens[remainder:]
+                all_tokens_np[0: len(tokens)-remainder] = tokens[remainder:]
                 token_count = len(tokens)-remainder
 
         # write any remaining tokens as the last shard
