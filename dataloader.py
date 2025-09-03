@@ -20,7 +20,7 @@ class DataLoaderLite:
 
         # get the shard filenames
         data_root = "edu_fineweb10B"
-        shards = os.listdir(data_root)
+        shards = os.listdir("./" + data_root)
         shards = [s for s in shards if split in s]
         shards = sorted(shards)
         shards = [os.path.join(data_root, s) for s in shards]
@@ -49,3 +49,18 @@ class DataLoaderLite:
             self.tokens = load_tokens(self.shards[self.current_shard])
             self.current_position = B * T * self.process_rank
         return x, y
+
+
+if __name__ == "__main__":
+
+    B = 64      # micro batch size
+    T = 1024    # sequence length
+    ddp_rank = 0
+    ddp_world_size = 1
+    master_process = True
+
+    train_loader = DataLoaderLite(
+        B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", master_process=master_process)
+
+    val_loader = DataLoaderLite(
+        B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="val", master_process=master_process)
