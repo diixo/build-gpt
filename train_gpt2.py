@@ -1,7 +1,6 @@
 import os
 import math
 import time
-import inspect
 from dataclasses import dataclass
 import torch
 import torch.nn as nn
@@ -52,6 +51,27 @@ torch.manual_seed(1337)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(1337)
 
+
+max_lr = 6e-4
+min_lr = max_lr * 0.1
+warmup_steps = 715
+max_steps = 19073 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
+
+def get_lr(it):
+    # 1) linear warmup for warmup_iters steps
+    if it < warmup_steps:
+        return max_lr * (it+1) / warmup_steps
+    # 2) if it > lr_decay_iters, return min learning rate
+    if it > max_steps:
+        return min_lr
+    # 3) in between, use cosine decay down to min learning rate
+    decay_ratio = (it - warmup_steps) / (max_steps - warmup_steps)
+    assert 0 <= decay_ratio <= 1
+    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio)) # coeff starts at 1 and goes to 0
+    return min_lr + coeff * (max_lr - min_lr)
+
+# -----------------------------------------------------------------------------
+
 enc = tiktoken.get_encoding("gpt2")
 
 model_config = GPTConfig(vocab_size=50304)
@@ -80,23 +100,6 @@ if ddp:
     model = DDP(model, device_ids=[ddp_local_rank])
 raw_model = model.module if ddp else model # always contains the "raw" unwrapped model
 
-max_lr = 6e-4
-min_lr = max_lr * 0.1
-warmup_steps = 715
-max_steps = 19073 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
-
-def get_lr(it):
-    # 1) linear warmup for warmup_iters steps
-    if it < warmup_steps:
-        return max_lr * (it+1) / warmup_steps
-    # 2) if it > lr_decay_iters, return min learning rate
-    if it > max_steps:
-        return min_lr
-    # 3) in between, use cosine decay down to min learning rate
-    decay_ratio = (it - warmup_steps) / (max_steps - warmup_steps)
-    assert 0 <= decay_ratio <= 1
-    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio)) # coeff starts at 1 and goes to 0
-    return min_lr + coeff * (max_lr - min_lr)
 
 # optimize!
 optimizer = raw_model.configure_optimizers(
