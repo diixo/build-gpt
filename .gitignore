@@ -11,5 +11,7 @@ venv/
 ENV/
 env.bak/
 
+log.txt
+
 edu_fineweb10B/
 edu_fineweb-10B/
