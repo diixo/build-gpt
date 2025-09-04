@@ -72,7 +72,7 @@ if __name__ == "__main__":
     grad_accum_steps = total_batch_size // (B * T * ddp_world_size)
     max_steps = int(10_000_000_000 // total_batch_size) # steps is ~1 epoch (10B), if data is 10B tokens and batch size 128k tokens
     
-    warmup_steps = max_steps * 0.05
+    warmup_steps = int(max_steps * 0.05)
 
     if master_process:
         print(f"total desired batch size: {total_batch_size}")
