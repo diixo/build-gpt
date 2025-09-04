@@ -1,3 +1,7 @@
+#--------------------------------------------------------------------------
+# vanilla training implementation, non-DDP (Distributed Data Parallel) run
+#--------------------------------------------------------------------------
+
 import os
 import math
 import time
@@ -8,10 +12,23 @@ import tiktoken
 from dataloader import DataLoaderLite
 from utils import generate_text
 
+torch.manual_seed(1337)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(1337)
+
 
 max_lr = 6e-4
 min_lr = max_lr * 0.1
-warmup_steps = 715
+
+eval_steps = 100
+warmup_steps = 8 * eval_steps
+
+total_batch_size = 65536 # 2**16, ~65k, in number of tokens
+B = 8 # micro batch size
+
+# for high-load GPU:
+#total_batch_size = 524288 # 2**19, ~0.5M, in number of tokens
+#B = 64 # micro batch size
 
 
 def get_lr(it, max_steps):
@@ -28,15 +45,10 @@ def get_lr(it, max_steps):
     return min_lr + coeff * (max_lr - min_lr)
 
 
-torch.manual_seed(1337)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed(1337)
-
 
 if __name__ == "__main__":
-    # vanilla, non-DDP run
+
     ddp_rank = 0
-    ddp_local_rank = 0
     ddp_world_size = 1
     master_process = True
     # attempt to autodetect device
@@ -53,18 +65,16 @@ if __name__ == "__main__":
     enc = tiktoken.get_encoding("gpt2")
 
     model_config = GPTConfig(vocab_size=50304)
-    total_batch_size = 65536 # 2**19, ~0.5M, in number of tokens
-    max_steps = int(10_000_000_000 // total_batch_size) # steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
 
-    B = 8 # micro batch size
     T = model_config.block_size # sequence_length=1024
     assert total_batch_size % (B * T * ddp_world_size) == 0, "make sure total_batch_size is divisible by B * T * ddp_world_size"
 
     grad_accum_steps = total_batch_size // (B * T * ddp_world_size)
+    max_steps = int(10_000_000_000 // total_batch_size) # steps is ~1 epoch (10B), if data is 10B tokens and batch size 128k tokens
     
     if master_process:
         print(f"total desired batch size: {total_batch_size}")
-        print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
+        print(f"=> calculated grad_accum_steps: {grad_accum_steps}, max_steps: {max_steps}")
 
     train_loader = DataLoaderLite(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", master_process=master_process)
     val_loader = DataLoaderLite(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="val", master_process=master_process)
@@ -95,7 +105,7 @@ if __name__ == "__main__":
         last_step = (step == max_steps - 1)
 
         # once in a while evaluate our validation loss
-        if step % 250 == 0 or last_step:
+        if step % eval_steps == 0 or last_step:
             model.eval()
             val_loader.reset()
             with torch.no_grad():
@@ -127,7 +137,7 @@ if __name__ == "__main__":
                     torch.save(checkpoint, checkpoint_path)
 
         # once in a while evaluate hellaswag
-        if (step % 250 == 0 or last_step):
+        if (step % eval_steps == 0 or last_step):
             num_correct_norm = 0
             num_total = 0
             for i, example in enumerate(iterate_examples("val")):
@@ -154,7 +164,7 @@ if __name__ == "__main__":
                     f.write(f"{step} hella {acc_norm:.4f}\n")
 
         # once in a while generate from the model (except step 0, which is noise)
-        if ((step > 0 and step % 250 == 0) or last_step):
+        if ((step > 0 and step % eval_steps == 0) or last_step):
             generate_text("Hello, I'm a language model,", model, enc, device, device_type, ddp_rank)
 
         # do one step of the optimization
