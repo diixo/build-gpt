@@ -193,14 +193,15 @@ if __name__ == "__main__":
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
         optimizer.step()
+
         if device_type == "cuda":
             torch.cuda.synchronize() # wait for the GPU to finish work
+            torch.cuda.empty_cache() # !!!
+
         t1 = time.time()
         dt = t1 - t0 # time difference in seconds
         tokens_processed = train_loader.B * train_loader.T * grad_accum_steps * ddp_world_size
         tokens_per_sec = tokens_processed / dt
-
-        torch.cuda.empty_cache()
 
         if master_process:
             print(f"step {step:5d} | loss: {loss_accum.item():.6f} | lr: {lr:.4e} | norm: {norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f}")
