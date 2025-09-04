@@ -5,8 +5,8 @@ from torch.nn import functional as F
 
 def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
         model.eval()
-        num_return_sequences = 4
-        max_length = 32
+        num_return_sequences = 1
+        max_length = 64
         tokens = enc.encode(prompt)
         tokens = torch.tensor(tokens, dtype=torch.long)
         tokens = tokens.unsqueeze(0).repeat(num_return_sequences, 1)
