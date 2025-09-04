@@ -21,7 +21,7 @@ max_lr = 6e-4
 min_lr = max_lr * 0.1
 
 eval_steps = 100
-warmup_steps = 8 * eval_steps
+warmup_steps = eval_steps
 
 total_batch_size = 65536 # 2**16, ~65k, in number of tokens
 B = 8 # micro batch size
@@ -72,9 +72,11 @@ if __name__ == "__main__":
     grad_accum_steps = total_batch_size // (B * T * ddp_world_size)
     max_steps = int(10_000_000_000 // total_batch_size) # steps is ~1 epoch (10B), if data is 10B tokens and batch size 128k tokens
     
+    warmup_steps = max_steps * 0.05
+
     if master_process:
         print(f"total desired batch size: {total_batch_size}")
-        print(f"=> calculated grad_accum_steps: {grad_accum_steps}, max_steps: {max_steps}")
+        print(f"=> calculated grad_accum_steps: {grad_accum_steps}, max_steps: {max_steps}, warmup_steps: {warmup_steps}")
 
     train_loader = DataLoaderLite(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", master_process=master_process)
     val_loader = DataLoaderLite(B=B, T=T, process_rank=ddp_rank, num_processes=ddp_world_size, split="val", master_process=master_process)
