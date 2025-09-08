@@ -6,6 +6,15 @@ from dataclasses import dataclass
 from transformers import GPT2LMHeadModel
 
 
+@dataclass
+class GPTConfig:
+    block_size: int = 1024 # max sequence length
+    vocab_size: int = 50257 # number of tokens: 50,000 BPE merges + 256 bytes tokens + 1 <|endoftext|> token
+    n_layer: int = 12 # number of layers
+    n_head: int = 12 # number of heads
+    n_embd: int = 768 # embedding dimension
+
+
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config):
@@ -80,15 +89,6 @@ class BlockPA(nn.Module):   # Block Parallel Attention
     def forward(self, x):
         x = x + self.attn(self.ln_attn(x)) + self.mlp(self.ln_mlp(x))
         return x
-
-
-@dataclass
-class GPTConfig:
-    block_size: int = 1024 # max sequence length
-    vocab_size: int = 50257 # number of tokens: 50,000 BPE merges + 256 bytes tokens + 1 <|endoftext|> token
-    n_layer: int = 12 # number of layers
-    n_head: int = 12 # number of heads
-    n_embd: int = 768 # embedding dimension
 
 
 class GPT(nn.Module):
@@ -190,7 +190,6 @@ class GPT(nn.Module):
                 assert sd_hf[k].shape == sd[k].shape
                 with torch.no_grad():
                     sd[k].copy_(sd_hf[k])
-
         return model
 
 
