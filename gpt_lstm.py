@@ -19,6 +19,12 @@ class CausalSelfAttentionLSTM(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
 
+        lstm_hidden = config.n_embd/2
+        # LSTM after attention
+        self.lstm = nn.LSTM(config.n_embd, lstm_hidden, batch_first=True)
+        self.lstm_proj = nn.Linear(lstm_hidden, config.n_embd)
+
+
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
@@ -33,7 +39,13 @@ class CausalSelfAttentionLSTM(nn.Module):
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
         # output projection
         y = self.c_proj(y)
-        return y
+
+        # --- LSTM after attention ---
+        lstm_out, _ = self.lstm(y)
+        lstm_out = self.lstm_proj(lstm_out)
+        # TODO: can be added the residual with y into block above
+        return lstm_out
+
 
 class MLP(nn.Module):
 
@@ -50,6 +62,7 @@ class MLP(nn.Module):
         x = self.c_proj(x)
         return x
 
+
 class BlockLSTM(nn.Module):
     # head_layer+1 ​= head_layer + Attn(LN(head_layer)) + MLP(LN(head_layer))
 
@@ -61,7 +74,10 @@ class BlockLSTM(nn.Module):
         self.mlp = MLP(config)
 
     def forward(self, x):
-        x = x + self.attn(self.ln_1(x))
+        # Attention + LSTM + residual
+        attn_out = self.attn_lstm(self.ln_1(x))
+        x = x + attn_out  # residual
+
         x = x + self.mlp(self.ln_2(x))
         return x
 
@@ -126,4 +142,3 @@ class GPT_LSTM(nn.Module):
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
         return logits, loss
-
