@@ -20,10 +20,9 @@ class CausalSelfAttentionLSTM(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
 
-        lstm_hidden = config.n_embd/2 if bool(config.bidirectional) else config.n_embd
-
+        lstm_hidden = config.n_embd
         # LSTM after attention
-        self.lstm = nn.LSTM(config.n_embd, lstm_hidden, batch_first=True)
+        self.lstm = nn.LSTM(config.n_embd, lstm_hidden, batch_first=True, bidirectional=False)
         self.lstm_proj = nn.Linear(lstm_hidden, config.n_embd)
 
 
