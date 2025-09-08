@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from dataclasses import dataclass
+from gpt import GPTConfig
 
 
 class CausalSelfAttentionLSTM(nn.Module):
@@ -19,7 +20,8 @@ class CausalSelfAttentionLSTM(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
 
-        lstm_hidden = config.n_embd/2
+        lstm_hidden = config.n_embd/2 if bool(config.bidirectional) else config.n_embd
+
         # LSTM after attention
         self.lstm = nn.LSTM(config.n_embd, lstm_hidden, batch_first=True)
         self.lstm_proj = nn.Linear(lstm_hidden, config.n_embd)
@@ -80,15 +82,6 @@ class BlockLSTM(nn.Module):
 
         x = x + self.mlp(self.ln_2(x))
         return x
-
-
-@dataclass
-class GPTConfig:
-    block_size: int = 1024 # max sequence length
-    vocab_size: int = 50257 # number of tokens: 50,000 BPE merges + 256 bytes tokens + 1 <|endoftext|> token
-    n_layer: int = 12 # number of layers
-    n_head: int = 12 # number of heads
-    n_embd: int = 768 # embedding dimension
 
 
 class GPT_LSTM(nn.Module):
