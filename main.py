@@ -7,7 +7,7 @@ import math
 import time
 import torch
 from hellaswag import render_example, iterate_examples, get_most_likely_row
-from model_gpt2 import GPT, GPTConfig
+from gpt import GPT, GPTConfig
 import tiktoken
 from dataloader import DataLoaderLite
 from utils import generate_text
