@@ -76,22 +76,6 @@ class Block(nn.Module):
         x = x + self.mlp(self.ln_2(x))
         return x
 
-
-class BlockPA(nn.Module):   # Block Parallel Attention
-    # head_layer+1 ​= head_layer ​+ MLP( LN(head_layer ​+ Attn(LN(head_layer))) )
-
-    def __init__(self, config):
-        super().__init__()
-        self.ln_attn = nn.LayerNorm(config.n_embd)
-        self.ln_mlp = nn.LayerNorm(config.n_embd)
-        self.attn = CausalSelfAttention(config)
-        self.mlp = MLP(config)
-
-    def forward(self, x):
-        x = x + self.attn(self.ln_attn(x)) + self.mlp(self.ln_mlp(x))
-        return x
-
-
 class GPT(nn.Module):
     def __init__(self, config):
         super().__init__()

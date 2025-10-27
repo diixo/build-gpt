@@ -1,6 +1,22 @@
 
 import torch
 from torch.nn import functional as F
+import torch.nn as nn
+
+
+# class BlockPA(nn.Module):   # Block Parallel Attention
+#     # head_layer+1 ​= head_layer ​+ MLP( LN(head_layer ​+ Attn(LN(head_layer))) )
+
+#     def __init__(self, config):
+#         super().__init__()
+#         self.ln_attn = nn.LayerNorm(config.n_embd)
+#         self.ln_mlp = nn.LayerNorm(config.n_embd)
+#         self.attn = CausalSelfAttention(config)
+#         self.mlp = MLP(config)
+
+#     def forward(self, x):
+#         x = x + self.attn(self.ln_attn(x)) + self.mlp(self.ln_mlp(x))
+#         return x
 
 
 def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
