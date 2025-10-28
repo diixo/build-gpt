@@ -17,63 +17,8 @@ class GPTConfig:
 
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
-    rope_scale: float = 1.0     # scaling (if extend the model, for example: 2.0 for 1024->2048 NTK-scaling)
+    use_rope: bool = True       # whether to use RoPE or not
 
-
-class RotaryEmbedding(nn.Module):
-    """
-    RoPE (rotary positional embeddings).
-    Return cos, sin matrices forsequences length T, head_dim sizes.
-    """
-
-    def __init__(self, dim: int, base: float = 10000.0, scale: float = 1.0):
-        """
-        dim: head_dim (hs)
-        base: θ (usually 10000.0)
-        scale: scaling of positioning indices (for NTK-scaling)
-        """
-        super().__init__()
-        assert dim % 2 == 0, "head_dim must be even for interleaved rotary implementation"
-        inv_freq = 1.0 / (base ** (torch.arange(0, dim, 2).float() / dim))
-        # inv_freq shape: (dim/2,)
-        self.register_buffer("inv_freq", inv_freq)
-        self.scale = float(scale)
-        self.dim = dim
-
-
-    def get_cos_sin(self, seq_len: int, device: torch.device, dtype: torch.dtype):
-        """
-        Returns cos, sin tensors of forms: (seq_len, dim),
-        ready for broadcast to: (B, nh, T, hs).
-        """
-        t = torch.arange(seq_len, device=device, dtype=dtype).float() / self.scale  # scaled positions
-        # freqs: (T, dim/2)
-        freqs = torch.einsum("i,j->ij", t, self.inv_freq.to(dtype=dtype))
-        # interleave to (T, dim)
-        emb = torch.cat((freqs, freqs), dim=-1)  # (T, dim)
-        cos = emb.cos()
-        sin = emb.sin()
-        return cos, sin
-
-    @staticmethod
-    def apply_rotary(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor):
-        """
-        x: (B, nh, T, hs)
-        cos, sin: broadcastable to (1, 1, T, hs) or (T, hs)
-        returns rotated x
-        """
-        # split even/odd
-        # x[..., ::2] shape = (..., hs/2)
-        x1 = x[..., ::2]
-        x2 = x[..., 1::2]
-        # rotate: (-x2, x1)
-        x_rot = torch.stack((-x2, x1), dim=-1).reshape_as(x)
-        # ensure cos/sin have trailing dims for broadcasting
-        # cos, sin shape: (T, hs) -> make (1,1,T,hs)
-        if cos.dim() == 2:
-            cos = cos.unsqueeze(0).unsqueeze(0)
-            sin = sin.unsqueeze(0).unsqueeze(0)
-        return x * cos + x_rot * sin
 
 class CausalSelfAttention(nn.Module):
 
@@ -89,8 +34,8 @@ class CausalSelfAttention(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
 
-        # Rotary embedding instance (applies to q/k)
-        self.rope = RotaryEmbedding(self.head_dim, base=config.rope_base, scale=config.rope_scale)
+        self.use_rope = config.use_rope
+        self.rope_base = config.rope_base
 
 
     def forward(self, x):
@@ -104,11 +49,31 @@ class CausalSelfAttention(nn.Module):
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
-        # --- apply RoPE to q and k ---
-        cos, sin = self.rope.get_cos_sin(T, device=x.device, dtype=x.dtype)  # (T, hs)
-        q = RotaryEmbedding.apply_rotary(q, cos, sin)
-        k = RotaryEmbedding.apply_rotary(k, cos, sin)
-        # ---------------------------------
+        if self.use_rope:
+            # Apply Rotary Position Embedding (RoPE) to queries and keys
+            hs = C // self.n_head  # head dimension
+            d = hs // 2  # number of dimension pairs
+            theta = 1.0 / (self.rope_base ** (2 * torch.arange(0, d, device=x.device, dtype=torch.float32) / hs))
+            t = torch.arange(T, device=x.device, dtype=torch.float32)
+            freqs = torch.outer(t, theta)
+            freqs_cos = torch.cos(freqs).unsqueeze(0).unsqueeze(0)  # (1, 1, T, d)
+            freqs_sin = torch.sin(freqs).unsqueeze(0).unsqueeze(0)  # (1, 1, T, d)
+
+            # ✅ Check form q/k before rotation:
+            assert q.ndim == 4 and k.ndim == 4, f"Expected 4D tensors for RoPE, got q:{q.shape}, k:{k.shape}"
+
+            def apply_rope(x, cos, sin):
+                assert x.ndim == 4  # multihead attention tensor
+                x_ = x.float().reshape(*x.shape[:-1], -1, 2)  # (B, nh, T, d, 2)
+                x0 = x_[..., 0]
+                x1 = x_[..., 1]
+                x0_rot = x0 * cos - x1 * sin
+                x1_rot = x0 * sin + x1 * cos
+                x_rot = torch.stack([x0_rot, x1_rot], dim=-1).flatten(start_dim=-2)
+                return x_rot.type_as(x)
+
+            q = apply_rope(q, freqs_cos, freqs_sin)
+            k = apply_rope(k, freqs_cos, freqs_sin)
 
         y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
@@ -156,8 +121,7 @@ class GPT(nn.Module):
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
-            #wpe = nn.Embedding(config.block_size, config.n_embd),
-            # wpe removed, position embeddings coded by RoPE inside attention
+            wpe = None if self.use_rope else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = nn.LayerNorm(config.n_embd),
         ))
@@ -168,6 +132,19 @@ class GPT(nn.Module):
 
         # init params
         self.apply(self._init_weights)
+
+
+    def get_num_params(self, non_embedding=True):
+        """
+        Return the number of parameters in the model.
+        For non-embedding count (default), the position embeddings get subtracted.
+        The token embeddings would too, except due to the parameter sharing these
+        params are actually used as weights in the final layer, so we include them.
+        """
+        n_params = sum(p.numel() for p in self.parameters())
+        if non_embedding and not self.use_rope:
+            n_params -= self.transformer.wpe.weight.numel()
+        return n_params
 
 
     def _init_weights(self, module):
@@ -188,9 +165,14 @@ class GPT(nn.Module):
         assert T <= self.config.block_size, f"Cannot forward sequence of length {T}, block size is only {self.config.block_size}"
         # forward the token and posisition embeddings
         pos = torch.arange(0, T, dtype=torch.long, device=idx.device) # shape (T)
-        pos_emb = self.transformer.wpe(pos) # position embeddings of shape (T, n_embd)
+
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (B, T, n_embd)
-        x = tok_emb # + pos_emb
+        if self.use_rope:
+            x = tok_emb
+        else:
+            pos_emb = self.transformer.wpe(pos) # position embeddings of shape (T, n_embd)
+            x = tok_emb + pos_emb
+
         # forward the blocks of the transformer
         for block in self.transformer.h:
             x = block(x)
