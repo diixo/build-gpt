@@ -20,6 +20,51 @@ class GPTConfig:
     use_rope: bool = True       # whether to use RoPE or not
 
 
+class RotaryEmbedding(nn.Module):
+    """
+    Implements precomputed Rotary Position Embedding (RoPE) cache for efficiency.
+    """
+
+    def __init__(self, dim: int, base: float = 10000.0, max_seq_len: int = 2048):
+        """
+        Args:
+            dim: Head dimension (hs)
+            base: RoPE base theta (usually 10000.0)
+            max_seq_len: Maximum sequence length
+        """
+        super().__init__()
+        assert dim % 2 == 0, "Head dimension must be even for RoPE"
+        self.dim = dim
+        self.base = base
+        self.max_seq_len = max_seq_len
+
+        # precompute frequencies
+        half_dim = dim // 2
+        theta = 1.0 / (base ** (2 * torch.arange(0, half_dim, dtype=torch.float32) / dim))
+        t = torch.arange(max_seq_len, dtype=torch.float32)
+        freqs = torch.outer(t, theta)  # (T, half_dim)
+        freqs_cos = torch.cos(freqs)[None, None, :, :]  # (1, 1, T, half_dim)
+        freqs_sin = torch.sin(freqs)[None, None, :, :]  # (1, 1, T, half_dim)
+
+        # store as buffers (moved automatically with model.to(device))
+        self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+        self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+
+
+    def apply_rotary(self, x: torch.Tensor, seq_len: int):
+        """Applies rotary transformation to tensor x."""
+        assert x.ndim == 4, f"Expected 4D tensor (B, nH, T, d), got {x.shape}"
+        cos = self.freqs_cos[:, :, :seq_len, :].to(x.device)
+        sin = self.freqs_sin[:, :, :seq_len, :].to(x.device)
+
+        d = x.shape[3] // 2
+        x1, x2 = x[..., :d], x[..., d:] # split up last time into two halves
+        y1 = x1 * cos + x2 * sin        # rotate pairs of dims
+        y2 = x1 * (-sin) + x2 * cos
+        out = torch.cat([y1, y2], 3)    # re-assemble
+        out = out.to(x.dtype)           # ensure input/output dtypes match
+
+
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config):
@@ -38,15 +83,8 @@ class CausalSelfAttention(nn.Module):
         self.rope_base = config.rope_base
 
         if self.use_rope:
-            hs = config.n_embd // config.n_head
-            d = hs // 2
-            theta = 1.0 / (self.rope_base ** (2 * torch.arange(0, d, dtype=torch.float32) / hs))
-            t = torch.arange(config.block_size, dtype=torch.float32)
-            freqs = torch.outer(t, theta)
-            freqs_cos = torch.cos(freqs)[None, None, :, :]  # (1, 1, T, d)
-            freqs_sin = torch.sin(freqs)[None, None, :, :]  # (1, 1, T, d)
-            self.register_buffer("freqs_cos", freqs_cos, persistent=False)
-            self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+            head_dim = config.n_embd // config.n_head
+            self.rope = RotaryEmbedding(dim=head_dim, base=config.rope_base, max_seq_len=config.block_size)
 
 
     def forward(self, x):
@@ -61,24 +99,8 @@ class CausalSelfAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         if self.use_rope:
-            cs = self.freqs_cos[:, :, :T, :].to(x.device)   # (1, 1, T, d)
-            sn = self.freqs_sin[:, :, :T, :].to(x.device)   # (1, 1, T, d)
-
-            # ✅ Check form q/k before rotation:
-            assert q.ndim == 4 and k.ndim == 4, f"Expected 4D tensors for RoPE, got q:{q.shape}, k:{k.shape}"
-
-            def apply_rope(x, cos, sin):
-                assert x.ndim == 4  # multihead attention tensor
-                x_ = x.float().reshape(*x.shape[:-1], -1, 2)  # (B, nh, T, d, 2)
-                x0 = x_[..., 0]
-                x1 = x_[..., 1]
-                x0_rot = x0 * cos - x1 * sin
-                x1_rot = x0 * sin + x1 * cos
-                x_rot = torch.stack([x0_rot, x1_rot], dim=-1).flatten(start_dim=-2)
-                return x_rot.type_as(x)
-
-            q = apply_rope(q, cs, sn)
-            k = apply_rope(k, cs, sn)
+            q = self.rope.apply_rotary(q, T)
+            k = self.rope.apply_rotary(k, T)
 
         y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
