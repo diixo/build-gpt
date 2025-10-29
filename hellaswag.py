@@ -96,12 +96,29 @@ def iterate_examples(split):
 
 
 @torch.no_grad()
-def evaluate(model_name, device):
+def evaluate_nano(file_path, device):
+
+    from model_gpt2 import GPT, GPTConfig
 
     torch.set_float32_matmul_precision('high') # use tf32
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    config = GPTConfig(
+        block_size=1024,
+        vocab_size=50304,
+        n_layer=12,
+        n_head=12,
+        n_embd=768
+    )
+
+    ckpt = torch.load(file_path, map_location=device, weights_only=False)
+
+    config = ckpt['config']
+
+    model = GPT(config)
+
+    model.load_state_dict(ckpt['model'])
     model.to(device)
-    # model = torch.compile(model) # optionally torch compile the model
+    model.eval()
+
 
     num_correct_norm = 0
     num_correct = 0
@@ -112,7 +129,7 @@ def evaluate(model_name, device):
         mask = mask.to(device)          # (4, max_len)
 
         # get the logits
-        logits = model(tokens).logits   # (4, max_len, vocab_size)
+        logits, loss = model(tokens)   # (4, max_len, vocab_size)
 
         # evaluate the autoregressive loss at all positions
         # last logit is prediction of next token, but next token after last does not exist
@@ -179,7 +196,11 @@ def get_most_likely_row(tokens, mask, logits):
 
 if __name__ == "__main__":
 
-    model_name = "gpt2"
-    model_name = "EleutherAI/gpt-neo-125M"              # = 0.2936
-    model_name = "rhysjones/gpt2-124M-edu-fineweb-10B"  # = 0.3099 # Andrej Karpathy model
-    evaluate(model_name, "cuda")
+    # model_name = "gpt2"
+    # model_name = "EleutherAI/gpt-neo-125M"              # = 0.2936
+    # model_name = "rhysjones/gpt2-124M-edu-fineweb-10B"  # = 0.3099 # Andrej Karpathy model
+
+    file_path = "models/nano-gpt/model_19072.pt"
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    evaluate_nano(file_path, device)
