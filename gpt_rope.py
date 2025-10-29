@@ -1,4 +1,9 @@
-import inspect
+"""
+GPT model
+1) Rotary Position Embeddings (RoPE) implementation.
+2) tie_word_embeddings=True in GPT.from_pretrained to share weights between token embeddings and LM head.
+"""
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -40,9 +45,10 @@ class RotaryEmbedding(nn.Module):
 
         # precompute frequencies
         half_dim = dim // 2
-        theta = 1.0 / (base ** (2 * torch.arange(0, half_dim, dtype=torch.float32) / dim))
+        channel_range = 2 * torch.arange(0, half_dim, dtype=torch.float32)
+        inv_freq = 1.0 / (base ** (channel_range / dim))
         t = torch.arange(max_seq_len, dtype=torch.float32)
-        freqs = torch.outer(t, theta)  # (T, half_dim)
+        freqs = torch.outer(t, inv_freq)                # (T, half_dim)
         freqs_cos = torch.cos(freqs)[None, None, :, :]  # (1, 1, T, half_dim)
         freqs_sin = torch.sin(freqs)[None, None, :, :]  # (1, 1, T, half_dim)
 
