@@ -37,6 +37,17 @@ class CausalSelfAttention(nn.Module):
         self.use_rope = config.use_rope
         self.rope_base = config.rope_base
 
+        if self.use_rope:
+            hs = config.n_embd // config.n_head
+            d = hs // 2
+            theta = 1.0 / (self.rope_base ** (2 * torch.arange(0, d, dtype=torch.float32) / hs))
+            t = torch.arange(config.block_size, dtype=torch.float32)
+            freqs = torch.outer(t, theta)
+            freqs_cos = torch.cos(freqs)[None, None, :, :]  # (1, 1, T, d)
+            freqs_sin = torch.sin(freqs)[None, None, :, :]  # (1, 1, T, d)
+            self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+            self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -50,14 +61,8 @@ class CausalSelfAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         if self.use_rope:
-            # Apply Rotary Position Embedding (RoPE) to queries and keys
-            hs = C // self.n_head  # head dimension
-            d = hs // 2  # number of dimension pairs
-            theta = 1.0 / (self.rope_base ** (2 * torch.arange(0, d, device=x.device, dtype=torch.float32) / hs))
-            t = torch.arange(T, device=x.device, dtype=torch.float32)
-            freqs = torch.outer(t, theta)
-            freqs_cos = torch.cos(freqs).unsqueeze(0).unsqueeze(0)  # (1, 1, T, d)
-            freqs_sin = torch.sin(freqs).unsqueeze(0).unsqueeze(0)  # (1, 1, T, d)
+            cs = self.freqs_cos[:, :, :T, :].to(x.device)   # (1, 1, T, d)
+            sn = self.freqs_sin[:, :, :T, :].to(x.device)   # (1, 1, T, d)
 
             # ✅ Check form q/k before rotation:
             assert q.ndim == 4 and k.ndim == 4, f"Expected 4D tensors for RoPE, got q:{q.shape}, k:{k.shape}"
@@ -72,8 +77,8 @@ class CausalSelfAttention(nn.Module):
                 x_rot = torch.stack([x0_rot, x1_rot], dim=-1).flatten(start_dim=-2)
                 return x_rot.type_as(x)
 
-            q = apply_rope(q, freqs_cos, freqs_sin)
-            k = apply_rope(k, freqs_cos, freqs_sin)
+            q = apply_rope(q, cs, sn)
+            k = apply_rope(k, cs, sn)
 
         y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
