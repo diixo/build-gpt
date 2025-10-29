@@ -53,7 +53,7 @@ class RotaryEmbedding(nn.Module):
 
     def apply_rotary(self, x: torch.Tensor, seq_len: int):
         """Applies rotary transformation to tensor x."""
-        assert x.ndim == 4, f"Expected 4D tensor (B, nH, T, d), got {x.shape}"
+        assert x.ndim == 4, f"Expected 4D tensor (B, nH, T, d), got: {x.shape}"
         cos = self.freqs_cos[:, :, :seq_len, :].to(x.device)
         sin = self.freqs_sin[:, :, :seq_len, :].to(x.device)
 

@@ -46,6 +46,7 @@ class CausalSelfAttention(nn.Module):
         y = self.c_proj(y)
         return y
 
+
 class MLP(nn.Module):
 
     def __init__(self, config):
@@ -61,6 +62,7 @@ class MLP(nn.Module):
         x = self.c_proj(x)
         return x
 
+
 class Block(nn.Module):
     # head_layer+1 ​= head_layer + Attn(LN(head_layer)) + MLP(LN(head_layer))
 
@@ -75,6 +77,7 @@ class Block(nn.Module):
         x = x + self.attn(self.ln_1(x))
         x = x + self.mlp(self.ln_2(x))
         return x
+
 
 class GPT(nn.Module):
     def __init__(self, config):
