@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from dataclasses import dataclass
-from transformers import GPT2LMHeadModel
+from typing import Optional
 
 
 @dataclass
@@ -23,6 +23,12 @@ class GPTConfig:
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
     use_rope: bool = True       # whether to use RoPE or not
+
+
+@dataclass
+class GPTOutput:
+    logits: torch.Tensor
+    loss: Optional[torch.Tensor] = None
 
 
 class RotaryEmbedding(nn.Module):
@@ -147,7 +153,7 @@ class Block(nn.Module):
         return x
 
 
-class GPTNeoX(nn.Module):
+class GPTLlama(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -190,7 +196,7 @@ class GPTNeoX(nn.Module):
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
-        return logits, loss
+        return GPTOutput(logits=logits, loss=loss)
 
 
     def _init_weights(self, module):
