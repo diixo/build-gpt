@@ -215,7 +215,8 @@ class GPT(nn.Module):
 
 
 ######################################################################################################################
-class GPTNeo(nn.Module):
+class GPTExt(nn.Module):
+    """GPT model with sinusoidal positional embeddings (as in GPT-Neo)"""
 
     def __init__(self, config):
         super().__init__()
