@@ -19,7 +19,7 @@ class AutoGPT2Model:
         "gpt": dict(),
         "gpt-neo": dict(),
         "gpt-llama": dict(rope_base=10000.0, use_rope=True),
-        "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, flash_attn=True),
+        "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25),
     }
 
 
