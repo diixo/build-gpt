@@ -4,6 +4,7 @@ GPT model
 2) tie_word_embeddings=True in GPT.from_pretrained to share weights between token embeddings and LM head.
 """
 
+import math
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -18,6 +19,7 @@ class GPTConfig:
     n_layer: int = 12       # number of layers
     n_head: int = 12        # number of heads
     n_embd: int = 768       # embedding dimension
+    flash_attn: bool = True # whether to use flash attention (scaled_dot_product_attention)
 
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
@@ -113,7 +115,16 @@ class CausalSelfAttention(nn.Module):
             q = self.rope.apply_rotary(q, T)
             k = self.rope.apply_rotary(k, T)
 
-        y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
+        if self.n_head == 1 or not self.flash_attn:
+            # manual attention implementation
+            att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
+            att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
+            att = F.softmax(att, dim=-1)
+            y = att @ v  # (B, nh, T, hs)
+        else:
+            # use PyTorch flash attention (scaled_dot_product_attention)
+            y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
+
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
         # output projection
         y = self.c_proj(y)

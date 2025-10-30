@@ -39,6 +39,7 @@ class AutoGPT2Model:
             "n_layer": 12,
             "n_head": 12,
             "n_embd": 768,
+            "flash_attn": True,
         })
 
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
