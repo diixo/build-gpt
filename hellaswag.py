@@ -129,7 +129,7 @@ def evaluate_nano(file_path, device):
         mask = mask.to(device)          # (4, max_len)
 
         # get the logits
-        logits, loss = model(tokens)   # (4, max_len, vocab_size)
+        logits = model(tokens).logits   # (4, max_len, vocab_size)
 
         # evaluate the autoregressive loss at all positions
         # last logit is prediction of next token, but next token after last does not exist

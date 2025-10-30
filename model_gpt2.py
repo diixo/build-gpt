@@ -4,6 +4,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 from dataclasses import dataclass
 from transformers import GPT2LMHeadModel
+from typing import Optional
 
 
 @dataclass
@@ -13,6 +14,12 @@ class GPTConfig:
     n_layer: int = 12       # number of layers
     n_head: int = 12        # number of heads
     n_embd: int = 768       # embedding dimension
+
+
+@dataclass
+class GPTOutput:
+    logits: torch.Tensor
+    loss: Optional[torch.Tensor] = None
 
 
 class CausalSelfAttention(nn.Module):
@@ -79,6 +86,7 @@ class Block(nn.Module):
 
 
 class GPT(nn.Module):
+
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -116,7 +124,7 @@ class GPT(nn.Module):
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
-        return logits, loss
+        return GPTOutput(logits=logits, loss=loss)
 
 
     def _init_weights(self, module):
@@ -257,7 +265,7 @@ class GPTNeo(nn.Module):
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
-        return logits, loss
+        return GPTOutput(logits=logits, loss=loss)
 
 
     def _init_weights(self, module):

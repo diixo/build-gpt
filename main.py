@@ -117,7 +117,8 @@ if __name__ == "__main__":
                     x, y = val_loader.next_batch()
                     x, y = x.to(device), y.to(device)
                     with torch.autocast(device_type=device_type, dtype=torch.bfloat16):
-                        logits, loss = model(x, y)
+                        output = model(x, y)
+                        logits, loss = output.logits, output.loss
                     loss = loss / val_loss_steps
                     val_loss_accum += loss.detach()
 
@@ -153,7 +154,8 @@ if __name__ == "__main__":
                 # get the logits
                 with torch.no_grad():
                     with torch.autocast(device_type=device_type, dtype=torch.bfloat16):
-                        logits, loss = model(tokens)
+                        output = model(x, y)
+                        logits, loss = output.logits, output.loss
                     pred_norm = get_most_likely_row(tokens, mask, logits)
                 num_total += 1
                 num_correct_norm += int(pred_norm == label)
@@ -178,7 +180,8 @@ if __name__ == "__main__":
             x, y = x.to(device), y.to(device)
 
             with torch.autocast(device_type=device_type, dtype=torch.bfloat16):
-                logits, loss = model(x, y)
+                output = model(x, y)
+                logits, loss = output.logits, output.loss
             # we have to scale the loss to account for gradient accumulation,
             # because the gradients just add on each successive backward().
             # addition of gradients corresponds to a SUM in the objective, but
