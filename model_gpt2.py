@@ -87,8 +87,11 @@ class Block(nn.Module):
 
 class GPT(nn.Module):
 
-    def __init__(self, config):
+    def __init__(self, config=None, **kwargs):
         super().__init__()
+        if config is None:
+            config = GPTConfig(**kwargs)
+
         self.config = config
 
         self.transformer = nn.ModuleDict(dict(
@@ -215,11 +218,13 @@ class GPT(nn.Module):
 
 
 ######################################################################################################################
-class GPTExt(nn.Module):
+class GPTNeo(nn.Module):
     """GPT model with sinusoidal positional embeddings (as in GPT-Neo)"""
 
-    def __init__(self, config):
+    def __init__(self, config=None, **kwargs):
         super().__init__()
+        if config is None:
+            config = GPTConfig(**kwargs)
         self.config = config
 
         self.transformer = nn.ModuleDict(dict(

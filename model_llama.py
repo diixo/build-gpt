@@ -18,7 +18,6 @@ class GPTConfig:
     n_layer: int = 12       # number of layers
     n_head: int = 12        # number of heads
     n_embd: int = 768       # embedding dimension
-    bidirectional: bool = False # by GPT_LSTM using
 
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
@@ -154,8 +153,11 @@ class Block(nn.Module):
 
 
 class GPTLlama(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config=None, **kwargs):
         super().__init__()
+        if config is None:
+            config = GPTConfig(**kwargs)
+
         self.config = config
 
         self.transformer = nn.ModuleDict(dict(

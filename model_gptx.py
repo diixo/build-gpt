@@ -17,12 +17,12 @@ class GPTConfig:
     n_layer: int = 12       # number of layers
     n_head: int = 12        # number of heads
     n_embd: int = 768       # embedding dimension
+    flash_attn: bool = True # whether to use flash attention (scaled_dot_product_attention)
 
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
     use_rope: bool = True       # whether to use RoPE or not
     rotary_pct: float = 1.0     # percentage of head_dim to apply RoPE to (1.0 = all)
-    flash_attn: bool = True     # whether to use flash attention (scaled_dot_product_attention)
 
 
 @dataclass
@@ -201,8 +201,10 @@ class Block(nn.Module):
 
 
 class GPTNeoX(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config=None, **kwargs):
         super().__init__()
+        if config is None:
+            config = GPTConfig(**kwargs)
         self.config = config
 
         self.transformer = nn.ModuleDict(dict(
