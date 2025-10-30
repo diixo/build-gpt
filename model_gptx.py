@@ -1,9 +1,8 @@
 """
-GPT model
-1) Rotary Position Embeddings (RoPE) implementation.
-2) tie_word_embeddings=True in GPT.from_pretrained to share weights between token embeddings and LM head.
+GPT model with Rotary Position Embeddings (RoPE) and rotary_pct option (with separation by rotary and non-rotary parts).
 """
 
+import math
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -18,11 +17,12 @@ class GPTConfig:
     n_layer: int = 12       # number of layers
     n_head: int = 12        # number of heads
     n_embd: int = 768       # embedding dimension
-    bidirectional: bool = False # by GPT_LSTM using
 
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
     use_rope: bool = True       # whether to use RoPE or not
+    rotary_pct: float = 1.0     # percentage of head_dim to apply RoPE to (1.0 = all)
+    flash_attn: bool = True     # whether to use flash attention (scaled_dot_product_attention)
 
 
 @dataclass
@@ -36,7 +36,7 @@ class RotaryEmbedding(nn.Module):
     Implements precomputed Rotary Position Embedding (RoPE) cache for efficiency.
     """
 
-    def __init__(self, dim: int, base: float = 10000.0, max_seq_len: int = 2048):
+    def __init__(self, dim: int, base: float = 10000.0, max_seq_len: int = 2048, rotary_pct: float = 1.0):
         """
         Args:
             dim: Head dimension (hs)
@@ -48,6 +48,7 @@ class RotaryEmbedding(nn.Module):
         self.dim = dim
         self.base = base
         self.max_seq_len = max_seq_len
+        self.rotary_dim = int(dim * rotary_pct)
 
         # precompute frequencies
         half_dim = dim // 2
@@ -64,17 +65,23 @@ class RotaryEmbedding(nn.Module):
 
 
     def apply_rotary(self, x: torch.Tensor, seq_len: int):
-        """Applies rotary transformation to tensor x."""
+        """
+        Applies rotary transformation to the first rotary_dim of tensor x.
+        Expects x.shape = (B, n_head, T, head_dim)
+        """
         assert x.ndim == 4, f"Expected 4D tensor (B, nH, T, d), got: {x.shape}"
         cos = self.freqs_cos[:, :, :seq_len, :].to(x.device)
         sin = self.freqs_sin[:, :, :seq_len, :].to(x.device)
+        rotary_part = x[..., :self.rotary_dim]
+        non_rotary_part = x[..., self.rotary_dim:]
 
-        d = x.shape[3] // 2
-        x1, x2 = x[..., :d], x[..., d:] # split up last time into two halves
-        y1 = x1 * cos + x2 * sin        # rotate pairs of dims
+        #d = x.shape[3] // 2
+        d = self.rotary_dim // 2
+        x1, x2 = rotary_part[..., :d], rotary_part[..., d:]
+        y1 = x1 * cos + x2 * sin
         y2 = x1 * (-sin) + x2 * cos
-        out = torch.cat([y1, y2], 3)    # re-assemble
-        out = out.to(x.dtype)           # ensure input/output dtypes match
+        rotated = torch.cat([y1, y2], dim=-1)
+        return torch.cat([rotated, non_rotary_part], dim=-1)
 
 
 class CausalSelfAttention(nn.Module):
@@ -82,24 +89,42 @@ class CausalSelfAttention(nn.Module):
     def __init__(self, config):
         super().__init__()
         assert config.n_embd % config.n_head == 0
+
+        self.flash_attn = config.flash_attn
+
         # key, query, value projections for all heads, but in a batch
         self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd)
-        # output projection
         self.c_proj = nn.Linear(config.n_embd, config.n_embd)
         self.c_proj.NANOGPT_SCALE_INIT = 1
+
         # regularization
         self.n_head = config.n_head
         self.n_embd = config.n_embd
 
+        # RoPE config
         self.use_rope = config.use_rope
         self.rope_base = config.rope_base
+        self.rotary_pct = config.rotary_pct
 
         if self.use_rope:
             head_dim = config.n_embd // config.n_head
-            self.rope = RotaryEmbedding(dim=head_dim, base=config.rope_base, max_seq_len=config.block_size)
+            self.rope = RotaryEmbedding(
+                dim=head_dim,
+                base=self.rope_base,
+                max_seq_len=config.block_size,
+                rotary_pct=self.rotary_pct
+            )
+
+            # positional embedding для non-RoPE части
+            if self.rotary_pct < 1.0:
+                self.wpe = nn.Embedding(config.block_size, head_dim - self.rope.rotary_dim)
+            else:
+                self.wpe = None
+        else:
+            self.wpe = nn.Embedding(config.block_size, config.n_embd)
 
 
-    def forward(self, x):
+    def forward(self, x, pos=None):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
         # nh is "number of heads", hs is "head size", and C (number of channels) = nh * hs
@@ -114,7 +139,29 @@ class CausalSelfAttention(nn.Module):
             q = self.rope.apply_rotary(q, T)
             k = self.rope.apply_rotary(k, T)
 
-        y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
+        # --- add WPE only to non-rotation part ---
+        if self.wpe is not None and self.use_rope and self.rotary_pct < 1.0:
+            rotary_dim = self.rope.rotary_dim
+            nonrotary_dim = (C // self.n_head) - rotary_dim
+            if nonrotary_dim > 0:
+                pos_emb = self.wpe(pos)[:, None, :, :nonrotary_dim]  # [B,1,T,nonrotary_dim]
+                q[..., rotary_dim:] += pos_emb
+                k[..., rotary_dim:] += pos_emb
+        elif self.wpe is not None and not self.use_rope:
+            # classic GPT-2 positional embeddings
+            pos_emb = self.wpe(pos)
+            x = x + pos_emb
+
+        if self.n_head == 1 or not self.flash_attn:
+            # manual attention implementation
+            att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
+            att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
+            att = F.softmax(att, dim=-1)
+            y = att @ v  # (B, nh, T, hs)
+        else:
+            # use PyTorch flash attention (scaled_dot_product_attention)
+            y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
+
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
         # output projection
         y = self.c_proj(y)
@@ -147,8 +194,8 @@ class Block(nn.Module):
         self.ln_2 = nn.LayerNorm(config.n_embd)
         self.mlp = MLP(config)
 
-    def forward(self, x):
-        x = x + self.attn(self.ln_1(x))
+    def forward(self, x, pos=None):
+        x = x + self.attn(self.ln_1(x), pos=pos)
         x = x + self.mlp(self.ln_2(x))
         return x
 
@@ -160,16 +207,15 @@ class GPTNeoX(nn.Module):
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
-            wpe = None if self.use_rope else nn.Embedding(config.block_size, config.n_embd),
+            wpe = None if self.use_rope and self.rotary_pct == 1.0 else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
-            ln_f = nn.LayerNorm(config.n_embd),
+            ln_f = nn.LayerNorm(config.n_embd)
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         # weight sharing scheme
         self.transformer.wte.weight = self.lm_head.weight
 
-        # init params
         self.apply(self._init_weights)
 
 
@@ -181,11 +227,11 @@ class GPTNeoX(nn.Module):
         pos = torch.arange(0, T, dtype=torch.long, device=idx.device) # shape (T)
 
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (B, T, n_embd)
-        if self.use_rope:
-            x = tok_emb
-        else:
-            pos_emb = self.transformer.wpe(pos) # position embeddings of shape (T, n_embd)
+        if self.transformer.wpe is not None:
+            pos_emb = self.transformer.wpe(pos)
             x = tok_emb + pos_emb
+        else:
+            x = tok_emb
 
         # forward the blocks of the transformer
         for block in self.transformer.h:
