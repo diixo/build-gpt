@@ -102,6 +102,8 @@ class TrainerConfig:
 class Trainer:
 
     def __init__(self, model, dataset, config):
+        self.losses = []
+
         self.model = model.to(config.device)
         self.config = config
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
@@ -111,25 +113,31 @@ class Trainer:
             shuffle=False,
             collate_fn=lambda b: custom_collate_fn(
                 b,
-                max_seq_length=config.block_size,
-                pad_token_id=tokenizer.eos_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-                device=config.device,
+                max_seq_length = model.config.block_size,
+                pad_token_id = tokenizer.eos_token_id,
+                eos_token_id = tokenizer.eos_token_id,
+                device = config.device,
                 ),
             )
+        print("sz.loader:", len(self.loader))
 
 
     def train(self):
+        self.losses = []
         self.model.train()
         for epoch in range(self.config.epochs):
             pbar = tqdm(self.loader, desc=f"Epoch {epoch + 1} / {self.config.epochs}")
+
+            epoch_loss = 0.0
             for x, y in pbar:
                 x, y = x.to(self.config.device), y.to(self.config.device)
-                logits, loss = self.model(x, y)
+                loss = self.model(x, y).loss
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 pbar.set_postfix(loss=loss.item())
+                epoch_loss += loss.item()
+            self.losses.append(epoch_loss / len(self.loader))
         print("✅ Training complete.")
 
 
@@ -160,6 +168,8 @@ class AutoGPT2Model:
 
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
+
+        print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
         config_kwargs = AutoGPT2Model.CONFIG_MAP[model_type]
         config_kwargs.update({
@@ -214,5 +224,4 @@ if __name__ == "__main__":
 
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
     trainer = Trainer(model, dataset, TrainerConfig(epochs=2, batch_size=4))
-    exit(0)
     trainer.train()
