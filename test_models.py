@@ -12,6 +12,53 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, GPT2Tokenizer
 
 
+class AutoGPT2Model:
+
+    MODEL_MAP = {
+        "gpt": GPT,
+        "gpt-neo": GPTNeo,
+        "gpt-llama": GPTLlama,
+        "gpt-neox": GPTNeoX,
+    }
+
+    CONFIG_MAP = {
+        "gpt": dict(),
+        "gpt-neo": dict(),
+        "gpt-llama": dict(rope_base=10000.0, use_rope=True),
+        "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
+    }
+
+    @staticmethod
+    def from_config(model_type: str):
+        if model_type not in AutoGPT2Model.MODEL_MAP:
+            raise ValueError(f"Unknown model_type: {model_type}")
+
+        # For any model we use the same tokenizer (GPT-NeoX tokenizer)
+        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
+        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
+
+        config_kwargs = AutoGPT2Model.CONFIG_MAP[model_type]
+        config_kwargs.update({
+            "block_size": 2048,
+            "vocab_size": 50304,
+            "n_layer": 12,
+            "n_head": 12,
+            "n_embd": 768,
+            "flash_attn": True,
+        })
+
+        print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
+
+        model_cls = AutoGPT2Model.MODEL_MAP[model_type]
+        model = model_cls(**config_kwargs)
+        return model, tokenizer
+
+
 def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device, ignore_index=-100):
     """
     Custom collate function for variable-length text samples.
@@ -154,53 +201,6 @@ class Trainer:
             print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={math.exp(avg_loss):.2f}")
 
         print("✅ Training complete.")
-
-
-class AutoGPT2Model:
-
-    MODEL_MAP = {
-        "gpt": GPT,
-        "gpt-neo": GPTNeo,
-        "gpt-llama": GPTLlama,
-        "gpt-neox": GPTNeoX,
-    }
-
-    CONFIG_MAP = {
-        "gpt": dict(),
-        "gpt-neo": dict(),
-        "gpt-llama": dict(rope_base=10000.0, use_rope=True),
-        "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
-    }
-
-    @staticmethod
-    def from_config(model_type: str):
-        if model_type not in AutoGPT2Model.MODEL_MAP:
-            raise ValueError(f"Unknown model_type: {model_type}")
-
-        # For any model we use the same tokenizer (GPT-NeoX tokenizer)
-        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
-        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
-
-        print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
-
-        config_kwargs = AutoGPT2Model.CONFIG_MAP[model_type]
-        config_kwargs.update({
-            "block_size": 2048,
-            "vocab_size": 50304,
-            "n_layer": 12,
-            "n_head": 12,
-            "n_embd": 768,
-            "flash_attn": True,
-        })
-
-        print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
-
-        model_cls = AutoGPT2Model.MODEL_MAP[model_type]
-        model = model_cls(**config_kwargs)
-        return model, tokenizer
 
 
 def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
