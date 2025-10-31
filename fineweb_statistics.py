@@ -5,6 +5,7 @@ import json
 import tiktoken
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from datasets import load_dataset
 
 
 enc = tiktoken.get_encoding("gpt2")
@@ -19,16 +20,12 @@ def tokenize_to_len(doc):
 
 
 if __name__ == "__main__":
-    from datasets import load_dataset
-    import os
 
     fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
-    nprocs = 4 # max(1, os.cpu_count() // 2)
-    size_map_counter = Counter()
     total_docs = len(fw)  # 9_672_101
 
-    nprocs = 4 # max(1, os.cpu_count() // 2)
+    nprocs = 4  # max(1, os.cpu_count() // 2)
     size_map_counter = Counter()
 
     with mp.Pool(nprocs) as pool:
@@ -54,8 +51,8 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10, 6))
     plt.bar(lengths, counts, color='skyblue')
-    plt.xlabel("Длина токенизированной строки")
-    plt.ylabel("Количество документов")
-    plt.title("Распределение размеров токенизированных строк в датасете")
+    plt.xlabel("Length of tokenized rows")
+    plt.ylabel("Count of rows")
+    plt.title("Sizes distribution of tokenized rows from dataset FineWeb-Edu-10BT")
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
