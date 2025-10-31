@@ -1,11 +1,17 @@
 """
-GPT model with Rotary Position Embeddings (RoPE) and rotary_pct option (with separation by rotary and non-rotary parts).
+GPT model:
+
+1) Rotary Position Embeddings (RoPE) - roformer implemented.
+2) rotary_pct ( float , optional, defaults to 0.25) — percentage of hidden dimensions to allocate to rotary embeddings
+3) QK-normalization when using RoPE.
+4) RMSNorm instead of LayerNorm.
+5) Weight tying option (tie_word_embeddings) between token embeddings and LM head.
 """
 
 import math
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
+import torch.nn.functional as F
 from dataclasses import dataclass
 from typing import Optional
 
@@ -22,8 +28,13 @@ class GPTConfig:
     # RoPE params
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
     use_rope: bool = True       # whether to use RoPE or not
-    rotary_pct: float = 1.0     # percentage of head_dim to apply RoPE to (1.0 = all)
+    rotary_pct: float = 0.25    # percentage of head_dim to apply RoPE to (1.0 = all)
+    tie_word_embeddings: bool = True    # whether to tie word embeddings and LM head weights
 
+
+def norm(x, eps=1e-5):
+    # Purely functional rmsnorm with no learnable params
+    return F.rms_norm(x, (x.size(-1),), eps=eps)
 
 @dataclass
 class GPTOutput:
@@ -152,6 +163,10 @@ class CausalSelfAttention(nn.Module):
             pos_emb = self.wpe(pos)
             x = x + pos_emb
 
+        if self.use_rope:
+            q = norm(q)
+            k = norm(k)
+
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
             att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
@@ -189,14 +204,12 @@ class Block(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.ln_1 = nn.LayerNorm(config.n_embd)
         self.attn = CausalSelfAttention(config)
-        self.ln_2 = nn.LayerNorm(config.n_embd)
         self.mlp = MLP(config)
 
     def forward(self, x, pos=None):
-        x = x + self.attn(self.ln_1(x), pos=pos)
-        x = x + self.mlp(self.ln_2(x))
+        x = x + self.attn(norm(x), pos=pos)
+        x = x + self.mlp(norm(x))
         return x
 
 
@@ -215,8 +228,9 @@ class GPTNeoX(nn.Module):
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
-        # weight sharing scheme
-        self.transformer.wte.weight = self.lm_head.weight
+        if config.tie_word_embeddings:
+            # weight sharing scheme, tie_word_embeddings = True
+            self.transformer.wte.weight = self.lm_head.weight
 
         self.apply(self._init_weights)
 
