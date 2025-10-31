@@ -62,9 +62,11 @@ class RotaryEmbedding(nn.Module):
         self.rotary_dim = int(dim * rotary_pct)
 
         # precompute frequencies
-        half_dim = dim // 2
+        half_dim = self.rotary_dim // 2
+
         channel_range = 2 * torch.arange(0, half_dim, dtype=torch.float32)
         inv_freq = 1.0 / (base ** (channel_range / dim))
+
         t = torch.arange(max_seq_len, dtype=torch.float32)
         freqs = torch.outer(t, inv_freq)                # (T, half_dim)
         freqs_cos = torch.cos(freqs)[None, None, :, :]  # (1, 1, T, half_dim)
@@ -89,6 +91,7 @@ class RotaryEmbedding(nn.Module):
         #d = x.shape[3] // 2
         d = self.rotary_dim // 2
         x1, x2 = rotary_part[..., :d], rotary_part[..., d:]
+
         y1 = x1 * cos + x2 * sin
         y2 = x1 * (-sin) + x2 * cos
         rotated = torch.cat([y1, y2], dim=-1)
@@ -155,7 +158,9 @@ class CausalSelfAttention(nn.Module):
             rotary_dim = self.rope.rotary_dim
             nonrotary_dim = (C // self.n_head) - rotary_dim
             if nonrotary_dim > 0:
-                pos_emb = self.wpe(pos)[:, None, :, :nonrotary_dim]  # [B,1,T,nonrotary_dim]
+                # self.wpe(pos) -> (T, nonrotary_dim)
+                # [None, None, :, :] -> (1, 1, T, nonrotary_dim)
+                pos_emb = self.wpe(pos)[None, None, :, :]
                 q[..., rotary_dim:] += pos_emb
                 k[..., rotary_dim:] += pos_emb
         elif self.wpe is not None and not self.use_rope:
@@ -222,7 +227,7 @@ class GPTNeoX(nn.Module):
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
-            wpe = None if self.use_rope and self.rotary_pct == 1.0 else nn.Embedding(config.block_size, config.n_embd),
+            wpe = None if config.use_rope and config.rotary_pct == 1.0 else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = nn.LayerNorm(config.n_embd)
         ))
@@ -251,7 +256,7 @@ class GPTNeoX(nn.Module):
 
         # forward the blocks of the transformer
         for block in self.transformer.h:
-            x = block(x)
+            x = block(x, pos=pos)
         # forward the final layernorm and the classifier
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x) # (B, T, vocab_size)
