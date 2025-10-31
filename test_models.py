@@ -203,23 +203,26 @@ class AutoGPT2Model:
         return model, tokenizer
 
 
-def test_collate_fn():
+def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
 
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    inputs_1 = [0, 1, 2, 3, 4]
-    inputs_2 = [5, 6]
-    inputs_3 = [7, 8 , 9]
+    inputs_1 = torch.tensor([1, 2, 3, 4, 5],
+                            dtype=torch.long)
+    inputs_2 = torch.tensor([6, 7],
+                            dtype=torch.long)
+    inputs_3 = torch.tensor([7, 8, 9],
+                            dtype=torch.long)
 
     batch = [inputs_1, inputs_2, inputs_3]
 
-    print(24 * "*")
+    print(64 * "*")
     inputs, targets = custom_collate_fn(
         batch,
         max_seq_length = 4,
-        pad_token_id = 50256,
-        eos_token_id = 50256,
-        ignore_index = -100,
+        pad_token_id = pad_token_id,
+        eos_token_id = eos_token_id,
+        ignore_index = ignore_index,
         device = device)
 
     print(inputs)
@@ -229,7 +232,18 @@ def test_collate_fn():
 
 if __name__ == "__main__":
 
-    #test_collate_fn()
+    tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
+
+    # Проверяем eos_token_id и сам токен
+    print("EOS token id:", tokenizer.eos_token_id)
+    print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
+
+    # Заодно проверим pad, bos и другие, если есть
+    print("Special tokens:", tokenizer.special_tokens_map)
+
+    #test_collate_fn(pad_token_id=tokenizer.eos_token_id, eos_token_id=tokenizer.eos_token_id)
+
+    #########################################################################################
 
     model, tokenizer = AutoGPT2Model.from_config("gpt")
 
