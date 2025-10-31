@@ -36,11 +36,22 @@ def norm(x, eps=1e-5):
     # Purely functional rmsnorm with no learnable params
     return F.rms_norm(x, (x.size(-1),), eps=eps)
 
+class RMSNormFn(nn.Module):
+    """Нормализация без обучаемых весов и смещения (pure functional RMSNorm)."""
+    def __init__(self, eps=1e-5):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # rms_norm(x, normalized_shape) эквивалентно x / rms(x)
+        return F.rms_norm(x, (x.size(-1),), eps=self.eps)
+
 @dataclass
 class GPTOutput:
     logits: torch.Tensor
     loss: Optional[torch.Tensor] = None
 
+# --- RotaryEmbedding (ИСПРАВЛЕНО) ---
 
 class RotaryEmbedding(nn.Module):
     """
@@ -60,12 +71,18 @@ class RotaryEmbedding(nn.Module):
         self.base = base
         self.max_seq_len = max_seq_len
         self.rotary_dim = int(dim * rotary_pct)
+        assert self.rotary_dim % 2 == 0, "Rotary dimension must be even"
 
         # precompute frequencies
         half_dim = self.rotary_dim // 2
 
         channel_range = 2 * torch.arange(0, half_dim, dtype=torch.float32)
-        inv_freq = 1.0 / (base ** (channel_range / dim))
+        
+        # --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+        # Формула должна зависеть от rotary_dim, а не от полной dim
+        # inv_freq = 1.0 / (base ** (channel_range / dim)) # <-- БЫЛО
+        inv_freq = 1.0 / (base ** (channel_range / self.rotary_dim)) # <-- СТАЛО
+        # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
         t = torch.arange(max_seq_len, dtype=torch.float32)
         freqs = torch.outer(t, inv_freq)                # (T, half_dim)
@@ -98,6 +115,8 @@ class RotaryEmbedding(nn.Module):
         return torch.cat([rotated, non_rotary_part], dim=-1)
 
 
+# --- CausalSelfAttention (ИСПРАВЛЕНО) ---
+
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config):
@@ -128,21 +147,16 @@ class CausalSelfAttention(nn.Module):
                 max_seq_len=config.block_size,
                 rotary_pct=self.rotary_pct
             )
+        
+    # --- ИСПРАВЛЕНИЕ: ВСЯ ЛОГИКА WPE УДАЛЕНА ОТСЮДА ---
+    # self.wpe и связанная логика были удалены,
+    # так как абсолютные позиционные эмбеддинги 
+    # применяются в GPTNeoX.forward
 
-            # positional embedding для non-RoPE части
-            if self.rotary_pct < 1.0:
-                self.wpe = nn.Embedding(config.block_size, head_dim - self.rope.rotary_dim)
-            else:
-                self.wpe = None
-        else:
-            self.wpe = nn.Embedding(config.block_size, config.n_embd)
-
-
-    def forward(self, x, pos=None):
+    # def forward(self, x, pos=None): # <-- БЫЛО
+    def forward(self, x): # <-- СТАЛО
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
-        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
-        # nh is "number of heads", hs is "head size", and C (number of channels) = nh * hs
-        # e.g. in GPT-2 (124M), n_head=12, hs=64, so nh*hs=C=768 channels in the Transformer
+        
         qkv = self.c_attn(x)
         q, k, v = qkv.split(self.n_embd, dim=2)
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
@@ -153,20 +167,9 @@ class CausalSelfAttention(nn.Module):
             q = self.rope.apply_rotary(q, T)
             k = self.rope.apply_rotary(k, T)
 
-        # --- add WPE only to non-rotation part ---
-        if self.wpe is not None and self.use_rope and self.rotary_pct < 1.0:
-            rotary_dim = self.rope.rotary_dim
-            nonrotary_dim = (C // self.n_head) - rotary_dim
-            if nonrotary_dim > 0:
-                # self.wpe(pos) -> (T, nonrotary_dim)
-                # [None, None, :, :] -> (1, 1, T, nonrotary_dim)
-                pos_emb = self.wpe(pos)[None, None, :, :]
-                q[..., rotary_dim:] += pos_emb
-                k[..., rotary_dim:] += pos_emb
-        elif self.wpe is not None and not self.use_rope:
-            # classic GPT-2 positional embeddings
-            pos_emb = self.wpe(pos)
-            x = x + pos_emb
+        # --- ИСПРАВЛЕНИЕ: ВСЯ ЛОГИКА WPE УДАЛЕНА ОТСЮДА ---
+        # if self.wpe is not None ...
+        # elif self.wpe is not None ...
 
         if self.use_rope:
             q = norm(q)
@@ -175,7 +178,9 @@ class CausalSelfAttention(nn.Module):
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
             att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
-            att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
+            # causal mask
+            mask = torch.triu(torch.ones(T, T, device=x.device), 1).bool()
+            att = att.masked_fill(mask, float('-inf'))
             att = F.softmax(att, dim=-1)
             y = att @ v  # (B, nh, T, hs)
         else:
@@ -203,20 +208,24 @@ class MLP(nn.Module):
         x = self.c_proj(x)
         return x
 
+# --- Block (ИСПРАВЛЕНО) ---
 
 class Block(nn.Module):
-    # head_layer+1 ​= head_layer + Attn(LN(head_layer)) + MLP(LN(head_layer))
+    # head_layer+1 = head_layer + Attn(LN(head_layer)) + MLP(LN(head_layer))
 
     def __init__(self, config):
         super().__init__()
         self.attn = CausalSelfAttention(config)
         self.mlp = MLP(config)
 
-    def forward(self, x, pos=None):
-        x = x + self.attn(norm(x), pos=pos)
+    # def forward(self, x, pos=None): # <-- БЫЛО
+    def forward(self, x): # <-- СТАЛО
+        # x = x + self.attn(norm(x), pos=pos) # <-- БЫЛО
+        x = x + self.attn(norm(x)) # <-- СТАЛО
         x = x + self.mlp(norm(x))
         return x
 
+# --- GPTNeoX (ИСПРАВЛЕНО) ---
 
 class GPTNeoX(nn.Module):
     def __init__(self, config=None, **kwargs):
@@ -227,9 +236,13 @@ class GPTNeoX(nn.Module):
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
+            # Эта логика теперь правильная:
+            # - Если rotary_pct == 1.0 (полный RoPE), wpe не нужен.
+            # - Если rotary_pct < 1.0 (частичный RoPE) ИЛИ use_rope=False, wpe НУЖЕН.
             wpe = None if config.use_rope and config.rotary_pct == 1.0 else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
-            ln_f = nn.LayerNorm(config.n_embd)
+            # ln_f = nn.LayerNorm(config.n_embd) # В GPT-NeoX используется RMSNorm
+            ln_f = RMSNormFn(),
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
@@ -241,28 +254,33 @@ class GPTNeoX(nn.Module):
 
 
     def forward(self, idx, targets=None):
-        # idx is of shape (B, T)
         B, T = idx.size()
         assert T <= self.config.block_size, f"Cannot forward sequence of length {T}, block size is only {self.config.block_size}"
-        # forward the token and posisition embeddings
+
+        # pos нужен *только* для wpe
         pos = torch.arange(0, T, dtype=torch.long, device=idx.device) # shape (T)
 
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (B, T, n_embd)
+
+        # Применяем wpe *здесь*, *один раз*
         if self.transformer.wpe is not None:
-            pos_emb = self.transformer.wpe(pos)
-            x = tok_emb + pos_emb
+            pos_emb = self.transformer.wpe(pos) # (T, n_embd)
+            x = tok_emb + pos_emb # (B, T, n_embd)
         else:
             x = tok_emb
 
-        # forward the blocks of the transformer
+        # --- ИСПРАВЛЕНИЕ: pos больше не передается в блоки ---
         for block in self.transformer.h:
-            x = block(x, pos=pos)
-        # forward the final layernorm and the classifier
+            # x = block(x, pos=pos) # <-- БЫЛО
+            x = block(x) # <-- СТАЛО
+
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x) # (B, T, vocab_size)
+
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+
         return GPTOutput(logits=logits, loss=loss)
 
 
