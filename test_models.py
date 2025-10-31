@@ -175,8 +175,8 @@ class Trainer:
             dataset,
             batch_size = config.batch_size,
             shuffle=False,
-            collate_fn=lambda b: custom_collate_fn(
-                b,
+            collate_fn=lambda batch: custom_collate_fn(
+                batch,
                 max_seq_length = model.config.block_size,
                 pad_token_id = tokenizer.eos_token_id,
                 eos_token_id = tokenizer.eos_token_id,

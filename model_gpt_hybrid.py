@@ -2,7 +2,7 @@
 GPT model:
 
 1) Rotary Position Embeddings (RoPE) - roformer implemented.
-2) rotary_pct ( float , optional, defaults to 0.25) — percentage of hidden dimensions to allocate to rotary embeddings
+2) rotary_pct (optional, defaults to 0.25) — percentage of hidden dimensions to allocate to rotary embeddings
 3) QK-normalization when using RoPE.
 4) RMSNorm instead of LayerNorm.
 5) Weight tying option (tie_word_embeddings) between token embeddings and LM head.
@@ -174,10 +174,14 @@ class CausalSelfAttention(nn.Module):
 
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
-            att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
-            att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
-            att = F.softmax(att, dim=-1)
-            y = att @ v  # (B, nh, T, hs)
+            attn = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
+
+            # causal mask: (1, 1, T, T)
+            causal_mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), 1
+                )[None, None, :, :]
+            attn = attn.masked_fill(causal_mask, float('-inf'))
+            attn = F.softmax(attn, dim=-1)
+            y = attn @ v  # (B, nh, T, hs)
         else:
             # use PyTorch flash attention (scaled_dot_product_attention)
             y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention

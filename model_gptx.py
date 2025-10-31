@@ -2,7 +2,7 @@
 GPT model:
 
 1) Rotary Position Embeddings (RoPE) - roformer implemented.
-2) rotary_pct ( float , optional, defaults to 0.25) — percentage of hidden dimensions to allocate to rotary embeddings
+2) rotary_pct (optional, defaults to 0.25) — percentage of hidden dimensions to allocate to rotary embeddings
 3) QK-normalization when using RoPE.
 4) RMSNorm instead of LayerNorm.
 5) Weight tying option (tie_word_embeddings) between token embeddings and LM head.
@@ -156,7 +156,9 @@ class CausalSelfAttention(nn.Module):
     # def forward(self, x, pos=None): # <-- БЫЛО
     def forward(self, x): # <-- СТАЛО
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
-        
+        # calculate query, key, values for all heads in batch and move head forward to be the batch dim
+        # nh is "number of heads", hs is "head size", and C (number of channels) = nh * hs
+        # e.g. in GPT-2 (124M), n_head=12, hs=64, so nh*hs=C=768 channels in the Transformer
         qkv = self.c_attn(x)
         q, k, v = qkv.split(self.n_embd, dim=2)
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
@@ -177,12 +179,14 @@ class CausalSelfAttention(nn.Module):
 
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
-            att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
-            # causal mask
-            mask = torch.triu(torch.ones(T, T, device=x.device), 1).bool()
-            att = att.masked_fill(mask, float('-inf'))
-            att = F.softmax(att, dim=-1)
-            y = att @ v  # (B, nh, T, hs)
+            attn = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
+
+            # causal mask: (1, 1, T, T)
+            causal_mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), 1
+                )[None, None, :, :]
+            attn = attn.masked_fill(causal_mask, float('-inf'))
+            attn = F.softmax(attn, dim=-1)
+            y = attn @ v  # (B, nh, T, hs)
         else:
             # use PyTorch flash attention (scaled_dot_product_attention)
             y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
@@ -232,6 +236,7 @@ class GPTNeoX(nn.Module):
         super().__init__()
         if config is None:
             config = GPTConfig(**kwargs)
+
         self.config = config
 
         self.transformer = nn.ModuleDict(dict(
@@ -307,3 +312,4 @@ class GPTNeoX(nn.Module):
         if non_embedding and self.transformer.wpe is not None:
             n_params -= self.transformer.wpe.weight.numel()
         return n_params
+

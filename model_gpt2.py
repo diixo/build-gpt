@@ -2,7 +2,7 @@ import math
 import inspect
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
+import torch.nn.functional as F
 from dataclasses import dataclass
 from transformers import GPT2LMHeadModel
 from typing import Optional
@@ -61,7 +61,7 @@ class CausalSelfAttention(nn.Module):
 
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
-            att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
+            attn = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
 
             # causal mask: (1, 1, T, T)
             causal_mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), 1
@@ -75,10 +75,10 @@ class CausalSelfAttention(nn.Module):
                 full_mask = causal_mask
 
             # apply mask
-            att = att.masked_fill(full_mask, float('-inf'))
+            attn = attn.masked_fill(full_mask, float('-inf'))
 
-            att = F.softmax(att, dim=-1)
-            y = att @ v  # (B, nh, T, hs)
+            attn = F.softmax(attn, dim=-1)
+            y = attn @ v  # (B, nh, T, hs)
         else:
             # use PyTorch flash attention (scaled_dot_product_attention)
             y = F.scaled_dot_product_attention(q, k, v,  attn_mask=attn_mask, is_causal=True) # flash attention
@@ -308,9 +308,11 @@ class GPTNeo(nn.Module):
         # forward the final layernorm and the classifier
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x) # (B, T, vocab_size)
+
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+
         return GPTOutput(logits=logits, loss=loss)
 
 
