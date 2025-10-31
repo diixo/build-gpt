@@ -35,7 +35,7 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
 
     for item in batch:
 
-        new_item = item.copy() + [eos_token_id]
+        new_item = item.tolist() + [eos_token_id]
 
         # Pad sequences to max_length
         padded = new_item + [pad_token_id] * (batch_max_length - len(new_item))
@@ -73,22 +73,20 @@ class TextDataset(Dataset):
             with open(file_path, "r", encoding="utf-8") as f:
                 texts = [line.strip() for line in f if line.strip()]
 
-        # tokenize every line separately and store the input_ids
-        encodings = [
-            tokenizer(t.strip(), truncation=True, max_length=max_seq_length, padding="max_length", return_tensors="pt"
-            )["input_ids"][0] for t in texts]
-
-        self.data = torch.stack(encodings)
+        # tokenize each line separately and store the input_ids, with only truncation, without padding
+        self.data_idx = [
+            tokenizer(t.strip(), truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
+            )["input_ids"].squeeze(0)   # sizes: [seq_len <= max_seq_length]
+            for t in texts
+        ]
         self.max_seq_length = max_seq_length
 
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data_idx)
 
     def __getitem__(self, idx):
-        x = self.data[idx]
-        y = x.clone()
-        return x, y
+        return self.data_idx[idx]
 
 
 @dataclass
@@ -119,7 +117,6 @@ class Trainer:
                 device = config.device,
                 ),
             )
-        print("sz.loader:", len(self.loader))
 
 
     def train(self):
