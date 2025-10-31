@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from model_gpt2 import GPT, GPTNeo
 from model_llama import GPTLlama
 from model_gptx import GPTNeoX
+from model_gpt_hybrid import GPTNeoHybrid
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
-from transformers import AutoTokenizer, GPT2Tokenizer
+from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM
 
 
 class AutoGPT2Model:
@@ -19,6 +20,7 @@ class AutoGPT2Model:
         "gpt-neo": GPTNeo,
         "gpt-llama": GPTLlama,
         "gpt-neox": GPTNeoX,
+        "gpt-neo-hybrid": GPTNeoHybrid,
     }
 
     CONFIG_MAP = {
@@ -26,6 +28,7 @@ class AutoGPT2Model:
         "gpt-neo": dict(),
         "gpt-llama": dict(rope_base=10000.0, use_rope=True),
         "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
+        "gpt-neo-hybrid": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
     }
 
     @staticmethod
@@ -33,12 +36,28 @@ class AutoGPT2Model:
         if model_type not in AutoGPT2Model.MODEL_MAP:
             raise ValueError(f"Unknown model_type: {model_type}")
 
-        # For any model we use the same tokenizer (GPT-NeoX tokenizer)
+        #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
-        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+        tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
+        model = AutoModelForCausalLM.from_pretrained("EleutherAI/pythia-31m")
 
+        # Extract sizes
+        vocab_tok = tokenizer.vocab_size        # 50254
+        vocab_model = model.config.vocab_size   # 50304
+
+        print("Vocab size: tokenizer=", vocab_tok, ", model=", vocab_model)
+
+        # Find "empty" indices
+        unused_ids = list(range(vocab_tok, vocab_model))
+        print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
+
+        # Check eos_token_id and the token itself
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
+        print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
+
+        # Check alls special tokens
+        print(f"Special tokens ({tokenizer.vocab_size}):", tokenizer.special_tokens_map)
 
         print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
@@ -231,15 +250,6 @@ def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
 
 
 if __name__ == "__main__":
-
-    tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
-
-    # Проверяем eos_token_id и сам токен
-    print("EOS token id:", tokenizer.eos_token_id)
-    print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
-
-    # Заодно проверим pad, bos и другие, если есть
-    print("Special tokens:", tokenizer.special_tokens_map)
 
     #test_collate_fn(pad_token_id=tokenizer.eos_token_id, eos_token_id=tokenizer.eos_token_id)
 
