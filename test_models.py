@@ -1,13 +1,13 @@
 import json
 import os
 import torch
+import math
 from dataclasses import dataclass
 from model_gpt2 import GPT, GPTNeo
 from model_llama import GPTLlama
 from model_gptx import GPTNeoX
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
-#from functools import partial
 
 from transformers import AutoTokenizer, GPT2Tokenizer
 
@@ -120,21 +120,39 @@ class Trainer:
 
 
     def train(self):
+
+        grad_accum_steps = min(4, len(self.loader))
+
         self.losses = []
+
         self.model.train()
         for epoch in range(self.config.epochs):
-            pbar = tqdm(self.loader, desc=f"Epoch {epoch + 1} / {self.config.epochs}")
-
+            pbar = tqdm(self.loader, desc=f"Epoch {epoch + 1}/{self.config.epochs}")
             epoch_loss = 0.0
-            for x, y in pbar:
+            smoothed = 0.0
+
+            self.optimizer.zero_grad(set_to_none=True)
+
+            for step, (x, y) in enumerate(pbar):
                 x, y = x.to(self.config.device), y.to(self.config.device)
-                loss = self.model(x, y).loss
-                self.optimizer.zero_grad()
+
+                # обычный FP32 loss
+                loss = self.model(x, y).loss / grad_accum_steps
                 loss.backward()
-                self.optimizer.step()
-                pbar.set_postfix(loss=loss.item())
+
+                if (step + 1) % grad_accum_steps == 0:
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                    self.optimizer.step()
+                    self.optimizer.zero_grad(set_to_none=True)
+
+                smoothed = 0.9 * smoothed + 0.1 * loss.item() if step > 0 else loss.item()
+                pbar.set_postfix(loss=f"{smoothed:.4f}")
                 epoch_loss += loss.item()
-            self.losses.append(epoch_loss / len(self.loader))
+
+            avg_loss = epoch_loss / len(self.loader)
+            self.losses.append(avg_loss)
+            print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={math.exp(avg_loss):.2f}")
+
         print("✅ Training complete.")
 
 
