@@ -54,3 +54,14 @@ def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
             tokens = xgen[i, :max_length].tolist()
             decoded = enc.decode(tokens)
             print(f"rank {ddp_rank} sample {i}: {decoded}")
+
+
+def plot_loss(losses: list):
+    import matplotlib.pyplot as plt
+
+    plt.plot(losses, label="Training Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training Loss over Epoch")
+    plt.legend()
+    plt.show()
