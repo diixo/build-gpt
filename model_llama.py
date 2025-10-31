@@ -76,6 +76,7 @@ class RotaryEmbedding(nn.Module):
         y2 = x1 * (-sin) + x2 * cos
         out = torch.cat([y1, y2], 3)    # re-assemble
         out = out.to(x.dtype)           # ensure input/output dtypes match
+        return out
 
 
 class CausalSelfAttention(nn.Module):
@@ -176,7 +177,7 @@ class GPTLlama(nn.Module):
 
         self.transformer = nn.ModuleDict(dict(
             wte = nn.Embedding(config.vocab_size, config.n_embd),
-            wpe = None if self.use_rope else nn.Embedding(config.block_size, config.n_embd),
+            wpe = None if config.use_rope else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = nn.LayerNorm(config.n_embd),
         ))
@@ -197,7 +198,7 @@ class GPTLlama(nn.Module):
         pos = torch.arange(0, T, dtype=torch.long, device=idx.device) # shape (T)
 
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (B, T, n_embd)
-        if self.use_rope:
+        if self.config.use_rope:
             x = tok_emb
         else:
             pos_emb = self.transformer.wpe(pos) # position embeddings of shape (T, n_embd)
