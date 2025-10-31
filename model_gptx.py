@@ -304,6 +304,6 @@ class GPTNeoX(nn.Module):
         params are actually used as weights in the final layer, so we include them.
         """
         n_params = sum(p.numel() for p in self.parameters())
-        if non_embedding and not self.use_rope:
+        if non_embedding and self.transformer.wpe is not None:
             n_params -= self.transformer.wpe.weight.numel()
         return n_params
