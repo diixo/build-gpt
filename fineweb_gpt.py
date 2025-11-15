@@ -10,12 +10,13 @@ Will save shards to the local directory "edu_fineweb10B".
 import os
 import multiprocessing as mp
 import numpy as np
-import tiktoken
 from datasets import load_dataset # pip install datasets
 from tqdm import tqdm # pip install tqdm
+from transformers import GPT2TokenizerFast
+import numpy as np
 
 # ------------------------------------------
-local_dir = "edu_fineweb10B"
+local_dir = "edu_fineweb10B-noomo"
 shard_size = int(1e8) # 100M tokens per shard, total of 100 shards
 
 # create the cache the local directory if it doesn't exist yet
@@ -27,18 +28,20 @@ os.makedirs(DATA_CACHE_DIR, exist_ok=True)
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
 # init the tokenizer
-enc = tiktoken.get_encoding("gpt2")
+tokenizer = GPT2TokenizerFast.from_pretrained("noomo", local_files_only=True)
 
-eot = enc._special_tokens['<|endoftext|>'] # end of text token
+eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
+
 
 def tokenize(doc):
     # tokenizes a single document and returns a numpy array of uint16 tokens
     tokens = [eot] # the special <|endoftext|> token delimits all documents
-    tokens.extend(enc.encode_ordinary(doc["text"]))
+    ids = tokenizer.encode(doc["text"], add_special_tokens=False)
+    tokens.extend(ids)
     tokens_np = np.array(tokens)
     assert (0 <= tokens_np).all() and (tokens_np < 2**16).all(), "token dictionary too large for uint16"
-    tokens_np_uint16 = tokens_np.astype(np.uint16)
-    return tokens_np_uint16
+    return tokens_np.astype(np.uint16)
+
 
 def write_datafile(filename, tokens_np):
     np.save(filename, tokens_np)
@@ -85,3 +88,5 @@ if __name__ == "__main__":
             split = "val" if shard_index == 0 else "train"
             filename = os.path.join(DATA_CACHE_DIR, f"edufineweb_{split}_{shard_index:06d}")
             write_datafile(filename, all_tokens_np[:token_count])
+
+        print(f"tokens.all={token_count}")
