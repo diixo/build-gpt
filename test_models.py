@@ -51,13 +51,14 @@ class AutoGPT2Model:
         unused_ids = list(range(vocab_tok, vocab_model))
         print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
 
+        # Check alls special tokens
+        print(f"Special tokens ({tokenizer.vocab_size}):", tokenizer.special_tokens_map)
+
         # Check eos_token_id and the token itself
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
 
-        # Check alls special tokens
-        print(f"Special tokens ({tokenizer.vocab_size}):", tokenizer.special_tokens_map)
 
         print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
