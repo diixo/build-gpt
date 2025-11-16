@@ -22,7 +22,7 @@ tokenizer.decoder = ByteLevelDecoder()
 
 trainer = BpeTrainer(
     vocab_size=50_256,
-    min_frequency=2,
+    min_frequency=5,
     initial_alphabet=ByteLevel.alphabet(),
     special_tokens=[EOT]
 )
