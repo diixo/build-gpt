@@ -28,7 +28,8 @@ os.makedirs(DATA_CACHE_DIR, exist_ok=True)
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
 # init the tokenizer
-tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
+#tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
+tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-neo-125m", local_files_only=True)
 
 eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
 
