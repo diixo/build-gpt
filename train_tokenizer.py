@@ -24,7 +24,7 @@ trainer = BpeTrainer(
     vocab_size=50_256,
     min_frequency=5,
     initial_alphabet=ByteLevel.alphabet(),
-    special_tokens=[EOT]
+    special_tokens=[]
 )
 
 
@@ -36,6 +36,8 @@ def text_iterator():
 
 
 tokenizer.train_from_iterator(text_iterator(), trainer=trainer)
+
+tokenizer.add_special_tokens([EOT])
 
 
 fast_tokenizer = PreTrainedTokenizerFast(
