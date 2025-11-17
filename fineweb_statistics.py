@@ -6,17 +6,30 @@ import tiktoken
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from datasets import load_dataset
+from transformers import AutoTokenizer
 
 
-enc = tiktoken.get_encoding("gpt2")
-eot = enc._special_tokens['<|endoftext|>']  # end of text token
+# enc = tiktoken.get_encoding("gpt2")
+# eot = enc._special_tokens['<|endoftext|>']  # end of text token
+
+
+tokenizer = AutoTokenizer.from_pretrained("data/gpt-neo-125m", use_fast=True)
+eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
 
 
 def tokenize_to_len(doc):
-    tokens = [eot]
-    tokens.extend(enc.encode_ordinary(doc["text"]))
-    tokens_np = np.array(tokens, dtype=np.uint16)
+    # tokens = [eot]
+    # tokens.extend(enc.encode_ordinary(doc["text"]))
+    # tokens_np = np.array(tokens, dtype=np.uint16)
+    # return len(tokens_np)
+    # tokenizes a single document and returns a numpy array of uint16 tokens
+    tokens = [eot] # the special <|endoftext|> token delimits all documents
+    ids = tokenizer.encode(doc["text"], add_special_tokens=False)
+    tokens.extend(ids)
+    tokens_np = np.array(tokens)
+    assert (0 <= tokens_np).all() and (tokens_np < 2**16).all(), "token dictionary too large for uint16"
     return len(tokens_np)
+    #return tokens_np.astype(np.uint16)
 
 
 if __name__ == "__main__":
