@@ -63,6 +63,15 @@ class AutoGPT2Model:
         print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
         config_kwargs = AutoGPT2Model.CONFIG_MAP[model_type]
+        # experimental
+        config_kwargs.update({
+            "block_size": 2048,
+            "vocab_size": 50304,
+            "n_layer": 28,
+            "n_head": 16, #(head_dim = 48)
+            "n_embd": 768,
+            "flash_attn": True,
+        })
         config_kwargs.update({
             "block_size": 2048,
             "vocab_size": 50304,
