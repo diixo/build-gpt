@@ -53,21 +53,23 @@ if __name__ == "__main__":
 
     size_map_sorted = dict(sorted(size_map_counter.items(), key=lambda item: item[0], reverse=True))
 
-    # сохраняем результат в JSON
-    with open("size-map.json", "w", encoding="utf-8") as f:
-        json.dump(size_map_sorted, f, ensure_ascii=False, indent=4)
+    # save results into JSON:
+    #with open("size-map.json", "w", encoding="utf-8") as f:
+    #    json.dump(size_map_sorted, f, ensure_ascii=False, indent=4)
 
     total = sum(size_map_counter.values())
 
+    print(f"\nTokens.all={total}")
 
-    ##################################################
 
-    # сортируем по длине токенов для красивого графика
+    ###############################################################################################
+
     lengths = sorted(size_map_counter.keys())
-    counts = [size_map_counter[l] for l in lengths if l < 16]
+    filtered_lengths = [l for l in lengths if l < 16]
+    counts = [size_map_counter[l] for l in filtered_lengths]
 
     plt.figure(figsize=(9, 5))
-    plt.bar(lengths, counts, color='skyblue')
+    plt.bar(filtered_lengths, counts, color='skyblue')
     plt.xlabel("Length of tokenized rows")
     plt.ylabel("Count of rows")
     plt.title(f"Tokens(all={total}) sizes distribution tokenization of dataset: FineWeb-Edu-10BT")
