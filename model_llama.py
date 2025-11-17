@@ -32,6 +32,17 @@ class GPTOutput:
     loss: Optional[torch.Tensor] = None
 
 
+class RMSNormNoParams(nn.Module):
+    """Normalization without trainable weights and bias (pure functional RMSNorm)."""
+    def __init__(self, eps=1e-5):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # rms_norm(x, normalized_shape) equivalently: x / rms(x)
+        return F.rms_norm(x, (x.size(-1),), eps=self.eps)
+
+
 class RotaryEmbedding(nn.Module):
     """
     Implements precomputed Rotary Position Embedding (RoPE) cache for efficiency.
@@ -140,7 +151,7 @@ class MLP(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd)
-        self.gelu    = nn.GELU(approximate='tanh')
+        self.gelu    = nn.SiLU(inplace=False)
         self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd)
         self.c_proj.NANOGPT_SCALE_INIT = 1
 
@@ -156,9 +167,9 @@ class Block(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.ln_1 = nn.LayerNorm(config.n_embd)
+        self.ln_1 = RMSNormNoParams()
         self.attn = CausalSelfAttention(config)
-        self.ln_2 = nn.LayerNorm(config.n_embd)
+        self.ln_2 = RMSNormNoParams()
         self.mlp = MLP(config)
 
     def forward(self, x):
@@ -179,7 +190,7 @@ class GPTLlama(nn.Module):
             wte = nn.Embedding(config.vocab_size, config.n_embd),
             wpe = None if config.use_rope else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
-            ln_f = nn.LayerNorm(config.n_embd),
+            ln_f = RMSNormNoParams(),
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
@@ -194,13 +205,13 @@ class GPTLlama(nn.Module):
         # idx is of shape (B, T)
         B, T = idx.size()
         assert T <= self.config.block_size, f"Cannot forward sequence of length {T}, block size is only {self.config.block_size}"
-        # forward the token and posisition embeddings
-        pos = torch.arange(0, T, dtype=torch.long, device=idx.device) # shape (T)
 
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (B, T, n_embd)
         if self.config.use_rope:
             x = tok_emb
         else:
+            # forward the token and posisition embeddings
+            pos = torch.arange(0, T, dtype=torch.long, device=idx.device) # shape (T)
             pos_emb = self.transformer.wpe(pos) # position embeddings of shape (T, n_embd)
             x = tok_emb + pos_emb
 
