@@ -43,6 +43,44 @@ class RMSNormNoParams(nn.Module):
         return F.rms_norm(x, (x.size(-1),), eps=self.eps)
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+class RMSNorm(nn.Module):
+    """
+    RMSNorm with trainable scale-parameter, that compatible to LLaMA behavior.
+    Equation:
+        out = x / (sqrt(mean(x**2, dim=-1, keepdim=True)) + eps) * weight
+    Where: weight — learnable vector (dim,)
+    """
+    def __init__(self, dim: int, eps: float = 1e-6):
+        super().__init__()
+        self.eps = eps
+        # обучаемый scale-вектор, инициализируем единицами как в LLaMA
+        self.weight = nn.Parameter(torch.ones(dim))
+
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (..., dim)
+        # вычисляем RMS по последней оси
+        # используем float32 accumulation для стабильности, но возвращаем в исходном dtype
+        orig_dtype = x.dtype
+        acc_dtype = torch.float32 if x.dtype in (torch.float16, torch.bfloat16) else x.dtype
+
+        x_acc = x.to(acc_dtype)
+        rms = torch.sqrt((x_acc * x_acc).mean(dim=-1, keepdim=True) + self.eps)  # (..., 1)
+        # нормируем (в acc dtype), затем масштабируем обучаемым весом
+        y = x_acc / rms
+        # weight: (dim,) -> (1, 1, dim) или broadcastable
+        weight = self.weight.to(acc_dtype)
+        # поддержка произвольных ведущих осей: разместим weight так, чтобы last dim совпадал
+        # y shape: (..., dim); weight shape: (dim,) => broadcasting ok
+        y = y * weight
+        return y.to(orig_dtype)
+
+
 class RotaryEmbedding(nn.Module):
     """
     Implements precomputed Rotary Position Embedding (RoPE) cache for efficiency.
@@ -151,13 +189,13 @@ class MLP(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd)
-        self.gelu    = nn.SiLU(inplace=False)
+        self.silu    = nn.SiLU(inplace=False)
         self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd)
         self.c_proj.NANOGPT_SCALE_INIT = 1
 
     def forward(self, x):
         x = self.c_fc(x)
-        x = self.gelu(x)
+        x = self.silu(x)
         x = self.c_proj(x)
         return x
 
