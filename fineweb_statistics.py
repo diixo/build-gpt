@@ -25,8 +25,8 @@ if __name__ == "__main__":
 
     total_docs = len(fw)  # 9_672_101
 
-    nprocs = 4  # max(1, os.cpu_count() // 2)
     size_map_counter = Counter()
+    nprocs = 4  # max(1, os.cpu_count() // 2)
 
     with mp.Pool(nprocs) as pool:
         with tqdm(total=total_docs, unit='docs') as pbar:

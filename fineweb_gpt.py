@@ -16,7 +16,7 @@ from transformers import GPT2TokenizerFast
 import numpy as np
 
 # ------------------------------------------
-local_dir = "edu_fineweb10B-noomo"
+local_dir = "edu_fineweb-10B-noomo"
 shard_size = int(1e8) # 100M tokens per shard, total of 100 shards
 
 # create the cache the local directory if it doesn't exist yet
