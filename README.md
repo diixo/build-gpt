@@ -15,10 +15,10 @@ Integrate `attention_mask` from GPT-model to another models.
 
 ### Demos:
 
-* fineweb.py: build `edu_fineweb10B` dataset
-* main_ddp.py
-* main.py
-* test_models.py
+* [fineweb.py](fineweb.py): build `edu_fineweb10B` dataset
+* [main_ddp.py](main_ddp.py])
+* [main.py](main.py)
+* [test_models.py](test_models.py)
 
 
 ### Additional:
