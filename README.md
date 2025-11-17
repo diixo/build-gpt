@@ -8,12 +8,21 @@ Based on: https://github.com/karpathy/build-nanogpt
 * **GPTNeoX**: GPT model, featured: percentage RoPE, QK-normalization, RMSNormFn.
 * **GPTNeoHybrid**: GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
+
 ## TODO:
 Integrate `attention_mask` from GPT-model to another models.
 
 
 ### Demos:
 
+* fineweb.py: build `edu_fineweb10B` dataset
 * main_ddp.py
 * main.py
 * test_models.py
+
+
+### Additional:
+
+* train_tokenizer.py : train custom tokenizer
+* fineweb_gpt.py     : build dataset from trained tokenizer
+* fineweb_statistics.py : create tokens statistic from dataset
