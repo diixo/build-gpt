@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 
 EOT = "<|endoftext|>"
-tokenizer_path = "noomo"
+tokenizer_path = "data/noomo"
 
 
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
