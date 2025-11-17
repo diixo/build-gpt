@@ -6,11 +6,13 @@ from collections import Counter
 from tqdm import tqdm
 import math
 
+
 DATASET = "HuggingFaceFW/fineweb-edu"
 NAME = "sample-10BT"
 SPLIT = "train"
-TOKENIZER_PATH = "noomo"   # уже сохранённый hf tokenizer dir (PreTrainedTokenizerFast)
-BATCH = 512                # ставь меньше, если мало RAM
+TOKENIZER_PATH = "noomo"
+BATCH = 512
+
 
 def batch_generator(ds, batch_size=BATCH):
     batch = []
@@ -29,6 +31,7 @@ def batch_generator(ds, batch_size=BATCH):
             batch = []
     if batch:
         yield batch
+
 
 def main():
     ds = load_dataset(DATASET, name=NAME, split=SPLIT)
@@ -65,6 +68,7 @@ def main():
     for tid, f in top30:
         tok = inv_vocab.get(tid, "<UNK_ID>")
         print(tid, f, tok)
+
 
 if __name__ == "__main__":
     main()
