@@ -47,12 +47,12 @@ if __name__ == "__main__":
 
     # сортируем по длине токенов для красивого графика
     lengths = sorted(size_map_counter.keys())
-    counts = [size_map_counter[l] for l in lengths]
+    counts = [size_map_counter[l] for l in lengths if l < 16]
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(9, 5))
     plt.bar(lengths, counts, color='skyblue')
     plt.xlabel("Length of tokenized rows")
     plt.ylabel("Count of rows")
-    plt.title("Sizes distribution of tokenized rows from dataset FineWeb-Edu-10BT")
+    plt.title(f"Tokens(all={total}) sizes distribution tokenization of dataset: FineWeb-Edu-10BT")
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
