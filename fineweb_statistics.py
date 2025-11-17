@@ -46,7 +46,7 @@ if __name__ == "__main__":
     nprocs = 4  # max(1, os.cpu_count() // 2)
 
     with mp.Pool(nprocs) as pool:
-        with tqdm(total=total_docs, unit='docs') as pbar:
+        with tqdm(total=total_docs, unit='rows') as pbar:
             for token_len in pool.imap(tokenize_to_len, fw, chunksize=16):
                 size_map_counter[token_len] += 1
                 pbar.update(1)
