@@ -45,22 +45,22 @@ if __name__ == "__main__":
     size_map_counter = Counter()
     nprocs = 4  # max(1, os.cpu_count() // 2)
 
+    total_tokens = 0
+
     with mp.Pool(nprocs) as pool:
         with tqdm(total=total_docs, unit='rows') as pbar:
             for token_len in pool.imap(tokenize_to_len, fw, chunksize=16):
                 size_map_counter[token_len] += 1
+                total_tokens += token_len
                 pbar.update(1)
+
+    print(f"\nTokens.all={total_tokens}")
 
     size_map_sorted = dict(sorted(size_map_counter.items(), key=lambda item: item[0], reverse=True))
 
     # save results into JSON:
     #with open("size-map.json", "w", encoding="utf-8") as f:
     #    json.dump(size_map_sorted, f, ensure_ascii=False, indent=4)
-
-    total = sum(size_map_counter.values())
-
-    print(f"\nTokens.all={total}")
-
 
     ###############################################################################################
 
@@ -72,6 +72,6 @@ if __name__ == "__main__":
     plt.bar(filtered_lengths, counts, color='skyblue')
     plt.xlabel("Length of tokenized rows")
     plt.ylabel("Count of rows")
-    plt.title(f"Tokens(all={total}) sizes distribution tokenization of dataset: FineWeb-Edu-10BT")
+    plt.title(f"Tokens(all={total_tokens}) sizes distribution tokenization of dataset: FineWeb-Edu-10BT")
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
