@@ -6,15 +6,46 @@ from tokenizers.decoders import ByteLevel as ByteLevelDecoder
 from tokenizers.trainers import BpeTrainer
 from transformers import PreTrainedTokenizerFast, GPT2TokenizerFast
 from tqdm import tqdm
+import json
+from datasets import Dataset, concatenate_datasets
 
 
 EOT = "<|endoftext|>"
 tokenizer_path = "data/noomo"
 
+def read_jsonl(file_path: str) -> list:
+    text = []
+    with open(file_path, "r", encoding="utf-8") as f:
+
+        for line in f:
+            item = json.loads(line)
+            title = item["title"]
+            description = item["description"]
+            text.append(title + " " + description)
+    return text
+
 
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
-total_docs = len(fw)
 
+fw_extended = concatenate_datasets([
+    fw,
+    Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2015_2020.jsonl") }),
+    Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2021_2024.jsonl") }),
+    ])
+
+total_rows = len(fw_extended)
+
+print(f"total_rows: {total_rows}")  # 11104126
+
+################################################################################################
+
+def text_iterator():
+    for row in tqdm(fw_extended, total=total_rows, unit="rows"):
+        txt = row.get("text", "")
+        if txt and isinstance(txt, str):
+            yield txt
+
+################################################################################################
 
 tokenizer = Tokenizer(BPE())
 tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
@@ -26,14 +57,6 @@ trainer = BpeTrainer(
     initial_alphabet=ByteLevel.alphabet(),
     special_tokens=[]
 )
-
-
-def text_iterator():
-    for row in tqdm(fw, total=total_docs, unit="docs"):
-        txt = row.get("text", "")
-        if txt and isinstance(txt, str):
-            yield txt
-
 
 tokenizer.train_from_iterator(text_iterator(), trainer=trainer)
 
