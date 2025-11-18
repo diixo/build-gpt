@@ -70,4 +70,4 @@ fast_tokenizer = PreTrainedTokenizerFast(
     unk_token = None
 )
 
-fast_tokenizer.save_pretrained("noomo")
+fast_tokenizer.save_pretrained(tokenizer_path)

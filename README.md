@@ -32,4 +32,4 @@ Integrate `attention_mask` from GPT-model to another models.
 | gpt2                  |  9_953_989_344  |
 | gpt-neo-125m          |  9_953_989_333  |
 | pythia-31m            |  9_919_456_391  |
-| noomo                 |  9_703_958_910  |
+| noomo                 |  9_707_208_407  |
