@@ -27,7 +27,9 @@ Integrate `attention_mask` from GPT-model to another models.
 * fineweb_gpt.py     : build dataset from trained tokenizer
 * fineweb_statistics.py : create tokens statistic from dataset
 
-| Tokenizer             |     Tokens     |
-|-----------------------|----------------|
-| gpt-neo-125m          | 00000000000000 |
-| noomo                 | 00000000000000 |
+| Tokenizer             |      Tokens     |
+|-----------------------|-----------------|
+| gpt2                  |  9_953_989_344  |
+| gpt-neo-125m          |  9_953_989_333  |
+| pythia-31m            |  9_919_456_391  |
+| noomo                 |  9_703_958_910  |
