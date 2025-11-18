@@ -85,6 +85,16 @@ class AutoGPT2Model:
 
         model_cls = AutoGPT2Model.MODEL_MAP[model_type]
         model = model_cls(**config_kwargs)
+        params = model.get_num_params()
+
+        def _fmt(n: int) -> str:
+            if n >= 1_000_000:
+                return f"{n/1_000_000:.2f}M"
+            if n >= 1_000:
+                return f"{n/1_000:.2f}K"
+            return str(n)
+
+        print(f"Total model.params: {_fmt(params)}")
         return model, tokenizer
 
 

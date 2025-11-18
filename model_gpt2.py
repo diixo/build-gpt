@@ -257,6 +257,20 @@ class GPT(nn.Module):
         return optimizer
 
 
+    def get_num_params(self, non_embedding: bool = True, only_trainable: bool = False):
+
+        total = sum(p.numel() for p in self.parameters())
+        trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+        if non_embedding:
+            pe = self.transformer.wpe.weight.numel()
+            total -= pe
+        if only_trainable and self.transformer.wpe.weight.requires_grad:
+            trainable -= pe
+
+        value = trainable if only_trainable else total
+        return value
+
 ######################################################################################################################
 class GPTNeo(nn.Module):
     """GPT model with sinusoidal positional embeddings (as in GPT-Neo)"""
