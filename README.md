@@ -13,9 +13,9 @@ Based on: https://github.com/karpathy/build-nanogpt
 
 ### Additional:
 
-* [train_tokenizer.py](train_tokenizer.py) : train custom tokenizer
-* [fineweb_gpt.py](fineweb_gpt.py)     : build dataset from trained tokenizer
-* [fineweb_statistics.py](fineweb_statistics.py) : create tokens statistic from dataset
+* [train_tokenizer.py](train_tokenizer.py)      : train custom tokenizer
+* [fineweb_gpt.py](fineweb_gpt.py)              : build dataset from trained tokenizer
+* [fineweb_statistics.py](fineweb_statistics.py): create tokens statistic from dataset
 
 
 ### Models support:
