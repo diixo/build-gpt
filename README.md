@@ -27,9 +27,9 @@ Based on: https://github.com/karpathy/build-nanogpt
 * [**GPTNeoHybrid**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
 
-## TODO:
+#### TODO:
 
-Integrate `attention_mask` from GPT-model to another models.
+* Integrate `attention_mask` from GPT-model to another models.
 
 
 
