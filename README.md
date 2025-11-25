@@ -5,7 +5,7 @@ Based on: https://github.com/karpathy/build-nanogpt
 
 ### Demos:
 
-* [fineweb.py](fineweb.py): build `edu_fineweb10B` dataset
+* [fineweb.py](fineweb.py): build tokenized `edu_fineweb10B` dataset
 * [main_ddp.py](main_ddp.py])
 * [main.py](main.py)
 * [test_models.py](test_models.py)
@@ -22,7 +22,7 @@ Based on: https://github.com/karpathy/build-nanogpt
 
 * [**GPT-model**](model_gpt2.py): standard nanoGPT model.
 * [**GPTNeo**](model_gpt2.py): GPT model with static sin-cos embeddings, that extended positional embeddings (as in GPT-Neo).
-* [**GPTLlama**](model_llama.py): GPT model with simple RoPE.
+* [**GPTLlama**](model_llama.py): GPT model with simple RoPE, RMSNormNoParams.
 * [**GPTNeoX**](model_gptx.py): GPT model, featured: percentage RoPE, QK-normalization, RMSNormFn.
 * [**GPTNeoHybrid**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
