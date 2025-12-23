@@ -18,7 +18,7 @@ Based on: https://github.com/karpathy/build-nanogpt
 * [fineweb_statistics.py](fineweb_statistics.py): create tokens statistic from dataset
 
 
-### Models support:
+### Custom models:
 
 * [**GPT-model**](model_gpt2.py): standard nanoGPT model.
 * [**GPTNeo**](model_gpt2.py): GPT model with static sin-cos embeddings, that extended positional embeddings (as in GPT-Neo).
@@ -27,15 +27,20 @@ Based on: https://github.com/karpathy/build-nanogpt
 * [**GPTNeoHybrid**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
 
-#### TODO:
+### Train tokenizer:
 
-* Integrate `attention_mask` from GPT-model to another models.
+[train_tokenizer.py](train_tokenizer.py): train custom tokenizer
 
-
-
-| Tokenizer             |      Tokens     |
+| Tokenizer             |     Tokens      |
 |-----------------------|-----------------|
 | gpt2                  |  9_953_989_344  |
 | gpt-neo-125m          |  9_953_989_333  |
 | pythia-31m            |  9_919_456_391  |
 | noomo                 |  9_707_208_407  |
+
+
+#### TODO:
+
+* Integrate `attention_mask` from GPT-model to another models.
+
+
