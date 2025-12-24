@@ -13,7 +13,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM
 
 
-class AutoGPT2Model:
+class AutoGPTModel:
 
     MODEL_MAP = {
         "gpt": GPT,
@@ -33,7 +33,7 @@ class AutoGPT2Model:
 
     @staticmethod
     def from_config(model_type: str):
-        if model_type not in AutoGPT2Model.MODEL_MAP:
+        if model_type not in AutoGPTModel.MODEL_MAP:
             raise ValueError(f"Unknown model_type: {model_type}")
 
         #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
@@ -63,7 +63,7 @@ class AutoGPT2Model:
             print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
 
-        config_kwargs = AutoGPT2Model.CONFIG_MAP[model_type]
+        config_kwargs = AutoGPTModel.CONFIG_MAP[model_type]
         # experimental
         config_kwargs.update({
             "block_size": 2048,
@@ -84,7 +84,7 @@ class AutoGPT2Model:
 
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
 
-        model_cls = AutoGPT2Model.MODEL_MAP[model_type]
+        model_cls = AutoGPTModel.MODEL_MAP[model_type]
         model = model_cls(**config_kwargs)
         params = model.get_num_params()
 
@@ -276,7 +276,7 @@ if __name__ == "__main__":
 
     #########################################################################################
 
-    model, tokenizer = AutoGPT2Model.from_config("gpt-llama")
+    model, tokenizer = AutoGPTModel.from_config("gpt-llama")
 
     # Checking the types:
     print("Model type:", type(model))
