@@ -47,20 +47,21 @@ class AutoGPT2Model:
 
         print("Vocab size: tokenizer=", vocab_tok, ", model=", vocab_model)
 
-        # Find "empty" indices
-        unused_ids = list(range(vocab_tok, vocab_model))
-        print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
+        if False:
+            # Find "empty" indices
+            unused_ids = list(range(vocab_tok, vocab_model))
+            print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
 
-        # Check alls special tokens
-        print(f"Special tokens ({tokenizer.vocab_size}):", tokenizer.special_tokens_map)
+            # Check alls special tokens
+            print(f"Special tokens ({tokenizer.vocab_size}):", tokenizer.special_tokens_map)
 
-        # Check eos_token_id and the token itself
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
-        print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
+            # Check eos_token_id and the token itself
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+            print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
 
+            print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
-        print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
         config_kwargs = AutoGPT2Model.CONFIG_MAP[model_type]
         # experimental
@@ -239,7 +240,7 @@ class Trainer:
             self.losses.append(avg_loss)
             print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={math.exp(avg_loss):.2f}")
 
-        print("✅ Training complete.")
+        print("✅ Training completed.")
 
 
 def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
@@ -275,7 +276,7 @@ if __name__ == "__main__":
 
     #########################################################################################
 
-    model, tokenizer = AutoGPT2Model.from_config("gpt")
+    model, tokenizer = AutoGPT2Model.from_config("gpt-llama")
 
     # Checking the types:
     print("Model type:", type(model))

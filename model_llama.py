@@ -7,7 +7,7 @@ GPT model
 import math
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
+import torch.nn.functional as F
 from dataclasses import dataclass
 from typing import Optional
 
@@ -32,22 +32,6 @@ class GPTOutput:
     loss: Optional[torch.Tensor] = None
 
 
-class RMSNormNoParams(nn.Module):
-    """Normalization without trainable weights and bias (pure functional RMSNorm)."""
-    def __init__(self, eps=1e-5):
-        super().__init__()
-        self.eps = eps
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # rms_norm(x, normalized_shape) equivalently: x / rms(x)
-        return F.rms_norm(x, (x.size(-1),), eps=self.eps)
-
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import math
-
 class RMSNorm(nn.Module):
     """
     RMSNorm with trainable scale-parameter, that compatible to LLaMA behavior.
@@ -58,24 +42,24 @@ class RMSNorm(nn.Module):
     def __init__(self, dim: int, eps: float = 1e-6):
         super().__init__()
         self.eps = eps
-        # обучаемый scale-вектор, инициализируем единицами как в LLaMA
+        # Trainable scale-vector, initialize by ones like in LLaMA.
         self.weight = nn.Parameter(torch.ones(dim))
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x: (..., dim)
-        # вычисляем RMS по последней оси
-        # используем float32 accumulation для стабильности, но возвращаем в исходном dtype
+        # calculate RMS along the last axis
+        # use float32 accumulation for stability, but return as original dtype
         orig_dtype = x.dtype
         acc_dtype = torch.float32 if x.dtype in (torch.float16, torch.bfloat16) else x.dtype
 
         x_acc = x.to(acc_dtype)
         rms = torch.sqrt((x_acc * x_acc).mean(dim=-1, keepdim=True) + self.eps)  # (..., 1)
-        # нормируем (в acc dtype), затем масштабируем обучаемым весом
+        # normalize (into acc dtype), then scale by the trainable weight
         y = x_acc / rms
-        # weight: (dim,) -> (1, 1, dim) или broadcastable
+        # weight: (dim,) -> (1, 1, dim) or broadcastable
         weight = self.weight.to(acc_dtype)
-        # поддержка произвольных ведущих осей: разместим weight так, чтобы last dim совпадал
+        # support for arbitrary leading axes: to place the weight so that the last dim coincides
         # y shape: (..., dim); weight shape: (dim,) => broadcasting ok
         y = y * weight
         return y.to(orig_dtype)
@@ -193,26 +177,33 @@ class MLP(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd)
-        self.silu    = nn.SiLU(inplace=False)
-        self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd)
+        hidden_dim = 4 * config.n_embd
+
+        # SWiGLU: first is activation layer, second is gate layer
+        self.c_fc1 = nn.Linear(config.n_embd, hidden_dim, bias=False)
+        self.c_fc2 = nn.Linear(config.n_embd, hidden_dim, bias=False)
+
+        self.silu = nn.SiLU()
+        self.c_proj = nn.Linear(hidden_dim, config.n_embd, bias=False)
         self.c_proj.NANOGPT_SCALE_INIT = 1
 
+
     def forward(self, x):
-        x = self.c_fc(x)
-        x = self.silu(x)
-        x = self.c_proj(x)
-        return x
+        x1 = self.c_fc1(x)
+        x2 = self.c_fc2(x)
+
+        # Element-wise product
+        hidden = self.silu(x1) * x2
+        return self.c_proj(hidden)
 
 
 class Block(nn.Module):
-    # head_layer+1 ​= head_layer + Attn(LN(head_layer)) + MLP(LN(head_layer))
 
     def __init__(self, config):
         super().__init__()
-        self.ln_1 = RMSNormNoParams()
+        self.ln_1 = RMSNorm(config.n_embd) 
         self.attn = CausalSelfAttention(config)
-        self.ln_2 = RMSNormNoParams()
+        self.ln_2 = RMSNorm(config.n_embd)
         self.mlp = MLP(config)
 
     def forward(self, x):
@@ -233,7 +224,7 @@ class GPTLlama(nn.Module):
             wte = nn.Embedding(config.vocab_size, config.n_embd),
             wpe = None if config.use_rope else nn.Embedding(config.block_size, config.n_embd),
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
-            ln_f = RMSNormNoParams(),
+            ln_f = RMSNorm(config.n_embd),
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
@@ -290,6 +281,6 @@ class GPTLlama(nn.Module):
         params are actually used as weights in the final layer, so we include them.
         """
         n_params = sum(p.numel() for p in self.parameters())
-        if non_embedding and not self.use_rope:
+        if non_embedding and not self.config.use_rope:
             n_params -= self.transformer.wpe.weight.numel()
         return n_params
