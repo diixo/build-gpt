@@ -152,6 +152,9 @@ class CausalSelfAttention(nn.Module):
             head_dim = config.n_embd // config.n_head
             self.rope = RotaryEmbedding(dim=head_dim, base=config.rope_base, max_seq_len=config.block_size)
 
+        # causal mask via register_buffer
+        self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size)))
+
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -171,7 +174,9 @@ class CausalSelfAttention(nn.Module):
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
             att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
-            att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
+            #att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
+            # use biased masked_fill instead:
+            att = att.masked_fill(self.bias[:T, :T] == 0, float('-inf'))
             att = F.softmax(att, dim=-1)
             y = att @ v  # (B, nh, T, hs)
         else:
