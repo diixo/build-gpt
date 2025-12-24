@@ -26,7 +26,17 @@ Based on: https://github.com/karpathy/build-nanogpt
 * [**GPTNeoHybrid**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
 
-### Testing models
+### Testing models:
+
+```python
+MODEL_MAP = {
+    "gpt": GPT,
+    "gpt-neo": GPTNeo,
+    "gpt-llama": GPTLlama,
+    "gpt-neox": GPTNeoX,
+    "gpt-neo-hybrid": GPTNeoHybrid,
+}
+```
 
 [test_models.py](test_models.py): testing models functionality (**gpt-llama** current model).
 
