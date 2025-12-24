@@ -140,7 +140,7 @@ class CausalSelfAttention(nn.Module):
         self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size)))
 
 
-    def forward(self, x):
+    def forward(self, x, attention_mask=None):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
         # nh is "number of heads", hs is "head size", and C (number of channels) = nh * hs
@@ -151,21 +151,39 @@ class CausalSelfAttention(nn.Module):
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
+        # attention_mask: (B, T) -> (B, 1, 1, T) for broadcast
+        if attention_mask is not None:
+            attn_mask = attention_mask[:, None, None, :].to(
+                device=x.device, dtype=torch.bool)
+        else:
+            attn_mask = None
+
         if self.use_rope:
             q = self.rope.apply_rotary(q, T)
             k = self.rope.apply_rotary(k, T)
 
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
-            att = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
-            #att = att.masked_fill(torch.triu(torch.ones(T, T, device=x.device), 1).bool(), float('-inf'))
-            # use biased masked_fill instead:
-            att = att.masked_fill(self.bias[:T, :T] == 0, float('-inf'))
-            att = F.softmax(att, dim=-1)
-            y = att @ v  # (B, nh, T, hs)
+            attn = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
+
+            # causal mask: (1, 1, T, T)
+            causal_mask = (self.bias[:T, :T] == 0).view(1, 1, T, T)
+
+            # combine both masks
+            if attn_mask is not None:
+                # invert: True = masked
+                full_mask = causal_mask | (~attn_mask)
+            else:
+                full_mask = causal_mask
+
+            # apply mask
+            attn = attn.masked_fill(full_mask, float('-inf'))
+
+            attn = F.softmax(attn, dim=-1)
+            y = attn @ v  # (B, nh, T, hs)
         else:
             # use PyTorch flash attention (scaled_dot_product_attention)
-            y = F.scaled_dot_product_attention(q, k, v, is_causal=True) # flash attention
+            y = F.scaled_dot_product_attention(q, k, v,  attn_mask=attn_mask, is_causal=True) # flash attention
 
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
         # output projection
@@ -206,8 +224,8 @@ class Block(nn.Module):
         self.ln_2 = RMSNorm(config.n_embd)
         self.mlp = MLP(config)
 
-    def forward(self, x):
-        x = x + self.attn(self.ln_1(x))
+    def forward(self, x, attention_mask=None):
+        x = x + self.attn(self.ln_1(x), attention_mask=attention_mask)
         x = x + self.mlp(self.ln_2(x))
         return x
 
@@ -235,7 +253,7 @@ class GPTLlama(nn.Module):
         self.apply(self._init_weights)
 
 
-    def forward(self, idx, targets=None):
+    def forward(self, idx, targets=None, attention_mask=None):
         # idx is of shape (B, T)
         B, T = idx.size()
         assert T <= self.config.block_size, f"Cannot forward sequence of length {T}, block size is only {self.config.block_size}"
@@ -251,13 +269,17 @@ class GPTLlama(nn.Module):
 
         # forward the blocks of the transformer
         for block in self.transformer.h:
-            x = block(x)
+            x = block(x, attention_mask=attention_mask)
         # forward the final layernorm and the classifier
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x) # (B, T, vocab_size)
         loss = None
         if targets is not None:
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+            if attention_mask is not None:
+                # do not calculate paddings in loss
+                targets = targets.clone()
+                targets[attention_mask == 0] = -100
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
         return GPTOutput(logits=logits, loss=loss)
 
 
