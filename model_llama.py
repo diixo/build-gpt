@@ -137,7 +137,11 @@ class CausalSelfAttention(nn.Module):
             self.rope = RotaryEmbedding(dim=head_dim, base=config.rope_base, max_seq_len=config.block_size)
 
         # causal mask via register_buffer
-        self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size)))
+        if not self.flash_attn:
+            print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
+            # causal mask to ensure that attention is only applied to the left in the input sequence
+            self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
+                                        .view(1, 1, config.block_size, config.block_size))
 
 
     def forward(self, x, attention_mask=None):
