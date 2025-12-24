@@ -10,7 +10,7 @@ from model_gpt_hybrid import GPTNeoHybrid
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
-from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
 
 
 class AutoGPTModel:
@@ -38,29 +38,27 @@ class AutoGPTModel:
 
         #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
-        tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
-        model = AutoModelForCausalLM.from_pretrained("EleutherAI/pythia-31m")
+        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
+        #model = AutoModelForCausalLM.from_pretrained("EleutherAI/pythia-31m")
+        tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo")
 
         # Extract sizes
         vocab_tok = tokenizer.vocab_size        # 50254
-        vocab_model = model.config.vocab_size   # 50304
 
-        print("Vocab size: tokenizer=", vocab_tok, ", model=", vocab_model)
+        print("Vocab size: tokenizer =", vocab_tok)
 
-        if False:
+        if True:
             # Find "empty" indices
-            unused_ids = list(range(vocab_tok, vocab_model))
-            print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
+            # unused_ids = list(range(vocab_tok, vocab_model))
+            # print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
 
             # Check alls special tokens
-            print(f"Special tokens ({tokenizer.vocab_size}):", tokenizer.special_tokens_map)
+            print(f"Special tokens =", tokenizer.special_tokens_map)
 
             # Check eos_token_id and the token itself
             if tokenizer.pad_token is None:
                 tokenizer.pad_token = tokenizer.eos_token
             print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
-
-            print(f"Using tokenizer: pad_token_id={tokenizer.pad_token_id}, eos_token_id={tokenizer.eos_token_id}")
 
 
         config_kwargs = AutoGPTModel.CONFIG_MAP[model_type]
