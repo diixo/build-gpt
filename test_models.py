@@ -213,30 +213,42 @@ class Trainer:
         self.model.train()
         for epoch in range(self.config.epochs):
             pbar = tqdm(self.loader, desc=f"Epoch {epoch + 1}/{self.config.epochs}")
-            epoch_loss = 0.0
-            smoothed = 0.0
+            total_epoch_loss = 0.0
+            smoothed_loss = 0.0
 
             self.optimizer.zero_grad(set_to_none=True)
 
             for step, (x, y) in enumerate(pbar):
                 x, y = x.to(self.config.device), y.to(self.config.device)
 
-                # обычный FP32 loss
-                loss = self.model(x, y).loss / grad_accum_steps
+                # Forward pass
+                raw_loss = self.model(x, y).loss
+
+                # Loss normalization for gradient accumulation
+                loss = raw_loss / grad_accum_steps
                 loss.backward()
 
-                if (step + 1) % grad_accum_steps == 0:
+                # Optimizer step
+                if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(self.loader):
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
                     self.optimizer.step()
                     self.optimizer.zero_grad(set_to_none=True)
 
-                smoothed = 0.9 * smoothed + 0.1 * loss.item() if step > 0 else loss.item()
-                pbar.set_postfix(loss=f"{smoothed:.4f}")
-                epoch_loss += loss.item()
+                # Updating metrics
+                iter_loss = raw_loss.item()
+                total_epoch_loss += iter_loss
 
-            avg_loss = epoch_loss / len(self.loader)
+                # Exponential smoothing for progress-bar
+                smoothed_loss = 0.9 * smoothed_loss + 0.1 * iter_loss if step > 0 else iter_loss
+                pbar.set_postfix(loss=f"{smoothed_loss:.4f}")
+
+            # Statistics at the end of the epoch
+            avg_loss = total_epoch_loss / len(self.loader)
             self.losses.append(avg_loss)
-            print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={math.exp(avg_loss):.2f}")
+
+            # Calculate Perplexity
+            perplexity = math.exp(avg_loss) if avg_loss < 20 else float('inf')
+            print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={perplexity:.2f}")
 
         print("✅ Training completed.")
 
