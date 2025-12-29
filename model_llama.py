@@ -338,19 +338,22 @@ class GPTLlama(nn.Module):
 
             idx_cond = input_ids if input_ids.size(1) <= block_size else input_ids[:, -block_size:]
 
-            logits = self(idx_cond).logits          # (B, t, V)
-            logits = logits[:, -1, :] / temperature # (B, V)
-
-            if top_k is not None:
-                v, _ = torch.topk(logits, top_k, dim=-1)
-                logits[logits < v[:, [-1]]] = -float("Inf")
-
-            probs = F.softmax(logits, dim=-1)
+            logits = self(idx_cond).logits  # (B, t, V)
+            logits = logits[:, -1, :]       # (B, V)
 
             if do_sample:
+                logits = logits / temperature
+                if top_k is not None:
+                    # clamp top_k to valid range [1, V]
+                    V = logits.size(-1)
+                    k = max(1, min(int(top_k), V))
+                    v, _ = torch.topk(logits, k, dim=-1)
+                    logits[logits < v[:, [-1]]] = -float("Inf")
+
+                probs = F.softmax(logits, dim=-1)
                 idx_next = torch.multinomial(probs, num_samples=1)      # (B,1)
             else:
-                idx_next = torch.argmax(probs, dim=-1, keepdim=True)    # (B,1)
+                idx_next = torch.argmax(logits, dim=-1, keepdim=True)   # (B,1)
 
             # if sequence already finished -> keep padding
             if eos_token_id is not None:

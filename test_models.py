@@ -68,18 +68,10 @@ class AutoGPTModel:
 
 
         config_kwargs = AutoGPTModel.CONFIG_MAP[model_type]
-        # experimental
+
         config_kwargs.update({
-            "block_size": 2048,
-            "vocab_size": 50304,
-            "n_layer": 28,
-            "n_head": 16, #(head_dim = 48)
-            "n_embd": 768,
-            "flash_attn": True,
-        })
-        config_kwargs.update({
-            "block_size": 2048,
-            "vocab_size": 50304,
+            "block_size": 1024,
+            "vocab_size": vocab_sz,
             "n_layer": 12,
             "n_head": 12,
             "n_embd": 768,
@@ -184,7 +176,7 @@ class TextDataset(Dataset):
 class TrainerConfig:
     epochs: int = 5
     batch_size: int = 8
-    learning_rate: float = 3e-4
+    learning_rate: float = 1e-4
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -298,7 +290,7 @@ if __name__ == "__main__":
     print("Model type:", type(model))
     print("Tokenizer type:", type(tokenizer))
 
-    config = TrainerConfig(epochs=2, batch_size=4)
+    config = TrainerConfig(epochs=5, batch_size=4)
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
     trainer = Trainer(model, dataset, config)
     trainer.train()
@@ -307,7 +299,8 @@ if __name__ == "__main__":
     gen_ids = model.generate(
                 input_ids=input_ids.to(config.device),
                 max_new_tokens=3,
-                do_sample=False,
+                do_sample=True,
+                top_k=10,
                 eos_token_id=tokenizer.eos_token_id,
                 pad_token_id=tokenizer.eos_token_id
             )[0]
