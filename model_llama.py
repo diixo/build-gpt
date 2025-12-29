@@ -170,8 +170,8 @@ class CausalSelfAttention(nn.Module):
             # manual attention implementation
             attn = (q @ k.transpose(-2, -1)) / math.sqrt(k.size(-1)) # (B, nh, T, T)
 
-            # causal mask: (1, 1, T, T)
-            causal_mask = (self.bias[:T, :T] == 0).view(1, 1, T, T)
+            # causal mask: as bool view(1, 1, T, T)
+            causal_mask = (self.bias[:, :, :T, :T] == 0)
 
             # combine both masks
             if attn_mask is not None:
