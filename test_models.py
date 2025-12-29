@@ -36,20 +36,20 @@ class AutoGPTModel:
         if model_type not in AutoGPTModel.MODEL_MAP:
             raise ValueError(f"Unknown model_type: {model_type}")
 
-        #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
-        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
-        #model = AutoModelForCausalLM.from_pretrained("EleutherAI/pythia-31m")
-        tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo")
+        tokenizer = GPT2Tokenizer.from_pretrained("data/gpt2", local_files_only=True)
+        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b", local_files_only=True)
+        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m", local_files_only=True)
+        #model = AutoModelForCausalLM.from_pretrained("EleutherAI/pythia-31m", local_files_only=True)
+        #tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
 
         # Extract sizes
-        vocab_tok = tokenizer.vocab_size        # 50254
+        vocab_sz = tokenizer.vocab_size # 50257
 
-        print("Vocab size: tokenizer =", vocab_tok)
+        print("Vocab size: tokenizer =", vocab_sz)
 
         if True:
             # Find "empty" indices
-            # unused_ids = list(range(vocab_tok, vocab_model))
+            # unused_ids = list(range(vocab_sz, vocab_model))
             # print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
 
             # Check alls special tokens
