@@ -298,6 +298,19 @@ if __name__ == "__main__":
     print("Model type:", type(model))
     print("Tokenizer type:", type(tokenizer))
 
+    config = TrainerConfig(epochs=2, batch_size=4)
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
-    trainer = Trainer(model, dataset, TrainerConfig(epochs=2, batch_size=4))
+    trainer = Trainer(model, dataset, config)
     trainer.train()
+
+    input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    gen_ids = model.generate(
+                input_ids=input_ids.to(config.device),
+                max_new_tokens=3,
+                do_sample=False,
+                eos_token_id=tokenizer.eos_token_id,
+                pad_token_id=tokenizer.eos_token_id
+            )[0]
+    output_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
+    print("Generated text:", output_text)
+

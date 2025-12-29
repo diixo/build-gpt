@@ -5,3 +5,13 @@ Do Transformer Modifications Transfer Across Implementations and Applications?
 Learning Factored Representations in a Deep Mixture of Experts
 Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer
 ST-MoE: Designing Stable and Transferable Sparse Expert Models
+Your Transformer is Secretly Linear
+A Comprehensive Survey on Applications of Transformers for Deep Learning Tasks
+Transformer models: an introduction and catalog
+Advancing Transformer Architecture in Long-Context Large Language Models: A Comprehensive Survey
+Reducing the Transformer Architecture to a Minimum
+
+Transformer-based Large Language Models (LLMs) have been applied in diverse areas such as knowledge bases, human interfaces, and dynamic agents, and marking a stride towards achieving Artificial General Intelligence (AGI).
+This article offers a comprehensive survey of the recent advancement in Transformer-based LLM architectures aimed at enhancing the long-context capabilities of LLMs throughout the entire model lifecycle, from pre-training through to inference.
+We first delineate and analyze the problems of handling long-context input and output with the current Transformer-based models.
+We then provide a taxonomy and the landscape of upgrades on Transformer architecture to solve these problems.

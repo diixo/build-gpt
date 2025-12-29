@@ -310,3 +310,53 @@ class GPTLlama(nn.Module):
         if non_embedding and not self.config.use_rope:
             n_params -= self.transformer.wpe.weight.numel()
         return n_params
+
+
+    @torch.no_grad()
+    def generate(
+        self,
+        input_ids: torch.Tensor,    # (B, T)
+        max_new_tokens: int,
+        temperature: float = 1.0,
+        do_sample: bool = False,
+        top_k: int | None = None,
+        eos_token_id: int | None = None,
+        pad_token_id: int | None = None,
+    ):
+        self.eval()
+        block_size = self.config.block_size
+
+        if pad_token_id is None:
+            pad_token_id = eos_token_id if eos_token_id is not None else 0
+
+        pad = torch.tensor(pad_token_id, device=input_ids.device, dtype=input_ids.dtype)
+        finished = torch.zeros(input_ids.size(0), device=input_ids.device, dtype=torch.bool)
+
+        for _ in range(max_new_tokens):
+            if eos_token_id is not None and torch.all(finished):
+                break
+
+            idx_cond = input_ids if input_ids.size(1) <= block_size else input_ids[:, -block_size:]
+
+            logits = self(idx_cond).logits          # (B, t, V)
+            logits = logits[:, -1, :] / temperature # (B, V)
+
+            if top_k is not None:
+                v, _ = torch.topk(logits, top_k, dim=-1)
+                logits[logits < v[:, [-1]]] = -float("Inf")
+
+            probs = F.softmax(logits, dim=-1)
+
+            if do_sample:
+                idx_next = torch.multinomial(probs, num_samples=1)      # (B,1)
+            else:
+                idx_next = torch.argmax(probs, dim=-1, keepdim=True)    # (B,1)
+
+            # if sequence already finished -> keep padding
+            if eos_token_id is not None:
+                idx_next = torch.where(finished[:, None], pad, idx_next)
+                finished = finished | (idx_next.squeeze(1) == eos_token_id)
+
+            input_ids = torch.cat((input_ids, idx_next), dim=1)
+
+        return input_ids
