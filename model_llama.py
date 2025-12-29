@@ -1,5 +1,5 @@
 """
-GPT model
+GPT-LLaMA model
 1) Rotary Position Embeddings (RoPE) implementation.
 2) tie_word_embeddings=True in GPT.from_pretrained to share weights between token embeddings and LM head.
 """
@@ -21,15 +21,9 @@ class GPTConfig:
     n_embd: int = 768       # embedding dimension
     flash_attn: bool = True # whether to use flash attention (scaled_dot_product_attention)
 
-    # RoPE params
+    # RoPE params:
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
     use_rope: bool = True       # whether to use RoPE or not
-
-
-@dataclass
-class GPTOutput:
-    logits: torch.Tensor
-    loss: Optional[torch.Tensor] = None
 
 
 class RMSNorm(nn.Module):
@@ -69,14 +63,8 @@ class RotaryEmbedding(nn.Module):
     """
     Implements precomputed Rotary Position Embedding (RoPE) cache for efficiency.
     """
-
     def __init__(self, dim: int, base: float = 10000.0, max_seq_len: int = 2048):
-        """
-        Args:
-            dim: Head dimension (hs)
-            base: RoPE base theta (usually 10000.0)
-            max_seq_len: Maximum sequence length
-        """
+
         super().__init__()
         assert dim % 2 == 0, "Head dimension must be even for RoPE"
         self.dim = dim
@@ -98,7 +86,6 @@ class RotaryEmbedding(nn.Module):
 
 
     def apply_rotary(self, x: torch.Tensor, seq_len: int):
-        """Applies rotary transformation to tensor x."""
         assert x.ndim == 4, f"Expected 4D tensor (B, nH, T, d), got: {x.shape}"
         cos = self.freqs_cos[:, :, :seq_len, :].to(x.device)
         sin = self.freqs_sin[:, :, :seq_len, :].to(x.device)
@@ -233,6 +220,11 @@ class Block(nn.Module):
         x = x + self.mlp(self.ln_2(x))
         return x
 
+
+@dataclass
+class GPTOutput:
+    logits: torch.Tensor
+    loss: Optional[torch.Tensor] = None
 
 class GPTLlama(nn.Module):
     def __init__(self, config=None, **kwargs):
