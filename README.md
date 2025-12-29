@@ -1,6 +1,8 @@
 # build-gpt
 
-Based on: https://github.com/karpathy/build-nanogpt
+* Based on: https://github.com/karpathy/build-nanogpt
+
+A PyTorch library with re-implementation of several GPT-models: [GPT2](https://github.com/openai/gpt-2), LLaMa, GPTNeo, GPTNeoX, included both training and inference. Code tries to be small, clean, interpretable and educational, as most of the currently available GPT model implementations can a bit sprawling. Code focused on implementation of [GPTLlama](model_llama.py), that is not a complicated model and this implementation is appropriately about 350 lines of code.
 
 
 ### Demos:
