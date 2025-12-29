@@ -1,7 +1,6 @@
 import json
 import os
-import torch
-import math
+import torch, math, random, numpy as np
 from dataclasses import dataclass
 from model_gpt2 import GPT, GPTNeo
 from model_llama import GPTLlama
@@ -11,6 +10,15 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
 from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
+from transformers import set_seed
+
+
+SEED = 42
+set_seed(SEED)
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
 
 
 class AutoGPTModel:

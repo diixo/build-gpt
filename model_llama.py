@@ -227,7 +227,7 @@ class GPTOutput:
     loss: Optional[torch.Tensor] = None
 
 class GPTLlama(nn.Module):
-    def __init__(self, config=None, **kwargs):
+    def __init__(self, config: GPTConfig=None, **kwargs):
         super().__init__()
         if config is None:
             config = GPTConfig(**kwargs)
@@ -314,7 +314,8 @@ class GPTLlama(nn.Module):
         top_k: int | None = None,
         eos_token_id: int | None = None,
         pad_token_id: int | None = None,
-    ):
+    ) -> torch.Tensor:
+
         self.eval()
         block_size = self.config.block_size
 
