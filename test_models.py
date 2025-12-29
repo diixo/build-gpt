@@ -36,25 +36,12 @@ class AutoGPTModel:
         if model_type not in AutoGPTModel.MODEL_MAP:
             raise ValueError(f"Unknown model_type: {model_type}")
 
-        if False:
-            tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m")
-            model = AutoModelForCausalLM.from_pretrained("EleutherAI/pythia-31m")
-            vocab_tok = tokenizer.vocab_size        # pythia-31m=50254
-            vocab_model = model.config.vocab_size   # pythia-31m=50304
-            print(f"Tokenizer vocab size: {vocab_tok}, Model vocab size: {vocab_model}")
-
-            # Find "empty" indices
-            unused_ids = list(range(vocab_tok, vocab_model))
-            print(f"Unallocated tokens (unused ID\'s): {unused_ids[:10]}... all={len(unused_ids)}.")
-
-
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b", local_files_only=True)
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m", local_files_only=True)
         tokenizer = GPT2Tokenizer.from_pretrained("data/gpt2", local_files_only=True)
 
         # Extract sizes
         vocab_sz = tokenizer.vocab_size # 50257
-
         print("Vocab size: tokenizer =", vocab_sz)
 
         if True:
@@ -275,7 +262,6 @@ def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
 
     print(inputs)
     print(targets)
-    exit(0)
 
 
 if __name__ == "__main__":
