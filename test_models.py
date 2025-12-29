@@ -72,8 +72,8 @@ class AutoGPTModel:
         config_kwargs.update({
             "block_size": 1024,
             "vocab_size": vocab_sz,
-            "n_layer": 12,
-            "n_head": 12,
+            "n_layer": 8,
+            "n_head": 8,
             "n_embd": 768,
             "flash_attn": True,
         })
