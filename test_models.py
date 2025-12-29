@@ -68,7 +68,7 @@ class AutoGPTModel:
             "block_size": 1024,
             "vocab_size": vocab_sz,
             "n_layer": 8,
-            "n_head": 8,
+            "n_head": 12,
             "n_embd": 768,
             "flash_attn": True,
         })
@@ -77,16 +77,6 @@ class AutoGPTModel:
 
         model_cls = AutoGPTModel.MODEL_MAP[model_type]
         model = model_cls(**config_kwargs)
-        params = model.get_num_params()
-
-        def _fmt(n: int) -> str:
-            if n >= 1_000_000:
-                return f"{n/1_000_000:.2f}M"
-            if n >= 1_000:
-                return f"{n/1_000:.2f}K"
-            return str(n)
-
-        print(f"Total model.params: {_fmt(params)}")
         return model, tokenizer
 
 
@@ -272,6 +262,14 @@ def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
     print(targets)
 
 
+def _fmt(n: int) -> str:
+    if n >= 1_000_000:
+        return f"{n/1_000_000:.2f}M"
+    if n >= 1_000:
+        return f"{n/1_000:.2f}K"
+    return str(n)
+
+
 if __name__ == "__main__":
 
     #test_collate_fn(pad_token_id=tokenizer.eos_token_id, eos_token_id=tokenizer.eos_token_id)
@@ -299,5 +297,7 @@ if __name__ == "__main__":
                 pad_token_id=tokenizer.eos_token_id
             )[0]
     output_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
+
+    print(f"Total model.params: {_fmt(model.get_num_params())}")
     print("Generated text:", output_text)
 
