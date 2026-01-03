@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 import torch, math, random, numpy as np
 from dataclasses import dataclass
 from model_gpt2 import GPT, GPTNeo
@@ -132,14 +133,28 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
     return inputs_tensor, targets_tensor
 
 
-class TextDataset(Dataset):
+class JsonlDataset(Dataset):
 
     def __init__(self, file_path, tokenizer, max_seq_length=1024):
 
         texts = []
+
         if isinstance(file_path, str) and os.path.isfile(file_path):
-            with open(file_path, "r", encoding="utf-8") as f:
-                texts = [line.strip() for line in f if line.strip()]
+            with Path(file_path).open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    obj = json.loads(line)
+                    val = obj.get("example", None)
+                    definition = obj.get("definition", None)
+
+                    if val is None or val == "":
+                        continue
+
+                    if definition is not None:
+                        val = definition + ": " + val
+                    texts.append(val)
 
         # tokenize each line separately and store the input_ids, with only truncation, without padding
         self.data_idx = [
@@ -283,7 +298,7 @@ if __name__ == "__main__":
     print("Tokenizer type:", type(tokenizer))
 
     config = TrainerConfig(epochs=5, batch_size=4)
-    dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
+    dataset = JsonlDataset("test.jsonl", tokenizer, max_seq_length=model.config.block_size)
     trainer = Trainer(model, dataset, config)
     trainer.train()
 
