@@ -133,10 +133,31 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
     return inputs_tensor, targets_tensor
 
 
+class TextDataset(Dataset):
+
+    def __init__(self, file_path, tokenizer, max_seq_length=1024):
+        texts = []
+        with open(file_path, "r", encoding="utf-8") as f:
+            texts = [line.strip() for line in f if line.strip()]
+
+        # tokenize each line separately and store the input_ids, with only truncation, without padding
+        self.data_idx = [
+            tokenizer(t.strip(), truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
+            )["input_ids"].squeeze(0)   # sizes: [seq_len <= max_seq_length]
+            for t in texts
+        ]
+        self.max_seq_length = max_seq_length
+
+
+    def __len__(self):
+        return len(self.data_idx)
+
+    def __getitem__(self, idx):
+        return self.data_idx[idx]
+
 class JsonlDataset(Dataset):
 
     def __init__(self, file_path, tokenizer, max_seq_length=1024):
-
         texts = []
 
         if isinstance(file_path, str) and os.path.isfile(file_path):
@@ -298,14 +319,14 @@ if __name__ == "__main__":
     print("Tokenizer type:", type(tokenizer))
 
     config = TrainerConfig(epochs=5, batch_size=4)
-    dataset = JsonlDataset("test.jsonl", tokenizer, max_seq_length=model.config.block_size)
+    dataset = TextDataset("dataset.txt", tokenizer, max_seq_length=model.config.block_size)
     trainer = Trainer(model, dataset, config)
     trainer.train()
 
-    input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    input_ids = tokenizer("Model", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
                 input_ids=input_ids.to(config.device),
-                max_new_tokens=3,
+                max_new_tokens=5,
                 do_sample=True,
                 top_k=10,
                 eos_token_id=tokenizer.eos_token_id,

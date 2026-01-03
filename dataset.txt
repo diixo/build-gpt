@@ -1,0 +1,571 @@
+
+
+About Analytics: analytics technology aggregates and analyzes data sets to find meaningful patterns and information that can improve decision-making.
+About Artificial intelligence: artificial intelligence (AI) is the application of machine learning to build systems that simulate human thought processes. It includes several disciplines such as machine learning, knowledge discovery, natural language processing, vision, and human-computer interaction. Generative AI refers to deep-learning models that can generate novel, high-quality text, images, and other content based on the data with which they were trained.
+About Blockchain: blockchain is a tamper-evident, shared digital ledger that records transactions in a public or private peer-to-peer network. The blockchain acts as a single source of truth, and members in a blockchain network can view only those transactions that are relevant to them.
+About Containers: A containers architecture enables multiple services to run on the same machine, isolated from each other, in the same way as virtual machines, but with much less overhead.
+About Conversational AI: Conversation is interacting and communicating with with a personal assistant using voice recognition, speech-to-text, or text-to-speech services.
+About Data management: Data management is the practice of collecting, accessing, maintaining, and driving value from data in an agile, secure, and cost-effective manner. Key components of a data management strategy include data governance, processing, security, and storage.
+About Data privacy: Data privacy refers to processing, storing, and transmitting personal and sensitive data in compliance with government and industry regulations.
+About Data science: Data science is the process of using algorithms, methods, and systems to extract knowledge and insights from structured and unstructured data. It can be used to make predictions and decisions using analytics and machine learning.
+About Data storage: Data storage refers to magnetic, optical, or mechanical media that records and preserves digital information for ongoing or future operations. Two foundations of data storage are the form in which data takes (file storage, block storage, or object storage) and the device that the data is recorded and stored on (direct area storage or network-based storage).
+About Databases: Capture, store, analyze, and manage collections of data.
+About Deep learning: Deep learning is the ability of a system to learn from unstructured data. Relying on layers of artificial neural networks, the learning can be supervised or unsupervised.
+About Embeddable AI: Embeddable AI at IBM is a set of flexible, enterprise-grade AI products that you can easily embed in your applications to provide an enhanced user experience through powerful AI models.
+About Front-end development: Developing the visual aspects of a website or application that a user can see and experience.
+About Geolocation: Geolocation is the longitudinal and latitudinal location of a connected device. Using geolocation APIs or services, developers can programmatically obtain the relative position of a device that the user has granted permission for.
+About IoT: The IoT - Internet-of-Things is the connection of devices to the Internet and other connected devices. All of these devices share data about the way they are used and about the environment around them.
+About IT Infrastructure: Manage and support computers, servers, storage systems, operating systems, networking, and more.
+About Linux: The open source operating system that runs the world.
+About Machine Learning: Machine learning is giving systems the ability to learn and improve without them being explicitly programmed.
+About Mainframes: Mainframe computers are reliable, scalable, compatible, and secure.
+About Messaging: With messaging software, developers can build communication into their applications using a variety of message exchange patterns and a range of qualities-of-service.
+About Mobile development: Mobile development means developing applications — mobile apps or web apps — for any kind of mobile device that runs some kind of mobile operating system.
+About Natural language processing: Natural language processing (NLP) is the parsing and semantic interpretation of text, which allows systems to learn, analyze, and understand human language.
+About Platform as a service:  Platform as a service (PaaS) is a cloud service model that enables you to focus on developing and managing applications without worrying about the underlying infrastructure. In addition to storage and other computing resources, a service provider also typically offers you access to a suite of prebuilt tools to develop, customize, and test your applications.
+About Predictive analytics: Analyze current and historical data to make predictions.
+About Speech and Empathy: Speech and empathy is the process of modeling speech and emotion in an artificial intelligence system.
+About Web development: Use open-standards technologies to build modern web apps.
+About Zero trust: Zero trust security is a model and plan that uses context to securely connect the right users to the right data at the right time under the right conditions, while also protecting your organization from cyber threats.
+
+
+Analytics - Uncover insights with data collection, organization, and analysis.
+Artificial intelligence - Next generation resources for AI builders to create trusted solutions
+Blockchain - Start developing with blockchain technologies
+Containers - Automate the deployment, scaling, and management of containerized applications.
+Conversational AI - Build voice and text chatbots that can understand what users are asking.
+Data management - Collect, access, and maintain data to drive value
+Data privacy - Use personal and sensitive information responsibly.
+Data science - Analyze structured and unstructured data to extract knowledge and insights.
+Data storage - Record and preserve digital information.
+Databases - Capture, store, analyze, and manage collections of data.
+Deep learning Create, train, and deploy self-learning models.
+Embeddable AI Enhance your applications with IBM embeddable AI.
+Front-end development Tools and knowledge you need to develop frontend websites and applications.
+Geolocation The geographical location of a connected device.
+IoT - Create value and gain insight through interconnected devices.
+IT Infrastructure Manage and support computers, servers, storage systems, operating systems, networking, and more.
+Linux The open source operating system that runs the world.
+Machine Learning Teach systems to learn without them being explicitly programmed.
+Mainframes High-performance computers that process billions of transactions in real time.
+Messaging Communicate between systems by exchanging messages.
+Mobile development Develop applications — mobile apps or web apps — for any kind of mobile device.
+Mobile development Develop applications — mobile apps or web apps — for any kind of mobile device.
+Natural language processing Build apps that can interpret unstructured data and analyze insights.
+Platform as a service Develop and manage applications without creating your own infrastructure.
+Predictive analytics Analyze current and historical data to make predictions.
+Speech and Empathy Develop apps that detect feelings and respond accordingly.
+Web development Use open-standards technologies to build modern web apps.
+Zero trust Increased cyber resiliency with threat management and identity management
+
+
+
+Native Protocols: The library implements the native protocols needed to communicate with services running on iOS devices. Due to the reimplemention it does not depend on using or bundling any existing libraries from Apple.
+
+Cross-Platform: The C programming language enables cross-platform use of the library. It has already been built and run on  Linux,  Mac,  Windows,  Android and embedded  ARM SoCs.
+
+Architecture: The architecture of the library and dependencies has been designed with an OOP approach in mind. Thus bindings for other programming languages are easier to create and allow an OOP based API.
+
+Motivation: Linux enthusiasts were not amused about great but incompatible hardware like the iPhone 2G. As iTunes was not available for Linux libiphone was born. This became libimobiledevice with the goal to bring freedom and "allow penguins to talk to fruits".
+
+Command-Line: Many command-line utilities come bundled with the library that allow interacting with iOS device services already. This covers retrieving basic device information up to restoring official firmware images.
+
+Network Support: Devices that have "Wifi Sync" enabled can be accessed wirelessly and do not require a wired USB connection anymore with iOS 11 and later.
+
+
+THE IDEAL PROFESSIONAL IT SUPPORT: Today's business climate demands your IT systems operate efficiently, are highly secure, and be online 24 hours a day.
+
+Viix provides integrated IT support and network design services that allow your company to maintain peak levels of performance and productivity while maintaining security.
+
+Years of Research: Due to being in development since 2007 the library supports the range from the first to the latest iOS device. This is an achievement of many years of research and development.
+
+Scalability: Being integrated by popular community projects as well as large implementations which interact with more than 10.000+ of devices provide a good reference point for high scalability and efficiency of this solution.
+
+All about IT: Our certified IT technicians and computer engineers excel with design, deployment, and maintaining communications systems. From implementing new data management systems to upgrading security standards, we can handle all your IT needs.
+
+
+Reliability and convenience are two parts of our customer services commitment. Remote and on-site services ensure you receive optimal service.
+
+Customer Solutions:
+A constantly problematic network is of little benefit to anyone. Because our reputation is important to us, we will only recommend tested and proven components for use in our network systems. Viix has and always will keep our Customer's Best Interest in mind by recommending the most inexpensive solution without compromising the dependability and performance of the network.
+
+
+Effective Operating Principles: Our mission and business philosophy is simple. We listen and take note of your needs, define our role, and visualize the solutions. This process allows us to implement flexible and effective processes and conquer ever-evolving challenges in business and communications.
+Staying ahead of the curve is the key to success in today's business world. We make sure to keep our eye on changes and elevations in technology, as that is what keeps us current and your company competitive.
+
+
+Depth estimation is the task of predicting depth of the objects present in an image.
+
+About Depth Estimation: Depth estimation models can be used to estimate the depth of different objects present in an image.
+
+Estimation of Volumetric Information: Depth estimation models are widely used to study volumetric formation of objects present inside an image. This is an important use case in the domain of computer graphics.
+
+3D Representation: Depth estimation models can also be used to develop a 3D representation from a 2D image.
+
+
+Image classification is the task of assigning a label or class to an entire image. Images are expected to have only one class for each image. Image classification models take an image as input and return a prediction about which class the image belongs to.
+About Image Classification: Image classification models can be used when we are not interested in specific instances of objects with location information or their shape.
+
+Image classification models are used widely in stock photography to assign each image a keyword.
+
+Image Search: Models trained in image classification can improve user experience by organizing and categorizing photo galleries on the phone or in the cloud, on multiple keywords or tags.
+
+Image Segmentation divides an image into segments where each pixel in the image is mapped to an object. This task has multiple variants such as instance segmentation, panoptic segmentation and semantic segmentation.
+
+
+Autonomous Driving: Segmentation models are used to identify road patterns such as lanes and obstacles for safer driving.
+
+Background Removal: Image Segmentation models are used in cameras to erase the background of certain objects and apply filters to them.
+
+Medical Imaging: Image Segmentation models are used to distinguish organs or tissues, improving medical imaging workflows. Models are used to segment dental instances, analyze X-Ray scans or even segment cells for pathological diagnosis. This dataset contains images of lungs of healthy patients and patients with COVID-19 segmented with masks. Another segmentation dataset contains segmented MRI data of the lower spine to analyze the effect of spaceflight simulation.
+
+Semantic Segmentation is the task of segmenting parts of an image that belong to the same class. Semantic Segmentation models make predictions for each pixel and return the probabilities of the classes for each pixel. These models are evaluated on Mean Intersection Over Union (Mean IoU).
+
+Instance Segmentation: Instance Segmentation is the variant of Image Segmentation where every distinct object is segmented, instead of one segment per class.
+
+Panoptic Segmentation: Panoptic Segmentation is the Image Segmentation task that segments the image both by instance and by class, assigning each pixel a different instance of the class.
+
+Inference: You can infer with Image Segmentation models using the image-segmentation pipeline. You need to install timm first.
+
+
+Image-to-image is the task of transforming a source image to match the characteristics of a target image or a target image domain. Any image manipulation and enhancement is possible with image to image models.
+
+
+Style transfer: One of the most popular use cases of image to image is the style transfer. Style transfer models can convert a regular photography into a painting in the style of a famous painter.
+
+Image inpainting is widely used during photography editing to remove unwanted objects, such as poles, wires or sensor dust.
+
+Image colorization: Old, black and white images can be brought up to life using an image colorization model.
+
+
+Super resolution models increase the resolution of an image, allowing for higher quality viewing and printing.
+
+
+Object Detection models allow users to identify objects of certain defined classes. Object detection models receive an image as input and output the images with bounding boxes and labels on detected objects.
+Autonomous Driving: Object Detection is widely used in computer vision for autonomous driving. Self-driving cars use Object Detection models to detect pedestrians, bicycles, traffic lights and road signs to decide which step to take.
+
+Object Tracking in Matches: Object Detection models are widely used in sports where the ball or a player is tracked for monitoring and refereeing during matches.
+
+Object Detection models are widely used in image search. Smartphones use Object Detection models to detect entities (such as specific places or objects) and allow the user to search for the entity on the Internet.
+
+
+Object Detection models are used to count instances of objects in a given image, this can include counting the objects in warehouses or stores, or counting the number of visitors in a store. They are also used to manage crowds at events to prevent disasters.
+
+Inference: You can infer with Object Detection models through the object-detection pipeline. When calling the pipeline you just need to specify a path or http link to an image.
+
+
+Video classification is the task of assigning a label or class to an entire video. Videos are expected to have only one class for each video. Video classification models take a video as input and return a prediction about which class the video belongs to.
+
+
+Video classification models can be used to categorize what a video is all about.
+
+Activity Recognition: Video classification models are used to perform activity recognition which is useful for fitness applications. Activity recognition is also helpful for vision-impaired individuals especially when they're commuting.
+
+
+Models trained in video classification can improve user experience by organizing and categorizing video galleries on the phone or in the cloud, on multiple keywords or tags.
+
+
+
+Unconditional image generation is the task of generating images with no condition in any context (like a prompt text or another image). Once trained, the model will create images that resemble its training data distribution.
+
+
+Unconditional image generation is the task of generating new images without any specific input. The main goal of this is to create novel, original images that are not based on existing images. This can be used for a variety of applications, such as creating new artistic images, improving image recognition algorithms, or generating photorealistic images for virtual reality environments.
+
+Unconditional image generation models usually start with a seed that generates a random noise vector. The model will then use this vector to create an output image similar to the images used for training the model.
+
+An example of unconditional image generation would be generating the image of a face on a model trained
+
+
+Zero shot image classification is the task of classifying previously unseen classes during training of a model.
+
+
+Zero-shot image classification is a computer vision task to classify images into one of several classes, without any prior training or knowledge of the classes.
+
+Zero shot image classification works by transferring knowledge learnt during training of one model, to classify novel classes that was not present in the training data. So this is a variation of transfer learning. For instance, a model trained to differentiate cars from airplanes can be used to classify images of ships.
+
+
+Auxiliary information - additional information given to the model during training connecting the unseen and seen data. This can be in the form of textual description or word embeddings.
+
+Zero-shot learning resolves several challenges in image retrieval systems. For example, with the rapid growth of categories on the web, it is challenging to index images based on unseen categories. With zero-shot learning we can associate unseen categories to images by exploiting attributes to model the relationships among visual features and labels.
+
+
+Action recognition is the task of identifying when a person in an image/video is performing a given action from a set of actions. If all the possible actions are not known beforehand, conventional deep learning models fail. With zero-shot learning, for a given domain of a set of actions, we can create a mapping connecting low-level features and a semantic description of auxiliary data to classify unknown classes of actions.
+
+
+Conversational response modelling is the task of generating conversational text that is relevant, coherent and knowledgable given a prompt. These models have applications in chatbots, and as a part of voice assistants
+
+Chatbots are used to have conversations instead of providing direct contact with a live human. They are used to provide customer service, sales, and can even be used to play games (see ELIZA from 1966 for one of the earliest examples).
+
+Voice Assistants: Conversational response models are used as part of voice assistants to provide appropriate responses to voice based queries.
+
+You can infer with Conversational models with the Transformers library using the conversational pipeline. This pipeline takes a conversation prompt or a list of conversations and generates responses for each prompt. The models that this pipeline can use are models that have been fine-tuned on a multi-turn conversational task
+
+
+Fill-Mask: Masked language modeling is the task of masking some of the words in a sentence and predicting which words should replace those masks. These models are useful when we want to get a statistical understanding of the language in which the model is trained in.
+
+
+Masked language models do not require labelled data! They are trained by masking a couple of words in sentences and the model is expected to guess the masked word. This makes it very practical!
+
+For example, masked language modeling is used to train large models for domain-specific problems. If you have to work on a domain-specific task, such as retrieving information from medical research papers, you can train a masked language model using those papers.
+
+The resulting model has a statistical understanding of the language used in medical research papers, and can be further trained in a process called fine-tuning to solve different tasks, such as Text Classification or Question Answering to build a medical research papers information extraction system. Pre-training on domain-specific data tends to yield better results (see this paper for an example).
+
+If you don't have the data to train a masked language model, you can also use an existing domain-specific masked language model from the Hub and fine-tune it with your smaller task dataset. That's the magic of Open Source and sharing your work!
+
+Inference with Fill-Mask Pipeline: You can use the Transformers library fill-mask pipeline to do inference with masked language models. If a model name is not provided, the pipeline will be initialized with. You can provide masked text and it will return a list of possible mask values ​​ranked according to the score.
+
+
+Question Answering models can retrieve the answer to a question from a given text, which is useful for searching for an answer in a document. Some question answering models can generate answers without context!
+
+
+Frequently Asked Questions: You can use Question Answering (QA) models to automate the response to frequently asked questions by using a knowledge base (documents) as context. Answers to customer questions can be drawn from those documents.
+
+If you’d like to save inference time, you can first use passage ranking models to see which document might contain the answer to the question and iterate over that document with the QA model instead.
+
+Extractive QA: The model extracts the answer from a context. The context here could be a provided text, a table or even HTML! This is usually solved with BERT-like models.
+Open Generative QA: The model generates free text directly based on the context. You can learn more about the Text Generation task in its page.
+Closed Generative QA: In this case, no context is provided. The answer is completely generated by a model.
+The schema above illustrates extractive, open book QA. The model takes a context and the question and extracts the answer from the given context.
+
+You can also differentiate QA models depending on whether they are open-domain or closed-domain. Open-domain models are not restricted to a specific domain, while closed-domain models are restricted to a specific domain (e.g. legal, medical documents).
+
+
+Sentence Similarity is the task of determining how similar two texts are. Sentence similarity models convert input texts into vectors (embeddings) that capture semantic information and calculate how close (similar) they are between them. This task is particularly useful for information retrieval and clustering/grouping.
+
+
+You can extract information from documents using Sentence Similarity models. The first step is to rank documents using Passage Ranking models. You can then get to the top ranked document and search it with Sentence Similarity models by selecting the sentence that has the most similarity to the input query.
+
+
+The Sentence Transformers library is very powerful for calculating embeddings of sentences, paragraphs, and entire documents. An embedding is just a vector representation of a text and is useful for finding how similar two texts are.
+
+You can find and use hundreds of Sentence Transformers models from the Hub by directly using the library, playing with the widgets in the browser or using the Inference API.
+
+
+Passage Ranking is the task of ranking documents based on their relevance to a given query. The task is evaluated on Mean Reciprocal Rank. These models take one query and multiple documents and return ranked documents according to the relevancy to the query.
+
+You can infer with Passage Ranking models using the Inference API. The Passage Ranking model inputs are a query for which we look for relevancy in the documents and the documents we want to search. The model will return scores according to the relevancy of these documents for the query.
+
+
+Summarization is the task of producing a shorter version of a document while preserving its important information. Some models can extract text from the original input, while other models can generate entirely new text.
+
+
+Research Paper Summarization: Research papers can be summarized to allow researchers to spend less time selecting which articles to read. There are several approaches you can take for a task like this:
+
+Use an existing extractive summarization model on the Hub to do inference.
+Pick an existing language model trained for academic papers. This model can then be trained in a process called fine-tuning so it can solve the summarization task.
+Use a sequence-to-sequence model like T5 for abstractive text summarization.
+
+
+Table Question Answering (Table QA) is the answering a question about an information on a given table.
+
+About Table Question Answering: You can use the Table Question Answering models to simulate SQL execution by inputting a table.
+
+Table Question Answering models are capable of answering questions based on a table.
+
+
+Text Classification is the task of assigning a label or class to a given text. Some use cases are sentiment analysis, natural language inference, and assessing grammatical correctness.
+
+
+You can track the sentiments of your customers from the product reviews using sentiment analysis models. This can help understand churn and retention by grouping reviews by sentiment, to later analyze the text and make strategic decisions based on this knowledge.
+
+
+Natural Language Inference (NLI): In NLI the model determines the relationship between two given texts. Concretely, the model takes a premise and a hypothesis and returns a class that can either be:
+
+
+The benchmark dataset for this task is GLUE (General Language Understanding Evaluation). NLI models have different variants, such as Multi-Genre NLI, Question NLI and Winograd NLI.
+
+Multi-Genre NLI (MNLI)
+MNLI is used for general NLI. 
+
+Text Generation
+Generating text is the task of producing new text. These models can, for example, fill in incomplete text or paraphrase.
+Text Generation Model
+About Text Generation
+This task covers guides on both text-generation and text-to-text generation models. Popular large language models that are used for chats or following instructions are also covered in this task. You can find the list of selected open-source large language models here, ranked by their performance scores.
+
+
+Instruction Models
+A model trained for text generation can be later adapted to follow instructions. One of the most used open-source models for instruction is OpenAssistant, which you can try at Hugging Chat.
+
+Code Generation
+A Text Generation model, also known as a causal language model, can be trained on code from scratch to help the programmers in their repetitive coding tasks. One of the most popular open-source models for code generation is StarCoder, which can generate code in 80+ languages. You can try it here.
+
+Stories Generation
+A story generation model can receive an input like "Once upon a time" and proceed to create a story-like text based on those first words. You can try this application which contains a model trained on story generation, by MosaicML.
+
+If your generative model training data is different than your use case, you can train a causal language model from scratch. Learn how to do it in the free transformers course!
+
+
+Completion Generation Models
+A popular variant of Text Generation models predicts the next word given a bunch of words. Word by word a longer text is formed that results in for example:
+
+Given an incomplete sentence, complete it.
+Continue a story given the first sentences.
+Provided a code description, generate the code.
+The most popular models for this task are GPT-based models (such as GPT-2). These models are trained on data that has no labels, so you just need plain text to train your own model. You can train GPT models to generate a wide variety of documents, from code to stories.
+
+Text-to-Text Generation Models
+These models are trained to learn the mapping between a pair of texts (e.g. translation from one language to another). The most popular variants of these models are T5, T0 and BART. Text-to-Text models are trained with multi-tasking capabilities, they can accomplish a wide range of tasks, including summarization, translation, and text classification.
+Text-to-Text generation models have a separate pipeline called text2text-generation. This pipeline takes an input containing the sentence including the task and returns the output of the accomplished task.
+
+
+Would you like to learn more about the topic? Awesome! Here you can find some curated resources that you may find helpful!
+
+
+Token Classification
+Token classification is a natural language understanding task in which a label is assigned to some tokens in a text. Some popular token classification subtasks are Named Entity Recognition (NER) and Part-of-Speech (PoS) tagging. NER models could be trained to identify specific entities in a text, such as dates, individuals and places; and PoS tagging would identify, for example, which words in a text are verbs, nouns, and punctuation marks.
+About Token Classification
+Token Classification Model
+Use Cases
+Information Extraction from Invoices
+You can extract entities of interest from invoices automatically using Named Entity Recognition (NER) models. Invoices can be read with Optical Character Recognition models and the output can be used to do inference with NER models. In this way, important information such as date, company name, and other named entities can be extracted.
+
+Task Variants
+Named Entity Recognition (NER)
+NER is the task of recognizing named entities in a text. These entities can be the names of people, locations, or organizations. The task is formulated as labeling each token with a class for each named entity and a class named "0" for tokens that do not contain any entities. The input for this task is text and the output is the annotated text with named entities.
+
+
+You can use the Transformers library ner pipeline to infer with NER models.
+Part-of-Speech (PoS) Tagging
+In PoS tagging, the model recognizes parts of speech, such as nouns, pronouns, adjectives, or verbs, in a given text. The task is formulated as labeling each word with a part of the speech.
+
+
+Translation is the task of converting text from one language to another.
+
+
+You can find over a thousand Translation models on the Hub, but sometimes you might not find a model for the language pair you are interested in. When this happen, you can use a pretrained multilingual Translation model like mBART and further train it on your own data in a process called fine-tuning.
+
+Multilingual conversational agents. Translation models can be used to build conversational agents across different languages. This can be done in two ways.
+
+Translate the dataset to a new language. You can translate a dataset of intents (inputs) and responses to the target language. You can then train a new intent classification model with this new dataset. This allows you to proofread responses in the target language and have better control of the chatbot's outputs.
+Translate the input and output of the agent. You can use a Translation model in user inputs so that the chatbot can process it. You can then translate the output of the chatbot into the language of the user. This approach might be less reliable as the chatbot will generate responses that were not defined before.
+
+
+You can use the Transformers library with the translation_xx_to_yy pattern where xx is the source language code and yy is the target language code. The default model for the pipeline is t5-base which under the hood adds a task prefix indicating the task itself, e.g.
+If you’d like to use a specific model checkpoint that is from one specific language to another, you can also directly use the translation pipeline.
+
+
+Would you like to learn more about Translation? Great! Here you can find some curated resources that you may find helpful!
+
+
+
+Zero-shot text classification is a task in natural language processing where a model is trained on a set of labeled examples but is then able to classify new examples from previously unseen classes.
+
+
+
+Zero Shot Classification is the task of predicting a class that wasn't seen by the model during training. This method, which leverages a pre-trained language model, can be thought of as an instance of transfer learning which generally refers to using a model trained for one task in a different application than what it was originally trained for. This is particularly useful for situations where the amount of labeled data is small.
+
+In zero shot classification, we provide the model with a prompt and a sequence of text that describes what we want our model to do, in natural language. Zero-shot classification excludes any examples of the desired task being completed. This differs from single or few-shot classification, as these tasks include a single or a few examples of the selected task.
+
+Zero, single and few-shot classification seem to be an emergent feature of large language models. This feature seems to come about around model sizes of +100M parameters. The effectiveness of a model at a zero, single or few-shot task seems to scale with model size, meaning that larger models (models with more trainable parameters or layers) generally do better at this task.
+
+Here is an example of a zero-shot prompt for classifying the sentiment of a sequence of text:
+One great example of this task with a nice off-the-shelf model is available at the widget of this page, where the user can input a sequence of text and candidate labels to the model. This is a word level example of zero shot classification, more elaborate and lengthy generations are available with larger models. Testing these models out and getting a feel for prompt engineering is the best way to learn how to use them.
+
+
+Audio classification is the task of assigning a label or class to a given audio. It can be used for recognizing which command a user is giving or the emotion of a statement, as well as identifying a speaker.
+
+
+Command recognition or keyword spotting classifies utterances into a predefined set of commands. This is often done on-device for fast response time.
+
+As an example, using the Google Speech Commands dataset, given an input, a model can classify which of the following commands the user is typing:
+Speechbrain models can easily perform this task with just a couple of lines of code!
+
+Language Identification: Datasets such as VoxLingua107 allow anyone to train language identification models for up to 107 languages! This can be extremely useful as a preprocessing step for other systems. Here's an example modeltrained on VoxLingua107.
+
+
+Emotion recognition is self explanatory. In addition to trying the widgets, you can use the Inference API to perform audio classification. Here is a simple example that uses a HuBERT model fine-tuned for this task.
+
+
+Audio-to-Audio is a family of tasks in which the input is an audio and the output is one or multiple generated audios. Some example tasks are speech enhancement and source separation.
+
+
+Speech Enhancement is a bit self explanatory. It improves (or enhances) the quality of an audio by removing noise. There are multiple libraries to solve this task, such as Speechbrain, Asteroid and ESPNet. Here is a simple example using Speechbrain
+
+Audio Source Separation allows you to isolate different sounds from individual sources. For example, if you have an audio file with multiple people speaking, you can get an audio file for each of them. You can then use an Automatic Speech Recognition system to extract the text from each of these sources as an initial step for your system!
+
+Audio-to-Audio can also be used to remove noise from audio files: you get one audio for the person speaking and another audio for the noise. This can also be useful when you have multi-person audio with some noise: yyou can get one audio for each person and then one audio for the noise.
+
+Training a model for your own data: If you want to learn how to train models for the Audio-to-Audio task, we recommend the following tutorials:
+
+
+You can use the Transformers library zero-shot-classification pipeline to infer with zero shot text classification models.
+
+
+Automatic Speech Recognition (ASR), also known as Speech to Text (STT), is the task of transcribing a given audio to text. It has many applications, such as voice user interfaces.
+
+
+Virtual Speech Assistants: Many edge devices have an embedded virtual assistant to interact with the end users better. These assistances rely on ASR models to recognize different voice commands to perform various tasks. For instance, you can ask your phone for dialing a phone number, ask a general question, or schedule a meeting.
+
+Caption Generation: A caption generation model takes audio as input from sources to generate automatic captions through transcription, for live-streamed or recorded videos. This can help with content accessibility.
+
+For example, an audience watching a video that includes a non-native language, can rely on captions to interpret the content. It can also help with information retention at online-classes environments improving knowledge assimilation while reading and taking notes faster.
+
+
+Multilingual ASR models can convert audio inputs with multiple languages into transcripts. Some multilingual ASR models include language identification blocks to improve the performance.
+
+The use of Multilingual ASR has become popular, the idea of maintaining just a single model for all language can simplify the production pipeline. Take a look at this model to get an idea on how 56 languages can be processed by a single model.
+
+
+We have some great news! You can do fine-tuning (transfer learning) to train a well-performing model without requiring as much data. Pretrained models such as Wav2Vec2 and HuBERT exist.
+
+
+Text-to-Speech (TTS) is the task of generating natural sounding speech given text input. TTS models can be extended to have a single model that generates speech for multiple speakers and multiple languages.
+
+About Text-to-Speech: Text-to-Speech (TTS) models can be used in any speech-enabled application that requires converting text to speech.
+
+Voice Assistants: TTS models are used to create voice assistants on smart devices. These models are a better alternative compared to concatenative methods where the assistant is built by recording sounds and mapping them, since the outputs in TTS models contain elements in natural speech such as emphasis.
+
+Announcement Systems: TTS models are widely used in airport and public transportation announcement systems to convert the announcement of a given text into speech.
+
+
+Tabular classification is the task of classifying a target category (a group) based on set of attributes.
+
+
+
+Tabular classification is the task of assigning a label or class given a limited number of attributes. For example, the input can be data related to a customer (balance of the customer, the time being a customer, or more) and the output can be whether the customer will churn from the service or not. There are three types of categorical variables:
+
+Binary variables: Variables that can take two values, like yes or no, open or closed. The task of predicting binary variables is called binary classification.
+Ordinal variables: Variables with a ranking relationship, e.g., good, insignificant, and bad product reviews. The task of predicting ordinal variables is called ordinal classification.
+Nominal variables: Variables with no ranking relationship among them, e.g., predicting an animal from their weight and height, where categories are cat, dog, or bird. The task of predicting nominal variables is called multinomial classification.
+
+Tabular classification models can be used in detecting fraudulent credit card transactions, where the features could be the amount of the transaction and the account balance, and the target to predict could be whether the transaction is fraudulent or not. This is an example of binary classification.
+
+
+Tabular classification models can be used in predicting customer churn in telecommunication. An example dataset for the task is hosted here.
+
+Model Hosting and Inference: You can use skops for model hosting and inference on the Hugging Face Hub. This library is built to improve production workflows of various libraries that are used to train tabular models, including sklearn and xgboost. Using skops you can:
+
+Easily use inference API, Build neat UIs with one line of code, Programmatically create model cards, Securely serialize your scikit-learn model. 
+
+
+Tabular Regression: Tabular regression is the task of predicting a numerical value given a set of attributes.
+
+About Tabular Regression: Tabular regression is the task of predicting a numerical value given a set of attributes/features. Tabular meaning that data is stored in a table (like an excel sheet), and each sample is contained in its own row. The features used to predict our target can be both numerical and categorical.
+
+However, including categorical features often requires additional preprocessing/feature engineering (a few models do accept categorical features directly, like CatBoost). An example of tabular regression would be predicting the weight of a fish given its' species and length.
+
+
+Sales Prediction: a Use Case for Predicting a Continuous Target Variable
+Here the objective is to predict a continuous variable based on a set of input variable(s). For example, predicting sales of an ice cream shop based on temperature of weather and duration of hours shop was open. Here we can build a regression model with temperature and duration of hours as input variable and sales as target variable.
+
+Missing Value Imputation for Other Tabular Tasks. In real-world applications, due to human error or other reasons, some of the input values can be missing or there might not be any recorded data. Considering the example above, say the shopkeeper's watch was broken and they forgot to calculate the hours for which the shop was open.
+
+This will lead to a missing value in their dataset. In this case, missing values could be replaced it with zero, or average hours for which the shop is kept open. Another approach we can try is to use temperature and sales variables to predict the hours variable here.
+
+
+A simple regression model can be created using sklearn as follows:
+Model Hosting and Inference. You can use skops for model hosting and inference on the Hugging Face Hub. This library is built to improve production workflows of various libraries that are used to train tabular models, including sklearn and xgboost. Using skops you can:
+
+Easily use inference API, Build neat UIs with one line of code, Programmatically create model cards, Securely serialize your models. (See limitations of using pickle here.)
+
+
+
+Document Question Answering (also known as Document Visual Question Answering) is the task of answering questions on document images. Document question answering models take a (document, question) pair as input and return an answer in natural language. Models usually rely on multi-modal features, combining text, position of words (bounding-boxes) and image.
+
+Document Question Answering models can be used to answer natural language questions about documents. Typically, document QA models consider textual, layout and potentially visual information. This is useful when the question requires some understanding of the visual aspects of the document.
+Nevertheless, certain document QA models can work without document images. Hence the task is not limited to visually-rich documents and allows users to ask questions based on spreadsheets, text PDFs, etc!
+
+Document Parsing: One of the most popular use cases of document question answering models is the parsing of structured documents. For example, you can extract the name, address, and other information from a form. You can also use the model to extract information from a table, or even a resume.
+
+Invoice Information Extraction: Another very popular use case is invoice information extraction. For example, you can extract the invoice number, the invoice date, the total amount, the VAT number, and the invoice recipient.
+
+
+Transformers library using the document-question-answering pipeline. If no model checkpoint is given, the pipeline will be initialized with impira/layoutlm-document-qa. This pipeline takes question(s) and document(s) as input, and returns the answer.
+Note that the question answering task solved here is extractive: the model extracts the answer from a context (the document).
+
+
+Feature extraction refers to the process of transforming raw data into numerical features that can be processed while preserving the information in the original dataset.
+
+
+Feature extraction is the task of building features intended to be informative from a given dataset, facilitating the subsequent learning and generalization steps in various domains of machine learning.
+
+
+Feature extraction can be used to do transfer learning in natural language processing, computer vision and audio models.
+
+
+Image to text models output a text from a given image. Image captioning or optical character recognition can be considered as the most common applications of image to text.
+
+
+Image Captioning is the process of generating textual description of an image. This can help the visually impaired people to understand what's happening in their surroundings.
+
+Optical Character Recognition (OCR): OCR models convert the text present in an image, e.g. a scanned document, to text.
+
+
+Pix2Struct is a state-of-the-art model built and released by Google AI. The model itself has to be trained on a downstream task to be used. These tasks include, captioning UI components, images including text, visual questioning infographics, charts, scientific diagrams and more. You can find these models on recommended models of this page.
+
+
+You can use the Transformers library's image-to-text pipeline to generate caption for the Image input.
+
+
+Generates images from input text. These models can be used to generate and modify images based on text prompts.
+
+
+Businesses can generate data for their their use cases by inputting text and getting image outputs.
+
+Immersive Conversational Chatbots: Chatbots can be made more immersive if they provide contextual images based on the input provided by the user.
+
+Creative Ideas for Fashion Industry: Different patterns can be generated to obtain unique pieces of fashion. Text-to-image models make creations easier for designers to conceptualize their design before actually implementing it.
+
+Architecture Industry: Architects can utilise the models to construct an environment based out on the requirements of the floor plan. This can also include the furniture that has to be placed in that environment.
+
+
+Visual Question Answering is the task of answering open-ended questions based on an image. They output natural language responses to natural language questions.
+
+VQA models can be used to improve experiences at museums by allowing observers to directly ask questions they interested in.
+
+
+Visual question answering models can be used to retrieve images with specific characteristics. For example, the user can ask "Is there a dog?" to find all images with dogs from a set of images.
+
+
+Specific snippets/timestamps of a video can be retrieved based on search queries. For example, the user can ask "At which part of the video does the guitar appear?" and get a specific timestamp range from the whole video.
+
+
+Video Question Answering aims to answer questions asked about the content of a video.
+
+
+Reinforcement learning is the computational approach of learning from action by interacting with an environment through trial and error and receiving rewards (negative or positive) as feedback
+
+
+About Reinforcement Learning: Reinforcement learning is known for its application to video games. Since the games provide a safe environment for the agent to be trained in the sense that it is perfectly defined and controllable, this makes them perfect candidates for experimentation and will help a lot to learn about the capabilities and limitations of various RL algorithms.
+
+There are many videos on the Internet where a game-playing reinforcement learning agent starts with a terrible gaming strategy due to random initialization of its settings, but over iterations, the agent gets better and better with each episode of the training.
+
+This paper mainly investigates the performance of RL in popular games such as Minecraft or Dota2. The agent's performance can exceed a human player's, although there are still some challenges mainly related to efficiency in constructing the gaming policy of the reinforcement learning agent.
+
+
+Reinforcement learning is the science to train computers to make decisions and thus has a novel use in trading and finance. All time-series models are helpful in predicting prices, volume and future sales of a product or a stock.
+
+Reinforcement based automated agents can decide to sell, buy or hold a stock. It shifts the impact of AI in this field to real time decision making rather than just prediction of prices. The glossary given below will clear some parameters to as to how we can train a model to take these decisions.
+
+
+Model Based RL: In model based reinforcement learning techniques intend to create a model of the environment, learn the state transition probabilities and the reward function, to find the optimal action. Some typical examples for model based reinforcement learning algorithms are dynamic programming, value iteration and policy iteration.
+
+
+In model free reinforcement learning, agent decides on optimal actions based on its experience in the environment and the reward it collects from it. This is one of the most commonly used algorithms beneficial in complex environments, where modeling of state transition probabilities and reward functions are difficult.
+
+Some of the examples of model free reinforcement learning are SARSA, Q-Learning, actor-critic and proximal policy optimization (PPO) algorithms.
+
+
+Environment: The part of the world the agent interacts, comprising everything outside the agent.
+
+Observations and states are the information our agent gets from the environment. In the case of a video game, it can be a frame (a screenshot). In the case of the trading agent, it can be the value of a certain stock.
+
+State: Complete description of the state of the environment with no hidden information.
+
+Observation: Partial description of the state, in a partially observed environment.
+
+Action: The decision taken by the agent.
+
+Reward: The numerical feedback signal that the agent receives from the environment based on the chosen action.
+
+Return: Cumulative Reward. In the simplest case, the return is the sum of the rewards.
+
+Episode: For some applications there is a natural notion of final time step. In this case, there is a starting point and an ending point (a terminal state). This creates an episode: a list of States, Actions, Rewards, and new States. For instance, think about Chess: an episode begins at the initial board position and ends when the game is over.
+
+Policy: The Policy is the brain of the Agent, it’s the function that tells what action to take given the state. So it defines the agent’s behavior at a given time. Reinforcement learning methods specify how the agent’s policy is changed as a result of its experience.
+
+Inference in reinforcement learning differs from other modalities, in which there's a model and test data. In reinforcement learning, once you have trained an agent in an environment, you try to run the trained agent for additional steps to get the average reward.
+
+A typical training cycle consists of gathering experience from the environment, training the agent, and running the agent on a test environment to obtain average reward. Below there's a snippet on how you can interact with the environment using the gymnasium library, train an agent using stable-baselines3, evalute the agent on test environment and infer actions from the trained agent.
+
