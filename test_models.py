@@ -22,6 +22,14 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
 
+@dataclass
+class TrainerConfig:
+    epochs: int = 1
+    batch_size: int = 4
+    learning_rate: float = 1e-4
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+
+
 class AutoGPTModel:
 
     MODEL_MAP = {
@@ -68,7 +76,7 @@ class AutoGPTModel:
         config_kwargs.update({
             "block_size": 1024,
             "vocab_size": vocab_sz,
-            "n_layer": 8,
+            "n_layer": 12,
             "n_head": 12,
             "n_embd": 768,
             "flash_attn": True,
@@ -155,14 +163,6 @@ class TextDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data_idx[idx]
-
-
-@dataclass
-class TrainerConfig:
-    epochs: int = 5
-    batch_size: int = 4
-    learning_rate: float = 1e-4
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class Trainer:
@@ -282,12 +282,12 @@ if __name__ == "__main__":
     print("Model type:", type(model))
     print("Tokenizer type:", type(tokenizer))
 
-    config = TrainerConfig(epochs=5, batch_size=4)
-    dataset = TextDataset("dataset.txt", tokenizer, max_seq_length=model.config.block_size)
+    config = TrainerConfig(epochs=3, batch_size=4)
+    dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
     trainer = Trainer(model, dataset, config)
     trainer.train()
 
-    input_ids = tokenizer("Modeling", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
                 input_ids=input_ids.to(config.device),
                 max_new_tokens=3,
