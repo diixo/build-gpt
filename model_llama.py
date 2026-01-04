@@ -25,6 +25,8 @@ class GPTConfig:
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
     use_rope: bool = True       # whether to use RoPE or not
 
+    mlp_bias: bool = False
+
 
 class RMSNorm(nn.Module):
     """
@@ -189,11 +191,11 @@ class MLP(nn.Module):
         hidden_dim = 4 * config.n_embd
 
         # SWiGLU: first is activation layer, second is gate layer
-        self.c_fc1 = nn.Linear(config.n_embd, hidden_dim, bias=False)
-        self.c_fc2 = nn.Linear(config.n_embd, hidden_dim, bias=False)
+        self.c_fc1 = nn.Linear(config.n_embd, hidden_dim, bias=config.mlp_bias)
+        self.c_fc2 = nn.Linear(config.n_embd, hidden_dim, bias=config.mlp_bias)
 
         self.silu = nn.SiLU()
-        self.c_proj = nn.Linear(hidden_dim, config.n_embd, bias=False)
+        self.c_proj = nn.Linear(hidden_dim, config.n_embd, bias=config.mlp_bias)
         self.c_proj.NANOGPT_SCALE_INIT = 1
 
 
