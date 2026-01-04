@@ -135,51 +135,15 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
 
 class TextDataset(Dataset):
 
-    def __init__(self, file_path, tokenizer, max_seq_length=1024):
+    def __init__(self, file_path, tokenizer, max_seq_length=1000):
+
         texts = []
         with open(file_path, "r", encoding="utf-8") as f:
             texts = [line.strip() for line in f if line.strip()]
 
         # tokenize each line separately and store the input_ids, with only truncation, without padding
         self.data_idx = [
-            tokenizer(t.strip(), truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
-            )["input_ids"].squeeze(0)   # sizes: [seq_len <= max_seq_length]
-            for t in texts
-        ]
-        self.max_seq_length = max_seq_length
-
-
-    def __len__(self):
-        return len(self.data_idx)
-
-    def __getitem__(self, idx):
-        return self.data_idx[idx]
-
-class JsonlDataset(Dataset):
-
-    def __init__(self, file_path, tokenizer, max_seq_length=1024):
-        texts = []
-
-        if isinstance(file_path, str) and os.path.isfile(file_path):
-            with Path(file_path).open("r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    obj = json.loads(line)
-                    val = obj.get("example", None)
-                    definition = obj.get("definition", None)
-
-                    if val is None or val == "":
-                        continue
-
-                    if definition is not None:
-                        val = definition + ": " + val
-                    texts.append(val)
-
-        # tokenize each line separately and store the input_ids, with only truncation, without padding
-        self.data_idx = [
-            tokenizer(t.strip(), truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
+            tokenizer(t, truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
             )["input_ids"].squeeze(0)   # sizes: [seq_len <= max_seq_length]
             for t in texts
         ]
