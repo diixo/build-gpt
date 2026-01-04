@@ -160,7 +160,7 @@ class TextDataset(Dataset):
 @dataclass
 class TrainerConfig:
     epochs: int = 5
-    batch_size: int = 8
+    batch_size: int = 4
     learning_rate: float = 1e-4
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -287,10 +287,10 @@ if __name__ == "__main__":
     trainer = Trainer(model, dataset, config)
     trainer.train()
 
-    input_ids = tokenizer("Model", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    input_ids = tokenizer("Modeling", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
                 input_ids=input_ids.to(config.device),
-                max_new_tokens=5,
+                max_new_tokens=3,
                 do_sample=True,
                 top_k=10,
                 eos_token_id=tokenizer.eos_token_id,
