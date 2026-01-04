@@ -51,3 +51,38 @@ def plot_loss(losses: list):
     plt.legend()
     plt.show()
 
+
+def create_hf_llama():
+
+    from transformers import LlamaConfig, LlamaForCausalLM
+
+    # "LLaMA-style" (RMSNorm + RoPE), by size is GPT-2 small:
+    # n_layer=12, n_head=12, hidden=768, mlp=3072
+    config = LlamaConfig(
+        vocab_size=50257,           # GPT-2
+        hidden_size=768,            # n_embd
+        intermediate_size=3072,     # usually 4 * hidden
+        num_hidden_layers=12,       # n_layer
+        num_attention_heads=12,     # n_head
+        num_key_value_heads=12,     # = n_head -> regular MHA (without GQA)
+        max_position_embeddings=1024,  # context-size (GPT-2 small = 1024)
+
+        # typical llama-params
+        rms_norm_eps=1e-6,
+        rope_theta=10000.0,
+        attention_bias=True,
+        mlp_bias=False,
+        tie_word_embeddings=True,
+
+        # llama specified bos/eos; use default params
+        pad_token_id=0,
+        bos_token_id=1,
+        eos_token_id=2,
+    )
+
+    model = LlamaForCausalLM(config)
+    params = sum(p.numel() for p in model.parameters())
+    print("hf_llama.params:", params)
+    # print("dtype:", next(model.parameters()).dtype)
+    # print("device:", next(model.parameters()).device)
+    return model

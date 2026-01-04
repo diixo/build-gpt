@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
 from transformers import set_seed
+from utils import create_hf_llama
 
 
 SEED = 42
@@ -301,3 +302,4 @@ if __name__ == "__main__":
     print(f"Total model.params: {_fmt(model.get_num_params())}")
     print("Generated text:", output_text)
 
+    hf_llama_model = create_hf_llama()
