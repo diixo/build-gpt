@@ -44,10 +44,10 @@ def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
 def plot_loss(losses: list):
     import matplotlib.pyplot as plt
 
-    plt.plot(losses, label="Training Loss")
-    plt.xlabel("Epoch")
+    plt.plot(list(range(len(losses))), losses, label="Training Loss")
+    plt.xlabel("Steps")
     plt.ylabel("Loss")
-    plt.title("Training Loss over Epoch")
+    plt.title("Training Loss over Steps")
     plt.legend()
     plt.show()
 

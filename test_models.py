@@ -12,8 +12,10 @@ from tqdm import tqdm
 
 from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
 from transformers import set_seed
-from utils import create_hf_llama
+from utils import create_hf_llama, plot_loss
 
+
+MAX_LEN = 1024
 
 SEED = 42
 set_seed(SEED)
@@ -29,6 +31,7 @@ class TrainerConfig:
     batch_size: int = 4
     learning_rate: float = 1e-4
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    grad_accum_steps: int = 1
 
 
 class AutoGPTModel:
@@ -144,7 +147,7 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
 
 class TextDataset(Dataset):
 
-    def __init__(self, file_path, tokenizer, max_seq_length=1000):
+    def __init__(self, file_path, tokenizer, max_seq_length=MAX_LEN-1):
 
         texts = []
         with open(file_path, "r", encoding="utf-8") as f:
@@ -190,51 +193,75 @@ class Trainer:
 
     def train(self):
 
-        grad_accum_steps = min(4, len(self.loader))
+        # 1) Gradient accumulation should be an explicit hyperparameter
+        grad_accum_steps = int(getattr(self.config, "grad_accum_steps", 1))
+        grad_accum_steps = max(1, grad_accum_steps)
+        # if epoch has fewer batches than accum steps — clamp
+        grad_accum_steps = min(grad_accum_steps, max(1, len(self.loader)))
 
-        self.losses = []
+        self.losses = []          # token-weighted epoch losses (good for PPL)
+        self.step_losses = []     # per-batch raw loss (for plotting)
 
         self.model.train()
         for epoch in range(self.config.epochs):
             pbar = tqdm(self.loader, desc=f"Epoch {epoch + 1}/{self.config.epochs}")
-            total_epoch_loss = 0.0
-            smoothed_loss = 0.0
+
+            total_loss_sum = 0.0   # sum of (mean_loss * num_valid_tokens)
+            total_tokens = 0       # number of non-ignored tokens
+            smoothed_loss = None
 
             self.optimizer.zero_grad(set_to_none=True)
 
             for step, (x, y) in enumerate(pbar):
-                x, y = x.to(self.config.device), y.to(self.config.device)
+                # NOTE: your collate already .to(device), so these .to() are redundant but harmless
+                #x = x.to(self.config.device, non_blocking=True)
+                #y = y.to(self.config.device, non_blocking=True)
+
 
                 # Forward pass
                 raw_loss = self.model(x, y).loss
+                # ---- logging helpers ----
+                raw = float(raw_loss.detach().cpu().item())
+                self.step_losses.append(raw)
 
-                # Loss normalization for gradient accumulation
+                # token-weighted stats for correct epoch avg loss / PPL
+                with torch.no_grad():
+                    ntok = int((y != -100).sum().item())
+                total_loss_sum += raw * ntok
+                total_tokens += ntok
+
+                # ---- backward (accumulation) ----
                 loss = raw_loss / grad_accum_steps
                 loss.backward()
 
                 # Optimizer step
-                if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(self.loader):
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                if ((step + 1) % grad_accum_steps == 0) or ((step + 1) == len(self.loader)):
+                    if getattr(self.config, "max_grad_norm", None) is not None:
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), float(self.config.max_grad_norm))
                     self.optimizer.step()
                     self.optimizer.zero_grad(set_to_none=True)
 
-                # Updating metrics
-                iter_loss = raw_loss.item()
-                total_epoch_loss += iter_loss
+                # Progress bar smoothing
+                if smoothed_loss is None:
+                    smoothed_loss = raw
+                else:
+                    smoothed_loss = 0.9 * smoothed_loss + 0.1 * raw
+                pbar.set_postfix(loss=f"{smoothed_loss:.4f}", accum=str(grad_accum_steps))
 
-                # Exponential smoothing for progress-bar
-                smoothed_loss = 0.9 * smoothed_loss + 0.1 * iter_loss if step > 0 else iter_loss
-                pbar.set_postfix(loss=f"{smoothed_loss:.4f}")
+            # ---- epoch metrics (token-weighted, correct for variable lengths) ----
+            if total_tokens == 0:
+                avg_loss = float("nan")
+                ppl = float("nan")
+            else:
+                avg_loss = total_loss_sum / total_tokens
+                # # Calculate Perplexity, avoid overflow for huge losses
+                ppl = math.exp(avg_loss) if avg_loss < 50 else float("inf")
 
-            # Statistics at the end of the epoch
-            avg_loss = total_epoch_loss / len(self.loader)
             self.losses.append(avg_loss)
-
-            # Calculate Perplexity
-            perplexity = math.exp(avg_loss) if avg_loss < 20 else float('inf')
-            print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={perplexity:.2f}")
+            print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={ppl:.2f}")
 
         print("✅ Training completed.")
+        return self.step_losses
 
 
 def test_collate_fn(pad_token_id, eos_token_id, ignore_index = -100):
@@ -273,7 +300,7 @@ def _fmt(n: int) -> str:
 
 if __name__ == "__main__":
 
-    #test_collate_fn(pad_token_id=tokenizer.eos_token_id, eos_token_id=tokenizer.eos_token_id)
+    #test_collate_fn(pad_token_id=0, eos_token_id=0, ignore_index=-100)
 
     #########################################################################################
 
@@ -286,7 +313,7 @@ if __name__ == "__main__":
     config = TrainerConfig(epochs=3, batch_size=4)
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
     trainer = Trainer(model, dataset, config)
-    trainer.train()
+    step_losses = trainer.train()
 
     input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
@@ -303,3 +330,4 @@ if __name__ == "__main__":
     print("Generated text:", output_text)
 
     hf_llama_model = create_hf_llama()
+    plot_loss(step_losses)
