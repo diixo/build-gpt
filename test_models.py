@@ -153,6 +153,8 @@ class TextDataset(Dataset):
         with open(file_path, "r", encoding="utf-8") as f:
             texts = [line.strip() for line in f if line.strip()]
 
+        print(f"TextDataset::loaded items.sz={len(texts)}")
+
         # tokenize each line separately and store the input_ids, with only truncation, without padding
         self.data_idx = [
             tokenizer(t, truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
@@ -275,7 +277,7 @@ class Trainer:
                 else:
                     smoothed_loss = 0.9 * smoothed_loss + 0.1 * raw
 
-            pbar.set_postfix(loss=f"{smoothed_loss:.4f}", accum_steps=str(grad_accum_steps))
+                pbar.set_postfix(loss=f"{smoothed_loss:.4f}", accum_steps=str(grad_accum_steps))
 
             # ---- epoch metrics (token-weighted, correct for variable lengths) ----
             if total_tokens == 0:
@@ -333,17 +335,17 @@ if __name__ == "__main__":
 
     #########################################################################################
 
-    model, tokenizer = AutoGPTModel.from_config("gpt-llama")
-    #model, tokenizer = AutoGPTModel.from_config("gpt")
+    #model, tokenizer = AutoGPTModel.from_config("gpt-llama")
+    model, tokenizer = AutoGPTModel.from_config("gpt")
 
     # Checking the types:
     print("Model_type:", type(model))
     print("Tokenizer_type:", type(tokenizer))
 
-    config = TrainerConfig(epochs=3, batch_size=4, grad_accum_steps=4)
+    config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
-    # config = TrainerConfig(epochs=1, batch_size=32, grad_accum_steps=4)
-    # dataset = JsonlDataset("data/dictionary.cambridge.org-505600.jsonl", tokenizer, max_seq_length=model.config.block_size)
+    #config = TrainerConfig(epochs=1, batch_size=32, grad_accum_steps=2)
+    #dataset = JsonlDataset("data/dictionary.cambridge.org-dataset.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
     trainer = Trainer(model, dataset, config)
     step_losses = trainer.train()
@@ -351,7 +353,7 @@ if __name__ == "__main__":
     input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
                 input_ids=input_ids.to(config.device),
-                max_new_tokens=3,
+                max_new_tokens=5,
                 do_sample=True,
                 top_k=10,
                 eos_token_id=tokenizer.eos_token_id,
@@ -359,9 +361,9 @@ if __name__ == "__main__":
             )[0]
     output_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
 
-    print(f"Total model.params: {_fmt(model.get_num_params())}")
+    print(f"Total model.params: {_fmt(model.get_num_params())}, steps: {len(step_losses)}, final loss: {step_losses[-1]:.4f}")
     print("Generated text:", output_text)
 
     plot_loss(step_losses)
 
-    hf_llama_model = create_hf_llama()
+    #hf_llama_model = create_hf_llama()
