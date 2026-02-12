@@ -45,6 +45,6 @@ with path.open("r", encoding="utf-8") as f:
             max_text = text
 
 print(f"Records used: {n}, bad json lines: {bad}")
-print(f"MAX tokens: {max_len}, id={max_id}, total_tokens={total_len}")
+print(f"MAX_tokens: {max_len}, line_id={max_id}, total_tokens={total_len}")
 
 #print("Winner preview:", (max_text[:300] + "…") if max_text and len(max_text) > 300 else max_text)
