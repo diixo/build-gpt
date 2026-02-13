@@ -12,10 +12,11 @@ from tqdm import tqdm
 
 from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
 from transformers import set_seed
-from utils import create_hf_llama, plot_loss
+from utils import create_hf_llama, plot_loss, save_trained_model
 
 
 MAX_LEN = 1024
+SAVE_DIRECTORY = "train_product"
 
 SEED = 42
 set_seed(SEED)
@@ -84,6 +85,7 @@ class AutoGPTModel:
             "n_head": 12,
             "n_embd": 768,
             "flash_attn": True,
+            "model_type": model_type,
         })
 
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
@@ -350,17 +352,17 @@ if __name__ == "__main__":
     print("Model_type:", type(model))
     print("Tokenizer_type:", type(tokenizer))
 
-    config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
+    train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
     #config = TrainerConfig(epochs=1, batch_size=32, grad_accum_steps=2)
     #dataset = JsonlDataset("data/dictionary.cambridge.org-505600.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
-    trainer = Trainer(model, dataset, config)
+    trainer = Trainer(model, dataset, train_config)
     step_losses = trainer.train()
 
     input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
-                input_ids=input_ids.to(config.device),
+                input_ids=input_ids.to(train_config.device),
                 max_new_tokens=5,
                 do_sample=True,
                 top_k=10,
@@ -371,6 +373,8 @@ if __name__ == "__main__":
 
     print(f"Total model.params: {_fmt(model.get_num_params())}, steps: {len(step_losses)}, final loss: {step_losses[-1]:.4f}")
     print("Generated text:", output_text)
+
+    #save_trained_model(SAVE_DIRECTORY, model, train_config)
 
     plot_loss(step_losses)
 

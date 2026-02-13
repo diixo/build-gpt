@@ -1,6 +1,7 @@
 
 import torch
 from torch.nn import functional as F
+import os, torch
 
 
 def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
@@ -86,3 +87,21 @@ def create_hf_llama():
     # print("dtype:", next(model.parameters()).dtype)
     # print("device:", next(model.parameters()).device)
     return model
+
+
+def save_trained_model(model_dir, model, train_config, **extra):
+
+    os.makedirs(model_dir, exist_ok=True)
+
+    ckpt = {
+        "model": model.state_dict(),
+        "config": (model.config if isinstance(model.config, dict) else getattr(model.config, "__dict__", None)),
+        "train_config": (train_config if isinstance(train_config, dict) else getattr(train_config, "__dict__", None)),
+        "extra": extra,
+    }
+    # if optimizer is not None:
+    #     ckpt["optimizer"] = optimizer.state_dict()
+
+    checkpoint_path = os.path.join(model_dir, f"model_{model.config.model_type}-{train_config.epochs}-{train_config.batch_size}-{train_config.grad_accum_steps}.pt")
+    torch.save(ckpt, checkpoint_path)
+

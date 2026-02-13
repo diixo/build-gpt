@@ -20,6 +20,7 @@ class GPTConfig:
     n_head: int = 12        # number of heads
     n_embd: int = 768       # embedding dimension
     flash_attn: bool = True # whether to use flash attention (scaled_dot_product_attention)
+    model_type: str = ""    # model type
 
     # RoPE params:
     rope_base: float = 10000.0  # standard base (θ). For learning on length=2048 may use 10000.0
