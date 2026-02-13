@@ -4,7 +4,8 @@ from pathlib import Path
 from transformers import GPT2TokenizerFast
 
 path = Path("data/dictionary.cambridge.org-505600.jsonl")
-tok = GPT2TokenizerFast.from_pretrained("gpt2")
+tok = GPT2TokenizerFast.from_pretrained("data/gpt2") # tokens=10_069_678
+#tok = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True) # tokens=9_962_792
 
 max_len = -1
 total_len = 0
@@ -30,6 +31,7 @@ with path.open("r", encoding="utf-8") as f:
             obj = json.loads(line)
         except Exception:
             bad += 1
+            print(f"Bad line at {i}: {line[:32]}…")
             continue
 
         text = obj.get("example")
