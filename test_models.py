@@ -230,7 +230,7 @@ class Trainer:
         grad_accum_steps = min(grad_accum_steps, max(1, len(self.loader)))
 
         self.losses = []          # token-weighted epoch losses (good for PPL)
-        self.step_losses = []     # per-batch raw loss (for plotting)
+        self.step_losses = []     # avg per-window accumulation raw loss (for plotting)
 
         self.model.train()
         for epoch in range(self.config.epochs):
@@ -238,9 +238,11 @@ class Trainer:
 
             total_loss_sum = 0.0   # sum of (mean_loss * num_valid_tokens)
             total_tokens = 0       # number of non-ignored tokens
-            smoothed_loss = None
+            first_loss = None
 
             self.optimizer.zero_grad(set_to_none=True)
+
+            accum_raw_sum = 0.0
 
             for step, (x, y) in enumerate(pbar):
                 # NOTE: your collate already .to(device), so these .to() are redundant but harmless
@@ -252,7 +254,7 @@ class Trainer:
                 raw_loss = self.model(x, y).loss
                 # ---- logging helpers ----
                 raw = float(raw_loss.detach().cpu().item())
-                self.step_losses.append(raw)
+                accum_raw_sum += raw
 
                 # token-weighted stats for correct epoch avg loss / PPL
                 with torch.no_grad():
@@ -264,6 +266,12 @@ class Trainer:
                 loss = raw_loss / grad_accum_steps
                 loss.backward()
 
+                # Progress bar smoothing
+                if first_loss is None:
+                    first_loss = raw
+                    pbar.set_postfix(loss=f"{first_loss:.4f}", accum_steps=str(grad_accum_steps))
+
+
                 # Optimizer step
                 if ((step + 1) % grad_accum_steps == 0) or ((step + 1) == len(self.loader)):
                     if getattr(self.config, "max_grad_norm", None) is not None:
@@ -271,13 +279,13 @@ class Trainer:
                     self.optimizer.step()
                     self.optimizer.zero_grad(set_to_none=True)
 
-                # Progress bar smoothing
-                if smoothed_loss is None:
-                    smoothed_loss = raw
-                else:
-                    smoothed_loss = 0.9 * smoothed_loss + 0.1 * raw
+                    # calculate the average raw loss for current accumulation window
+                    step_avg_loss = accum_raw_sum / grad_accum_steps
+                    accum_raw_sum = 0.0
+                    self.step_losses.append(step_avg_loss)
 
-                pbar.set_postfix(loss=f"{smoothed_loss:.4f}", accum_steps=str(grad_accum_steps))
+                    pbar.set_postfix(loss=f"{step_avg_loss:.4f}", accum_steps=str(grad_accum_steps))
+
 
             # ---- epoch metrics (token-weighted, correct for variable lengths) ----
             if total_tokens == 0:
@@ -345,7 +353,7 @@ if __name__ == "__main__":
     config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
     dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
     #config = TrainerConfig(epochs=1, batch_size=32, grad_accum_steps=2)
-    #dataset = JsonlDataset("data/dictionary.cambridge.org-dataset.jsonl", tokenizer, max_seq_length=model.config.block_size)
+    #dataset = JsonlDataset("data/dictionary.cambridge.org-505600.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
     trainer = Trainer(model, dataset, config)
     step_losses = trainer.train()
