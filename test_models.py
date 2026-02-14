@@ -384,7 +384,7 @@ if __name__ == "__main__":
 
 
     if USE_TEST:
-        train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
+        train_config = TrainerConfig(epochs=15, batch_size=4, grad_accum_steps=2)
     else:
         train_config = TrainerConfig(epochs=20, batch_size=40, grad_accum_steps=1)
 
