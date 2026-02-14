@@ -296,15 +296,15 @@ class Trainer:
 
             # ---- epoch metrics (token-weighted, correct for variable lengths) ----
             if total_tokens == 0:
-                avg_loss = float("nan")
+                epoch_avg_loss = float("nan")
                 ppl = float("nan")
             else:
-                avg_loss = total_loss_sum / total_tokens
+                epoch_avg_loss = total_loss_sum / total_tokens
                 # # Calculate Perplexity, avoid overflow for huge losses
-                ppl = math.exp(avg_loss) if avg_loss < 50 else float("inf")
+                ppl = math.exp(epoch_avg_loss) if epoch_avg_loss < 50 else float("inf")
 
-            self.losses.append(avg_loss)
-            print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={ppl:.2f}")
+            self.losses.append(epoch_avg_loss)
+            print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.2f}")
 
         print("✅ Training completed,",
             f"params: {_fmt(self.model.get_num_params())}, steps: {len(self.step_losses)}, final_loss: {self.step_losses[-1]:.4f}")
