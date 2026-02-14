@@ -367,7 +367,7 @@ def load_pretrained_model(model_type: str, file_path: str, default_tokenizer_typ
 
     # get the model class
     model_cls = AutoGPTModel.MODEL_MAP[model_type]
-    model = model_cls(**config)
+    model = GPT(**config) if isinstance(config, dict) else GPT(config)
     model.load_state_dict(ckpt['model'])
 
     return model, tokenizer

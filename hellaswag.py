@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
     config = ckpt['config']
 
-    model = GPT(config)
+    model = GPT(**config) if isinstance(config, dict) else GPT(config)
 
     model.load_state_dict(ckpt['model'])
     model.to(device)
