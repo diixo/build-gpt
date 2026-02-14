@@ -89,7 +89,18 @@ def create_hf_llama():
     return model
 
 
-def save_trained_model(model_dir, model, train_config, tokenizer_type="gpt2", **extra):
+def file_path_from_config(model_type: str, train_config, save_directory):
+
+    epochs = getattr(train_config, "epochs", "") or ""
+    batch_size = getattr(train_config, "batch_size", "") or ""
+    grad_accum_steps = getattr(train_config, "grad_accum_steps", "") or ""
+
+    file_name = f"model_{model_type}-{epochs}-{batch_size}-{grad_accum_steps}.pt"
+
+    return os.path.join(save_directory, file_name)
+
+
+def save_trained_model(model_dir, model, model_type: str, train_config, tokenizer_type="gpt2", **extra):
 
     os.makedirs(model_dir, exist_ok=True)
 
@@ -103,6 +114,6 @@ def save_trained_model(model_dir, model, train_config, tokenizer_type="gpt2", **
     # if optimizer is not None:
     #     ckpt["optimizer"] = optimizer.state_dict()
 
-    checkpoint_path = os.path.join(model_dir, f"model_{model.config.model_type}-{train_config.epochs}-{train_config.batch_size}-{train_config.grad_accum_steps}.pt")
+    checkpoint_path = file_path_from_config(model_type, train_config, model_dir)
     torch.save(ckpt, checkpoint_path)
 

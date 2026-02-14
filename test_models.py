@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
 from transformers import set_seed
-from utils import create_hf_llama, plot_loss, save_trained_model
+from utils import create_hf_llama, plot_loss, save_trained_model, file_path_from_config
 
 
 MAX_LEN = 1024
@@ -304,7 +304,9 @@ class Trainer:
             self.losses.append(avg_loss)
             print(f"Epoch {epoch+1}: avg loss={avg_loss:.4f}, PPL={ppl:.2f}")
 
-        print("✅ Training completed.")
+        print("✅ Training completed,",
+            f"params: {_fmt(self.model.get_num_params())}, steps: {len(self.step_losses)}, final_loss: {self.step_losses[-1]:.4f}")
+
         return self.step_losses
 
 
@@ -342,12 +344,9 @@ def _fmt(n: int) -> str:
     return str(n)
 
 
-def load_pretrained_model(model_type: str, train_config: TrainerConfig, default_tokenizer_type="gpt2"):
+def load_pretrained_model(model_type: str, file_path: str, default_tokenizer_type="gpt2"):
     if model_type not in AutoGPTModel.MODEL_MAP:
         raise ValueError(f"Unknown model_type: {model_type}")
-
-    file_path = os.path.join(
-        SAVE_DIRECTORY, f"model_{model_type}-{train_config.epochs}-{train_config.batch_size}-{train_config.grad_accum_steps}.pt")
 
     if not os.path.exists(file_path): return None, None
 
@@ -368,6 +367,7 @@ def load_pretrained_model(model_type: str, train_config: TrainerConfig, default_
     model_cls = AutoGPTModel.MODEL_MAP[model_type]
     model = model_cls(**config)
     model.load_state_dict(ckpt['model'])
+
     return model, tokenizer
 
 
@@ -383,13 +383,12 @@ if __name__ == "__main__":
     train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
 
 
-    model, tokenizer = load_pretrained_model(model_type, train_config)
+    model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
     if model is not None:
         model.to(train_config.device)
-        print(f"Loaded: model.total_params: {_fmt(model.get_num_params())}")
+        print(f"✅ Loaded: model.total_params: {_fmt(model.get_num_params())}")
     else:
-        #model, tokenizer = AutoGPTModel.from_config("gpt-llama")
         model, tokenizer = AutoGPTModel.from_config(model_type)
 
         dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
@@ -398,10 +397,9 @@ if __name__ == "__main__":
 
         trainer = Trainer(model, dataset, train_config)
         step_losses = trainer.train()
+        final_loss=round(float(step_losses[-1]), 4)
 
-        print(f"Trained: model.total_params: {_fmt(model.get_num_params())}, steps: {len(step_losses)}, final_loss: {step_losses[-1]:.4f}")
-
-        save_trained_model(SAVE_DIRECTORY, model, train_config, final_loss=round(float(step_losses[-1]), 4))
+        save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, final_loss=final_loss)
 
         plot_loss(step_losses)
 
