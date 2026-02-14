@@ -365,9 +365,11 @@ def load_pretrained_model(model_type: str, file_path: str, default_tokenizer_typ
 
     tokenizer = GPT2Tokenizer.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
 
-    # get the model class
+    # get the model class from mapping
     model_cls = AutoGPTModel.MODEL_MAP[model_type]
-    model = GPT(**config) if isinstance(config, dict) else GPT(config)
+
+    # create the model instance use mapped class
+    model = model_cls(**config) if isinstance(config, dict) else model_cls(config)
     model.load_state_dict(ckpt['model'])
 
     return model, tokenizer
