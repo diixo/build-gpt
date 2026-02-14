@@ -96,29 +96,7 @@ def iterate_examples(split):
 
 
 @torch.no_grad()
-def evaluate_nano(file_path, device):
-
-    from model_gpt2 import GPT, GPTConfig
-
-    torch.set_float32_matmul_precision('high') # use tf32
-    config = GPTConfig(
-        block_size=1024,
-        vocab_size=50304,
-        n_layer=12,
-        n_head=12,
-        n_embd=768
-    )
-
-    ckpt = torch.load(file_path, map_location=device, weights_only=False)
-
-    config = ckpt['config']
-
-    model = GPT(config)
-
-    model.load_state_dict(ckpt['model'])
-    model.to(device)
-    model.eval()
-
+def evaluate_hellaswag(model):
 
     num_correct_norm = 0
     num_correct = 0
@@ -203,4 +181,25 @@ if __name__ == "__main__":
     file_path = "models/nano-gpt/model_19072.pt"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    evaluate_nano(file_path, device)
+    from model_gpt2 import GPT, GPTConfig
+
+    torch.set_float32_matmul_precision('high') # use tf32
+    config = GPTConfig(
+        block_size=1024,
+        vocab_size=50304,
+        n_layer=12,
+        n_head=12,
+        n_embd=768
+    )
+
+    ckpt = torch.load(file_path, map_location=device, weights_only=False)
+
+    config = ckpt['config']
+
+    model = GPT(config)
+
+    model.load_state_dict(ckpt['model'])
+    model.to(device)
+    model.eval()
+
+    evaluate_hellaswag(model)
