@@ -38,7 +38,7 @@ class TrainerConfig:
 class AutoGPTModel:
 
     MODEL_MAP = {
-        "gpt": GPT,
+        "gpt2": GPT,
         "gpt-neo": GPTNeo,
         "gpt-llama": GPTLlama,
         "gpt-neox": GPTNeoX,
@@ -46,21 +46,23 @@ class AutoGPTModel:
     }
 
     CONFIG_MAP = {
-        "gpt": dict(),
+        "gpt2": dict(),
         "gpt-neo": dict(),
         "gpt-llama": dict(rope_base=10000.0, use_rope=True),
         "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
         "gpt-neo-hybrid": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
     }
 
+
     @staticmethod
-    def from_config(model_type: str):
+    def from_config(model_type: str, tokenizer_type="gpt2"):
+
         if model_type not in AutoGPTModel.MODEL_MAP:
             raise ValueError(f"Unknown model_type: {model_type}")
 
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b", local_files_only=True)
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m", local_files_only=True)
-        tokenizer = GPT2Tokenizer.from_pretrained("data/gpt2", local_files_only=True)
+        tokenizer = GPT2Tokenizer.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
 
         # Extract sizes
         vocab_sz = tokenizer.vocab_size # 50257
@@ -90,6 +92,7 @@ class AutoGPTModel:
 
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
 
+        # get the model class
         model_cls = AutoGPTModel.MODEL_MAP[model_type]
         model = model_cls(**config_kwargs)
         return model, tokenizer
@@ -339,26 +342,74 @@ def _fmt(n: int) -> str:
     return str(n)
 
 
+def load_pretrained_model(model_type: str, train_config: TrainerConfig, default_tokenizer_type="gpt2"):
+    if model_type not in AutoGPTModel.MODEL_MAP:
+        raise ValueError(f"Unknown model_type: {model_type}")
+
+    file_path = os.path.join(
+        SAVE_DIRECTORY, f"model_{model_type}-{train_config.epochs}-{train_config.batch_size}-{train_config.grad_accum_steps}.pt")
+
+    if not os.path.exists(file_path): return None, None
+
+    ckpt = torch.load(file_path, map_location="cpu", weights_only=False)
+
+    tokenizer_type = ckpt.get("tokenizer_type", "undefined")
+    print("tokenizer_type:", tokenizer_type)
+
+    extra = ckpt.get("extra", {})
+    print("extra:", extra)
+
+    config = ckpt['config']
+    tokenizer_type = ckpt.get("tokenizer_type", default_tokenizer_type)
+
+    tokenizer = GPT2Tokenizer.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
+
+    # get the model class
+    model_cls = AutoGPTModel.MODEL_MAP[model_type]
+    model = model_cls(**config)
+    model.load_state_dict(ckpt['model'])
+    return model, tokenizer
+
+
 if __name__ == "__main__":
 
     #test_collate_fn(pad_token_id=0, eos_token_id=0, ignore_index=-100)
 
     #########################################################################################
 
-    #model, tokenizer = AutoGPTModel.from_config("gpt-llama")
-    model, tokenizer = AutoGPTModel.from_config("gpt")
+    model_type = "gpt2"
+
+    #train_config = TrainerConfig(epochs=20, batch_size=40, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
+
+
+    model, tokenizer = load_pretrained_model(model_type, train_config)
+
+    if model is not None:
+        model.to(train_config.device)
+        print(f"Loaded: model.total_params: {_fmt(model.get_num_params())}")
+    else:
+        #model, tokenizer = AutoGPTModel.from_config("gpt-llama")
+        model, tokenizer = AutoGPTModel.from_config(model_type)
+
+        dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
+
+        #dataset = JsonlDataset("data/dictionary.cambridge.org-dataset.jsonl", tokenizer, max_seq_length=model.config.block_size)
+
+        trainer = Trainer(model, dataset, train_config)
+        step_losses = trainer.train()
+
+        print(f"Trained: model.total_params: {_fmt(model.get_num_params())}, steps: {len(step_losses)}, final_loss: {step_losses[-1]:.4f}")
+
+        save_trained_model(SAVE_DIRECTORY, model, train_config, final_loss=round(float(step_losses[-1]), 4))
+
+        plot_loss(step_losses)
+
 
     # Checking the types:
+    print(80 * "-")
     print("Model_type:", type(model))
     print("Tokenizer_type:", type(tokenizer))
-
-    train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
-    dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
-    #config = TrainerConfig(epochs=1, batch_size=32, grad_accum_steps=2)
-    #dataset = JsonlDataset("data/dictionary.cambridge.org-505600.jsonl", tokenizer, max_seq_length=model.config.block_size)
-
-    trainer = Trainer(model, dataset, train_config)
-    step_losses = trainer.train()
 
     input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
@@ -371,11 +422,7 @@ if __name__ == "__main__":
             )[0]
     output_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
 
-    print(f"Total model.params: {_fmt(model.get_num_params())}, steps: {len(step_losses)}, final loss: {step_losses[-1]:.4f}")
     print("Generated text:", output_text)
 
-    #save_trained_model(SAVE_DIRECTORY, model, train_config)
-
-    plot_loss(step_losses)
 
     #hf_llama_model = create_hf_llama()

@@ -89,7 +89,7 @@ def create_hf_llama():
     return model
 
 
-def save_trained_model(model_dir, model, train_config, **extra):
+def save_trained_model(model_dir, model, train_config, tokenizer_type="gpt2", **extra):
 
     os.makedirs(model_dir, exist_ok=True)
 
@@ -97,6 +97,7 @@ def save_trained_model(model_dir, model, train_config, **extra):
         "model": model.state_dict(),
         "config": (model.config if isinstance(model.config, dict) else getattr(model.config, "__dict__", None)),
         "train_config": (train_config if isinstance(train_config, dict) else getattr(train_config, "__dict__", None)),
+        "tokenizer_type": tokenizer_type,
         "extra": extra,
     }
     # if optimizer is not None:
