@@ -228,6 +228,8 @@ class Trainer:
 
     def train(self):
 
+        torch.set_float32_matmul_precision("high")
+
         # 1) Gradient accumulation should be an explicit hyperparameter
         grad_accum_steps = int(getattr(self.config, "grad_accum_steps", 1))
         grad_accum_steps = max(1, grad_accum_steps)
@@ -376,11 +378,15 @@ if __name__ == "__main__":
     #test_collate_fn(pad_token_id=0, eos_token_id=0, ignore_index=-100)
 
     #########################################################################################
+    USE_TEST = True
 
     model_type = "gpt2"
 
-    #train_config = TrainerConfig(epochs=20, batch_size=40, grad_accum_steps=1)
-    train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
+
+    if USE_TEST:
+        train_config = TrainerConfig(epochs=20, batch_size=1, grad_accum_steps=2)
+    else:
+        train_config = TrainerConfig(epochs=20, batch_size=40, grad_accum_steps=1)
 
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
@@ -391,9 +397,11 @@ if __name__ == "__main__":
     else:
         model, tokenizer = AutoGPTModel.from_config(model_type)
 
-        dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
+        if USE_TEST:
+            dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
+        else:
+            dataset = JsonlDataset("data/dictionary.cambridge.org-dataset.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
-        #dataset = JsonlDataset("data/dictionary.cambridge.org-dataset.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
         trainer = Trainer(model, dataset, train_config)
         step_losses = trainer.train()
