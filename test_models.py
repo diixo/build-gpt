@@ -386,7 +386,7 @@ if __name__ == "__main__":
 
 
     if USE_TEST:
-        train_config = TrainerConfig(epochs=15, batch_size=4, grad_accum_steps=2)
+        train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
     else:
         train_config = TrainerConfig(epochs=20, batch_size=40, grad_accum_steps=1)
 
@@ -407,9 +407,12 @@ if __name__ == "__main__":
 
         trainer = Trainer(model, dataset, train_config)
         step_losses = trainer.train()
-        final_loss=round(float(step_losses[-1]), 4)
 
-        save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, final_loss=final_loss)
+        avg_loss=round(float(trainer.losses[-1]), 4)
+
+        extra = {"avg_loss": avg_loss, "examples_count": len(dataset)}
+
+        save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, **extra)
 
         plot_loss(step_losses)
 
@@ -423,7 +426,7 @@ if __name__ == "__main__":
     gen_ids = model.generate(
                 input_ids=input_ids.to(train_config.device),
                 max_new_tokens=5,
-                do_sample=True,
+                do_sample=False,
                 top_k=10,
                 eos_token_id=tokenizer.eos_token_id,
                 pad_token_id=tokenizer.eos_token_id
