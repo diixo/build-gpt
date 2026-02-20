@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from transformers import GPT2TokenizerFast
 
-path = Path("data/dictionary.cambridge.org-505600.jsonl")
+path = Path("data/eng-base.jsonl")
 tok = GPT2TokenizerFast.from_pretrained("data/gpt2") # tokens=10_069_678
 #tok = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True) # tokens=9_962_792
 
@@ -46,7 +46,7 @@ with path.open("r", encoding="utf-8") as f:
             max_id = i
             max_text = text
 
-print(f"Records used: {n}, bad json lines: {bad}")
+print(f"Items: {n}, bad json lines: {bad}")
 print(f"MAX_tokens: {max_len}, line_id={max_id}, total_tokens={total_len}")
 
 #print("Winner preview:", (max_text[:300] + "…") if max_text and len(max_text) > 300 else max_text)
