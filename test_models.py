@@ -385,11 +385,7 @@ if __name__ == "__main__":
     model_type = "gpt2"
 
 
-    if USE_TEST:
-        train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
-    else:
-        train_config = TrainerConfig(epochs=20, batch_size=40, grad_accum_steps=1)
-
+    train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
