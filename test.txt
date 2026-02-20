@@ -1,13 +1,14 @@
-Mixture-of-Experts with Expert Choice Routing
 Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity
 Breaking the Softmax Bottleneck: A High-Rank RNN Language Model
 Do Transformer Modifications Transfer Across Implementations and Applications?
 Learning Factored Representations in a Deep Mixture of Experts
 Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer
-ST-MoE: Designing Stable and Transferable Sparse Expert Models
+ST-MoE: Designing Stable and Transferable Sparse Expert Models. Mixture-of-Experts with Expert Choice Routing.
 Your Transformer is Secretly Linear
 A Comprehensive Survey on Applications of Transformers for Deep Learning Tasks
-Transformer models: an introduction and catalog. In the past few years we have seen the meteoric appearance of dozens of foundation models of the Transformer family, all of which have memorable and sometimes funny, but not self-explanatory, names. The goal of this paper is to offer a somewhat comprehensive but simple catalog and classification of the most popular Transformer models. The paper also includes an introduction to the most important aspects and innovations in Transformer models.
+Transformer models: an introduction and catalog. In the past few years we have seen the meteoric appearance of dozens of foundation models of the Transformer family, all of which have memorable and sometimes funny, but not self-explanatory, names.
+
+The goal of this paper is to offer a somewhat comprehensive but simple catalog and classification of the most popular Transformer models. The paper also includes an introduction to the most important aspects and innovations in Transformer models.
 Advancing Transformer architecture in Long-Context Large Language Models: A Comprehensive Survey
 Reducing the Transformer architecture to a Minimum
 
@@ -34,8 +35,8 @@ In the summer of 2022, Anthropic finished training the first version of Claude b
 EleutherAI is a grass-roots non-profit artificial intelligence (AI) research group. The group, considered an open-source version of OpenAI, was formed in a Discord server in 2020 to create an open-source version of GPT-3.
 In early 2023, it formally incorporated as the EleutherAI Institute, a non-profit research institute. As of 2025, the nonprofit maintains widely-used training datasets, conducts research, and is involved in public policy, among other activities.
 
-On December 31, 2020, EleutherAI released The Pile, a curated dataset of diverse text for training large language models. While the paper referenced the existence of the GPT-Neo models, the models themselves were not released until March 21, 2021.
-On June 9, 2021, EleutherAI followed this up with GPT-J-6B, a six billion parameter language model that was again the largest open-source GPT-3-like model in the world.
+EleutherAI released The Pile, a curated dataset of diverse text for training large language models. While the paper referenced the existence of the GPT-Neo models, the models themselves were not released until March 21, 2021.
+EleutherAI followed this up with GPT-J-6B, a six billion parameter language model that was again the largest open-source GPT-3-like model in the world.
 
 1. Language Modeling (LM): Predict the next token (in the case of unidirectional LM) or the previous and next token (in the case of bidirectional LM).
 2. Causal Language Modeling (Causality-masked LM): Autoregressively (left-to-right, in general) predict a text sequence, similar to unidirectional LM.
