@@ -307,7 +307,7 @@ class Trainer:
             print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.2f}")
 
         print("✅ Training completed,",
-            f"params: {_fmt(self.model.get_num_params())}, steps: {len(self.step_losses)}, final_loss: {self.step_losses[-1]:.4f}")
+            f"params: {_fmt(self.model.get_num_params())}, steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}")
 
         return self.step_losses
 
@@ -402,7 +402,7 @@ if __name__ == "__main__":
         if USE_TEST:
             dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
         else:
-            dataset = JsonlDataset("data/dictionary.cambridge.org-dataset.jsonl", tokenizer, max_seq_length=model.config.block_size)
+            dataset = JsonlDataset("data/eng-base.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
 
         trainer = Trainer(model, dataset, train_config)
