@@ -385,7 +385,7 @@ if __name__ == "__main__":
     model_type = "gpt2"
 
 
-    train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=25, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
@@ -398,7 +398,7 @@ if __name__ == "__main__":
         if USE_TEST:
             dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
         else:
-            dataset = JsonlDataset("data/eng-base.jsonl", tokenizer, max_seq_length=model.config.block_size)
+            dataset = JsonlDataset("data/dictionary.cambridge.org.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
 
         trainer = Trainer(model, dataset, train_config)
