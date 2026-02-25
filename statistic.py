@@ -4,8 +4,8 @@ from pathlib import Path
 from transformers import GPT2TokenizerFast
 
 path = Path("data/dictionary.cambridge.org.jsonl")
-tok = GPT2TokenizerFast.from_pretrained("data/gpt2") # tokens=10_069_678
-#tok = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True) # tokens=9_962_792
+tok = GPT2TokenizerFast.from_pretrained("data/gpt2")
+#tok = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
 
 max_len = -1
 total_len = 0
