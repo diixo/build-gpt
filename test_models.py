@@ -18,6 +18,8 @@ from utils import create_hf_llama, plot_loss, save_trained_model, file_path_from
 MAX_LEN = 1024
 SAVE_DIRECTORY = "train_product"
 
+USE_HF = False
+
 SEED = 42
 set_seed(SEED)
 random.seed(SEED)
@@ -81,7 +83,7 @@ class AutoGPTModel:
         config_kwargs = AutoGPTModel.CONFIG_MAP[model_type]
 
         config_kwargs.update({
-            "block_size": 1024,
+            "block_size": MAX_LEN,
             "vocab_size": vocab_sz,
             "n_layer": 12,
             "n_head": 12,
@@ -92,9 +94,13 @@ class AutoGPTModel:
 
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
 
-        # get the model class
-        model_cls = AutoGPTModel.MODEL_MAP[model_type]
-        model = model_cls(**config_kwargs)
+        if USE_HF:
+            model = create_hf_llama()
+        else:
+            # get the model class
+            model_cls = AutoGPTModel.MODEL_MAP[model_type]
+            model = model_cls(**config_kwargs)
+
         return model, tokenizer
 
 
@@ -218,12 +224,117 @@ class Trainer:
             shuffle=False,
             collate_fn=lambda batch: custom_collate_fn(
                 batch,
-                max_seq_length = model.config.block_size,
+                #max_seq_length = model.config.block_size,
+                max_seq_length = MAX_LEN,
                 pad_token_id = tokenizer.eos_token_id,
                 eos_token_id = tokenizer.eos_token_id,
                 device = config.device,
                 ),
             )
+
+
+    # train model with hf-interface
+    def train_hf(self):
+
+        torch.set_float32_matmul_precision("high")
+
+        grad_accum_steps = int(getattr(self.config, "grad_accum_steps", 1))
+        grad_accum_steps = max(1, grad_accum_steps)
+        grad_accum_steps = min(grad_accum_steps, max(1, len(self.loader)))
+
+        self.losses = []       # token-weighted epoch losses (good for PPL)
+        self.step_losses = []  # avg per-window accumulation raw loss (for plotting)
+
+        self.model.train()
+
+        for epoch in range(self.config.epochs):
+            pbar = tqdm(self.loader, desc=f"Epoch {epoch + 1}/{self.config.epochs}")
+
+            total_loss_sum = 0.0  # sum of (mean_loss * num_valid_tokens)
+            total_tokens = 0      # number of non-ignored tokens
+            first_loss = None
+
+            self.optimizer.zero_grad(set_to_none=True)
+
+            accum_raw_sum = 0.0
+
+            for step, batch in enumerate(pbar):
+
+                # ---- unpack batch ----
+                # supports:
+                # 1) (input_ids, labels)
+                # 2) (input_ids, labels, attention_mask)
+                # 3) dict: {"input_ids":..., "labels":..., "attention_mask":...}
+                if isinstance(batch, dict):
+                    input_ids = batch["input_ids"]
+                    labels = batch["labels"]
+                    attention_mask = batch.get("attention_mask", None)
+                else:
+                    if len(batch) == 2:
+                        input_ids, labels = batch
+                        attention_mask = None
+                    else:
+                        input_ids, labels, attention_mask = batch
+
+                # Forward pass (HF LLaMA / AutoModelForCausalLM)
+                out = self.model(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    labels=labels,
+                    use_cache=False,
+                )
+                raw_loss = out.loss
+
+                # ---- logging helpers ----
+                raw = float(raw_loss.detach().cpu().item())
+                accum_raw_sum += raw
+
+                # token-weighted stats for correct epoch avg loss / PPL
+                with torch.no_grad():
+                    ntok = int((labels != -100).sum().item())
+                total_loss_sum += raw * ntok
+                total_tokens += ntok
+
+                # ---- backward (accumulation) ----
+                loss = raw_loss / grad_accum_steps
+                loss.backward()
+
+                if first_loss is None:
+                    first_loss = raw
+                    pbar.set_postfix(loss=f"{first_loss:.4f}", accum_steps=str(grad_accum_steps))
+
+                # Optimizer step
+                if ((step + 1) % grad_accum_steps == 0) or ((step + 1) == len(self.loader)):
+                    if getattr(self.config, "max_grad_norm", None) is not None:
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), float(self.config.max_grad_norm))
+
+                    self.optimizer.step()
+                    self.optimizer.zero_grad(set_to_none=True)
+
+                    step_avg_loss = accum_raw_sum / grad_accum_steps
+                    accum_raw_sum = 0.0
+                    self.step_losses.append(step_avg_loss)
+
+                    pbar.set_postfix(loss=f"{step_avg_loss:.4f}", accum_steps=str(grad_accum_steps))
+
+            # ---- epoch metrics (token-weighted) ----
+            if total_tokens == 0:
+                epoch_avg_loss = float("nan")
+                ppl = float("nan")
+            else:
+                epoch_avg_loss = total_loss_sum / total_tokens
+                ppl = math.exp(epoch_avg_loss) if epoch_avg_loss < 50 else float("inf")
+
+            self.losses.append(epoch_avg_loss)
+            print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.2f}")
+
+        print(
+            "✅ Training completed,",
+            f"params: {_fmt(self.model.num_parameters()) if hasattr(self.model, 'num_parameters') else _fmt(self.model.get_num_params())}, "
+            f"steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}"
+        )
+
+        return self.step_losses
 
 
     def train(self):
@@ -396,19 +507,25 @@ if __name__ == "__main__":
         model, tokenizer = AutoGPTModel.from_config(model_type)
 
         if USE_TEST:
-            dataset = TextDataset("test.txt", tokenizer, max_seq_length=model.config.block_size)
+            dataset = TextDataset("test.txt", tokenizer, max_seq_length=MAX_LEN)
         else:
             dataset = JsonlDataset("data/dictionary.cambridge.org.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
 
         trainer = Trainer(model, dataset, train_config)
-        step_losses = trainer.train()
+
+        if USE_HF:
+            step_losses = trainer.train_hf()
+        else:
+            step_losses = trainer.train()
+
 
         avg_loss=round(float(trainer.losses[-1]), 4)
 
         extra = {"avg_loss": avg_loss, "examples_count": len(dataset)}
 
-        save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, **extra)
+        if not USE_HF:
+            save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, **extra)
 
         plot_loss(step_losses)
 
