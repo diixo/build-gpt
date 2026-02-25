@@ -40,7 +40,7 @@ class AutoGPTModel:
     MODEL_MAP = {
         "gpt2": GPT,
         "gpt-neo": GPTNeo,
-        "gpt-llama": GPTLlama,
+        "llama": GPTLlama,
         "gpt-neox": GPTNeoX,
         "gpt-neo-hybrid": GPTNeoHybrid,
     }
@@ -48,7 +48,7 @@ class AutoGPTModel:
     CONFIG_MAP = {
         "gpt2": dict(),
         "gpt-neo": dict(),
-        "gpt-llama": dict(rope_base=10000.0, use_rope=True),
+        "llama": dict(rope_base=10000.0, use_rope=True),
         "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
         "gpt-neo-hybrid": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
     }
@@ -382,10 +382,10 @@ if __name__ == "__main__":
     #########################################################################################
     USE_TEST = True
 
-    model_type = "gpt2"
+    model_type = "llama"
 
 
-    train_config = TrainerConfig(epochs=25, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
