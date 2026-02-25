@@ -42,14 +42,18 @@ def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
         print(f"rank {ddp_rank} sample {i}: {decoded}")
 
 
-def plot_loss(losses: list):
+def plot_loss(losses: list, model_type: str):
     import matplotlib.pyplot as plt
 
     plt.plot(list(range(len(losses))), losses, label="Training Loss")
     plt.xlabel("Steps")
     plt.ylabel("Loss")
-    plt.title("Training Loss over Steps")
+    plt.title(f"Trained on: {model_type}")
     plt.legend()
+
+    plt.grid(True, which="both", linestyle="--", alpha=0.5)  # <- грид
+    plt.tight_layout()
+
     plt.show()
 
 

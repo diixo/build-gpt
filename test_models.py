@@ -527,7 +527,7 @@ if __name__ == "__main__":
         if not USE_HF:
             save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, **extra)
 
-        plot_loss(step_losses)
+        plot_loss(step_losses, type(model))
 
 
     # Checking the types:
