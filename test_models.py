@@ -223,8 +223,8 @@ class JsonlDataset(Dataset):
                     add_special_tokens=False,
                     max_length=max_seq_length,
                     padding=False,
-                    return_tensors=None,   # список списков
-                )["input_ids"]
+                    return_tensors=None,
+                )["input_ids"]  # list[list[int]]
             )
 
         print(f"JsonlDataset::TOTAL loaded items.sz={total_texts}")
@@ -236,6 +236,7 @@ class JsonlDataset(Dataset):
             if isinstance(x, torch.Tensor):
                 fixed.append(x.squeeze(0))
             else:
+                # always use when self.data_idx = list[list[int]]
                 fixed.append(torch.tensor(x, dtype=torch.long))
         self.data_idx = fixed
 
@@ -527,11 +528,11 @@ if __name__ == "__main__":
     #########################################################################################
     USE_TEST = True
 
-    model_type = "gpt2"     # "gpt2"
-    tokenizer_type = "gpt2"
+    model_type = "gpt2"         # "gpt2"
+    tokenizer_type = "noomo"    # "gpt2"
 
 
-    train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=30, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
@@ -593,6 +594,3 @@ if __name__ == "__main__":
     output_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
 
     print("Generated text:", output_text)
-
-
-    #hf_llama_model = create_hf_llama()
