@@ -3,9 +3,11 @@ import json
 from pathlib import Path
 from transformers import GPT2TokenizerFast
 
-path = Path("data/dictionary.cambridge.org.jsonl")
-tok = GPT2TokenizerFast.from_pretrained("data/gpt2")
+
 #tok = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
+tok = GPT2TokenizerFast.from_pretrained("data/gpt2")
+path = Path("data/dictionary.cambridge.org-00.jsonl")
+
 
 max_len = -1
 total_len = 0

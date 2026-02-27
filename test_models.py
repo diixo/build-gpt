@@ -509,7 +509,7 @@ if __name__ == "__main__":
         if USE_TEST:
             dataset = TextDataset("test.txt", tokenizer, max_seq_length=MAX_LEN)
         else:
-            dataset = JsonlDataset("data/dictionary.cambridge.org.jsonl", tokenizer, max_seq_length=model.config.block_size)
+            dataset = JsonlDataset("data/dictionary.cambridge.org-00.jsonl", tokenizer, max_seq_length=model.config.block_size)
 
 
         trainer = Trainer(model, dataset, train_config)
