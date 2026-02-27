@@ -528,8 +528,8 @@ if __name__ == "__main__":
     #########################################################################################
     USE_TEST = True
 
-    model_type = "gpt2"         # "gpt2"
-    tokenizer_type = "noomo"    # "gpt2"
+    model_type = "gpt2"         # "gpt2", "llama"
+    tokenizer_type = "noomo"    # "gpt2", "noomo"
 
 
     train_config = TrainerConfig(epochs=30, batch_size=32, grad_accum_steps=1)
