@@ -184,23 +184,60 @@ class TextDataset(Dataset):
 
 class JsonlDataset(Dataset):
 
-    def __init__(self, file_path, tokenizer, max_seq_length=MAX_LEN-1):
+    def __init__(self, file_pairs: list[tuple[str, str]], tokenizer, max_seq_length=1024):
+        """
+        files_map: list[(str, str)] # [(field_name: path_to_jsonl), ...]
+        data_idx: list[Tensor]      # flat list of token id tensors
+        """
 
-        texts = []
-        with open(file_path, "r", encoding="utf-8") as f:
-            texts = [
-                json.loads(line).get("example") for line in f if line.strip()
-            ]
+        if not isinstance(file_pairs, list) or not file_pairs:
+            raise ValueError("file_pairs must be a non-empty list of (field_name, path_to_jsonl) tuples")
 
-        print(f"JsonlDataset::loaded items.sz={len(texts)}")
-
-        # tokenize each line separately and store the input_ids, with only truncation, without padding
-        self.data_idx = [
-            tokenizer(t, truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
-            )["input_ids"].squeeze(0)   # sizes: [seq_len <= max_seq_length]
-            for t in texts
-        ]
         self.max_seq_length = max_seq_length
+        self.data_idx = []
+
+        total_texts = 0
+
+        for field_name, file_path in file_pairs:
+            texts = []
+            with open(file_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    obj = json.loads(line)
+                    t = obj.get(field_name)
+                    if t is None:
+                        continue
+                    if not isinstance(t, str):
+                        t = str(t)
+                    texts.append(t)
+
+            print(f"JsonlDataset::field='{field_name}' loaded items.sz={len(texts)} from {file_path}")
+            total_texts += len(texts)
+
+            self.data_idx.extend(
+                tokenizer(
+                    texts,
+                    truncation=True,
+                    add_special_tokens=False,
+                    max_length=max_seq_length,
+                    padding=False,
+                    return_tensors=None,   # список списков
+                )["input_ids"]
+            )
+
+        print(f"JsonlDataset::TOTAL loaded items.sz={total_texts}")
+
+        # convert each id-list to 1D LongTensor (as it was before)
+        # (if tokenizer returned torch.Tensor already — should handle that too, just squeeze the extra dim)
+        fixed = []
+        for x in self.data_idx:
+            if isinstance(x, torch.Tensor):
+                fixed.append(x.squeeze(0))
+            else:
+                fixed.append(torch.tensor(x, dtype=torch.long))
+        self.data_idx = fixed
 
 
     def __len__(self):
@@ -493,7 +530,7 @@ if __name__ == "__main__":
     #########################################################################################
     USE_TEST = True
 
-    model_type = "llama"
+    model_type = "llama"  # "gpt2"
 
 
     train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
@@ -509,7 +546,15 @@ if __name__ == "__main__":
         if USE_TEST:
             dataset = TextDataset("test.txt", tokenizer, max_seq_length=MAX_LEN)
         else:
-            dataset = JsonlDataset("data/dictionary.cambridge.org-00.jsonl", tokenizer, max_seq_length=model.config.block_size)
+            dataset = JsonlDataset(
+                [
+                    ("example", "data/dictionary.cambridge.org-00.jsonl"),
+                    ("example", "data/dictionary.cambridge.org-01.jsonl")
+                ],
+                tokenizer,
+                max_seq_length=model.config.block_size
+            )
+
 
 
         trainer = Trainer(model, dataset, train_config)
