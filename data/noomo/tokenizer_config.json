@@ -1,6 +1,6 @@
 {
   "added_tokens_decoder": {
-    "50256": {
+    "40256": {
       "content": "<|endoftext|>",
       "lstrip": false,
       "normalized": false,

@@ -19,15 +19,20 @@ def read_jsonl(file_path: str) -> list:
 
         for line in f:
             item = json.loads(line)
-            title = item["title"]
-            description = item["description"]
-            text.append(title + " " + description)
+            if item.get("example"):
+                text.append(item["example"])
+            else:
+                title = item["title"]
+                description = item["description"]
+                text.append(title + " " + description)
     return text
 
 
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
 fw_extended = concatenate_datasets([
+    Dataset.from_dict({ "text": read_jsonl("data/dictionary.cambridge.org-00.jsonl") }),
+    Dataset.from_dict({ "text": read_jsonl("data/dictionary.cambridge.org-01.jsonl") }),
     fw,
     Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2015_2020.jsonl") }),
     Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2021_2024.jsonl") }),
@@ -52,7 +57,7 @@ tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
 tokenizer.decoder = ByteLevelDecoder()
 
 trainer = BpeTrainer(
-    vocab_size=50_256,
+    vocab_size=40_256,
     min_frequency=5,
     initial_alphabet=ByteLevel.alphabet(),
     special_tokens=[]
