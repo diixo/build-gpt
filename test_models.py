@@ -64,10 +64,10 @@ class AutoGPTModel:
 
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b", local_files_only=True)
         #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m", local_files_only=True)
-        tokenizer = GPT2Tokenizer.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
+        tokenizer = GPT2TokenizerFast.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
 
         # Extract sizes
-        vocab_sz = tokenizer.vocab_size # 50257
+        vocab_sz = len(tokenizer.get_vocab())   # size include special tokens
         print("Vocab size: tokenizer =", vocab_sz)
 
         if True:
@@ -502,16 +502,13 @@ def load_pretrained_model(model_type: str, file_path: str, default_tokenizer_typ
 
     ckpt = torch.load(file_path, map_location="cpu", weights_only=False)
 
-    tokenizer_type = ckpt.get("tokenizer_type", "undefined")
-    print("tokenizer_type:", tokenizer_type)
-
     extra = ckpt.get("extra", {})
     print("extra:", extra)
 
     config = ckpt['config']
     tokenizer_type = ckpt.get("tokenizer_type", default_tokenizer_type)
 
-    tokenizer = GPT2Tokenizer.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
+    tokenizer = GPT2TokenizerFast.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
 
     # get the model class from mapping
     model_cls = AutoGPTModel.MODEL_MAP[model_type]
@@ -530,7 +527,8 @@ if __name__ == "__main__":
     #########################################################################################
     USE_TEST = True
 
-    model_type = "llama"  # "gpt2"
+    model_type = "gpt2"     # "gpt2"
+    tokenizer_type = "gpt2"
 
 
     train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
@@ -541,7 +539,7 @@ if __name__ == "__main__":
         model.to(train_config.device)
         print(f"✅ Loaded: model.total_params: {_fmt(model.get_num_params())}")
     else:
-        model, tokenizer = AutoGPTModel.from_config(model_type)
+        model, tokenizer = AutoGPTModel.from_config(model_type, tokenizer_type)
 
         if USE_TEST:
             dataset = TextDataset("test.txt", tokenizer, max_seq_length=MAX_LEN)
@@ -570,7 +568,10 @@ if __name__ == "__main__":
         extra = {"avg_loss": avg_loss, "examples_count": len(dataset)}
 
         if not USE_HF:
-            save_trained_model(SAVE_DIRECTORY, model, model_type=model_type, train_config=train_config, **extra)
+            save_trained_model(SAVE_DIRECTORY, model,
+                               model_type=model_type,
+                               train_config=train_config,
+                               **extra)
 
         plot_loss(step_losses, type(model))
 
@@ -580,7 +581,7 @@ if __name__ == "__main__":
     print("Model_type:", type(model))
     print("Tokenizer_type:", type(tokenizer))
 
-    input_ids = tokenizer("Transformer", truncation=True, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    input_ids = tokenizer("Transformer", truncation=True, max_length=MAX_LEN, add_special_tokens=False, return_tensors="pt")["input_ids"]
     gen_ids = model.generate(
                 input_ids=input_ids.to(train_config.device),
                 max_new_tokens=5,
