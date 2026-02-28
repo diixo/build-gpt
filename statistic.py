@@ -4,8 +4,9 @@ from pathlib import Path
 from transformers import GPT2TokenizerFast
 
 
-#tok = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
-tok = GPT2TokenizerFast.from_pretrained("data/gpt2")
+#tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
+tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt2", local_files_only=True)
+
 paths = [
     "data/dictionary.cambridge.org-00.jsonl",
     "data/dictionary.cambridge.org-01.jsonl",
@@ -47,7 +48,7 @@ for path_str in paths:
                 continue
 
             n += 1
-            length = len(tok.encode(text))
+            length = len(tokenizer.encode(text))
             total_len += length
             if length > max_len:
                 max_len = length
