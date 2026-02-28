@@ -31,8 +31,8 @@ def read_jsonl(file_path: str) -> list:
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
 fw_extended = concatenate_datasets([
-    Dataset.from_dict({ "text": read_jsonl("data/dictionary.cambridge.org-00.jsonl") }),
-    Dataset.from_dict({ "text": read_jsonl("data/dictionary.cambridge.org-01.jsonl") }),
+    #Dataset.from_dict({ "text": read_jsonl("data/dictionary.cambridge.org-00.jsonl") }),
+    #Dataset.from_dict({ "text": read_jsonl("data/dictionary.cambridge.org-01.jsonl") }),
     fw,
     Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2015_2020.jsonl") }),
     Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2021_2024.jsonl") }),
