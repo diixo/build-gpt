@@ -569,10 +569,12 @@ if __name__ == "__main__":
         extra = {"avg_loss": avg_loss, "examples_count": len(dataset)}
 
         if not USE_HF:
-            save_trained_model(SAVE_DIRECTORY, model,
-                               model_type=model_type,
-                               train_config=train_config,
-                               **extra)
+            save_trained_model(SAVE_DIRECTORY,
+                                model,
+                                model_type=model_type,
+                                train_config=train_config,
+                                tokenizer_type=tokenizer_type,
+                                **extra)
 
         plot_loss(step_losses, type(model))
 

@@ -104,7 +104,7 @@ def file_path_from_config(model_type: str, train_config, save_directory):
     return os.path.join(save_directory, file_name)
 
 
-def save_trained_model(model_dir, model, model_type: str, train_config, **extra):
+def save_trained_model(model_dir, model, model_type: str, train_config, tokenizer_type: str, **extra):
 
     os.makedirs(model_dir, exist_ok=True)
 
@@ -114,7 +114,7 @@ def save_trained_model(model_dir, model, model_type: str, train_config, **extra)
         "train_config": (train_config if isinstance(train_config, dict) else getattr(train_config, "__dict__", None)),
         #"config": model.config,
         #"train_config": train_config,
-        #"tokenizer_type": tokenizer_type,
+        "tokenizer_type": tokenizer_type,
         "extra": extra,
     }
     # if optimizer is not None:
