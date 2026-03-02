@@ -532,7 +532,7 @@ if __name__ == "__main__":
     tokenizer_type = "noomo"    # "gpt2", "noomo"
 
 
-    train_config = TrainerConfig(epochs=30, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=32, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
