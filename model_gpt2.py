@@ -44,6 +44,7 @@ class CausalSelfAttention(nn.Module):
 
 
     def forward(self, x, attention_mask=None):
+
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
         # calculate query, key, values for all heads in batch and move head forward to be the batch dim
         # nh is "number of heads", hs is "head size", and C (number of channels) = nh * hs
@@ -55,10 +56,23 @@ class CausalSelfAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         # attention_mask: (B, T) -> (B, 1, 1, T) for broadcast
+
+        # attention_mask: (B, T), where 1=real token, 0=pad
         if attention_mask is not None:
-            attn_mask = attention_mask[:, None, None, :].to(dtype=torch.bool)
+            # fix flash_attn with PyTorch back-end of scaled_dot_product_attention compatibility with is_causal=True
+            # if self.flash_attn and torch.all(attention_mask == 1):
+            # but make force solution more universally for both modes
+            if torch.all(attention_mask == 1):
+                # force fire-down attention for Flash Attention
+                attn_mask = None
+            else:
+                # use attention_mask for manual attention implementation
+                assert attention_mask.size(0) == B
+                assert attention_mask.size(1) == T
+                attn_mask = (attention_mask == 0)[:, None, None, :].to(dtype=torch.bool)  # (B,1,1,T)
         else:
             attn_mask = None
+
 
         if self.n_head == 1 or not self.flash_attn:
             # manual attention implementation
@@ -273,11 +287,13 @@ class GPT(nn.Module):
         return value
 
 
+
     @torch.no_grad()
     def generate(
         self,
         input_ids: torch.Tensor,    # (B, T)
-        max_new_tokens: int,
+        attention_mask: Optional[torch.Tensor] = None,  # (B, T)
+        max_new_tokens: int = 5,
         temperature: float = 1.0,
         do_sample: bool = False,
         top_k: int | None = None,
@@ -291,6 +307,14 @@ class GPT(nn.Module):
         if pad_token_id is None:
             pad_token_id = eos_token_id if eos_token_id is not None else 0
 
+        if attention_mask is not None:
+            B, T0 = input_ids.shape
+
+            attention_mask = attention_mask.to(device=input_ids.device, dtype=torch.long)
+            assert attention_mask.dim() == 2 and attention_mask.size(0) == B, f"bad attention_mask {attention_mask.shape}"
+            assert attention_mask.size(1) == input_ids.size(1), f"mask/input mismatch: {attention_mask.size()} vs {input_ids.size()}"
+
+
         pad = torch.tensor(pad_token_id, device=input_ids.device, dtype=input_ids.dtype)
         finished = torch.zeros(input_ids.size(0), device=input_ids.device, dtype=torch.bool)
 
@@ -300,7 +324,19 @@ class GPT(nn.Module):
 
             idx_cond = input_ids if input_ids.size(1) <= block_size else input_ids[:, -block_size:]
 
-            logits = self(idx_cond).logits  # (B, t, V)
+            if attention_mask is None:
+                logits = self(idx_cond).logits # (B, t, V)
+            else:
+
+                if input_ids.size(1) <= block_size:
+                    am_cond = attention_mask
+                else:
+                    am_cond = attention_mask[:, -block_size:] if attention_mask is not None else None
+
+                # strong correspondence in length to idx_cond
+                assert am_cond.size(1) == idx_cond.size(1)
+                logits = self(idx_cond, attention_mask=am_cond).logits  # (B, t, V)
+
             logits = logits[:, -1, :]       # (B, V)
 
             if do_sample:
@@ -323,6 +359,9 @@ class GPT(nn.Module):
                 finished = finished | (idx_next.squeeze(1) == eos_token_id)
 
             input_ids = torch.cat((input_ids, idx_next), dim=1)
+            if attention_mask is not None:
+                next_mask = (~finished).to(dtype=attention_mask.dtype).unsqueeze(1)  # (B,1) 1=active, 0=finished
+                attention_mask = torch.cat((attention_mask, next_mask), dim=1)
 
         return input_ids
 

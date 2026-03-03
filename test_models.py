@@ -124,16 +124,22 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
 
     # Pad and prepare inputs and targets
     inputs_lst, targets_lst = [], []
+    attn_lst = []
 
     for item in batch:
 
         new_item = item.tolist() + [eos_token_id]
+        real_len = len(new_item)
 
         # Pad sequences to max_length
-        padded = new_item + [pad_token_id] * (batch_max_length - len(new_item))
+        padded = new_item + [pad_token_id] * (batch_max_length - real_len)
+
+        # build attention mask from real_len (NOT from token values)
+        attn = [1] * real_len + [0] * (batch_max_length - real_len)
 
         inputs = torch.tensor(padded[:-1])  # Truncate the last token for inputs
         targets = torch.tensor(padded[1:])  # Shift +1 to the right for targets
+        am  = torch.tensor(attn[:-1], dtype=torch.long)
 
         # New: Replace all but the first padding tokens in targets by ignore_index
         mask = targets == pad_token_id
@@ -146,14 +152,18 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
         if max_seq_length is not None:
             inputs = inputs[:max_seq_length]
             targets = targets[:max_seq_length]
+            am  = am[:max_seq_length]
 
         inputs_lst.append(inputs)
         targets_lst.append(targets)
+        attn_lst.append(am)
+
 
     # Convert list of inputs and targets to tensors and transfer to target device
     inputs_tensor = torch.stack(inputs_lst).to(device)
     targets_tensor = torch.stack(targets_lst).to(device)
-    return inputs_tensor, targets_tensor
+    attention_mask = torch.stack(attn_lst).to(device)
+    return inputs_tensor, targets_tensor, attention_mask
 
 
 class TextDataset(Dataset):
@@ -253,7 +263,7 @@ class Trainer:
     def __init__(self, model, dataset, config):
         self.losses = []
 
-        self.model = model.to(config.device)
+        self.model = model.to(config.device).float()
         self.config = config
         self.optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
         self.loader = DataLoader(
@@ -400,21 +410,33 @@ class Trainer:
 
             accum_raw_sum = 0.0
 
-            for step, (x, y) in enumerate(pbar):
+            for step, batch in enumerate(pbar):
                 # NOTE: your collate already .to(device), so these .to() are redundant but harmless
                 #x = x.to(self.config.device, non_blocking=True)
                 #y = y.to(self.config.device, non_blocking=True)
 
+                if isinstance(batch, dict):
+                    input_ids = batch["input_ids"]
+                    labels = batch["labels"]
+                    attention_mask = batch.get("attention_mask", None)
+                else:
+                    if len(batch) == 2:
+                        input_ids, labels = batch
+                        attention_mask = None
+                    else:
+                        input_ids, labels, attention_mask = batch
+
 
                 # Forward pass
-                raw_loss = self.model(x, y).loss
+                raw_loss = self.model(input_ids, labels).loss
+
                 # ---- logging helpers ----
                 raw = float(raw_loss.detach().cpu().item())
                 accum_raw_sum += raw
 
                 # token-weighted stats for correct epoch avg loss / PPL
                 with torch.no_grad():
-                    ntok = int((y != -100).sum().item())
+                    ntok = int((labels != -100).sum().item())
                 total_loss_sum += raw * ntok
                 total_tokens += ntok
 
@@ -529,7 +551,7 @@ if __name__ == "__main__":
     USE_TEST = True
 
     model_type = "gpt2"         # "gpt2", "llama"
-    tokenizer_type = "noomo"    # "gpt2", "noomo"
+    tokenizer_type = "gpt2"    # "gpt2", "noomo"
 
 
     train_config = TrainerConfig(epochs=32, batch_size=32, grad_accum_steps=1)
@@ -541,6 +563,8 @@ if __name__ == "__main__":
         print(f"✅ Loaded: model.total_params: {_fmt(model.get_num_params())}")
     else:
         model, tokenizer = AutoGPTModel.from_config(model_type, tokenizer_type)
+
+        print("tokenizer.eos_token_id:", tokenizer.eos_token_id)
 
         if USE_TEST:
             dataset = TextDataset("test.txt", tokenizer, max_seq_length=MAX_LEN)
@@ -584,9 +608,18 @@ if __name__ == "__main__":
     print("Model_type:", type(model))
     print("Tokenizer_type:", type(tokenizer))
 
-    input_ids = tokenizer("Transformer", truncation=True, max_length=MAX_LEN, add_special_tokens=False, return_tensors="pt")["input_ids"]
+    enc = tokenizer("Transformer", truncation=True, max_length=MAX_LEN, add_special_tokens=False, return_tensors="pt")
+
+    input_ids = enc["input_ids"]
+
+    if USE_TEST:
+        attention_mask = enc["attention_mask"]
+    else:
+        attention_mask = None
+
     gen_ids = model.generate(
                 input_ids=input_ids.to(train_config.device),
+                attention_mask=attention_mask.to(train_config.device),
                 max_new_tokens=5,
                 do_sample=False,
                 top_k=10,

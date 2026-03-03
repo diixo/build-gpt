@@ -311,7 +311,8 @@ class GPTLlama(nn.Module):
     def generate(
         self,
         input_ids: torch.Tensor,    # (B, T)
-        max_new_tokens: int,
+        attention_mask: Optional[torch.Tensor] = None,  # (B, T)
+        max_new_tokens: int = 5,
         temperature: float = 1.0,
         do_sample: bool = False,
         top_k: int | None = None,
