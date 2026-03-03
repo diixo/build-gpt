@@ -12,7 +12,7 @@ The goal of this paper is to offer a somewhat comprehensive but simple catalog a
 Advancing Transformer architecture in Long-Context Large Language Models: A Comprehensive Survey
 Reducing the Transformer architecture to a Minimum
 
-Transformer-based Large Language Models (LLMs) have been applied in diverse areas such as knowledge bases, human interfaces, and dynamic agents, and marking a stride towards achieving Artificial General Intelligence (AGI).
+Transformer architecture of Large Language Models (LLMs). Transformer have been applied in diverse areas such as knowledge bases, human interfaces, and dynamic agents, and marking a stride towards achieving Artificial General Intelligence (AGI).
 This article offers a comprehensive survey of the recent advancement in Transformer-based LLM architectures aimed at enhancing the long-context capabilities of LLMs throughout the entire model lifecycle.
 We first delineate and analyze the problems of handling long-context input and output with the current Transformer-based models.
 We then provide a taxonomy and the landscape of upgrades on Transformer architecture to solve these problems.
@@ -37,3 +37,13 @@ In early 2023, it formally incorporated as the EleutherAI Institute, a non-profi
 
 EleutherAI released The Pile, a curated dataset of diverse text for training large language models. While the paper referenced the existence of the GPT-Neo models, the models themselves were not released until March 21, 2021.
 EleutherAI followed this up with GPT-J-6B, a six billion parameter language model that was again the largest open-source GPT-3-like model in the world.
+
+
+1. Language Modeling (LM): Predict the next token (in the case of unidirectional LM) or the previous and next token (in the case of bidirectional LM).
+2. Causal Language Modeling (Causality-masked LM): Autoregressively (left-to-right, in general) predict a text sequence, similar to unidirectional LM.
+3. Prefix Language Modeling (Prefix LM): In this task, a separate ’prefix’ section is separated from the main sequence. Within the prefix, any token can attend to any other token (non-causal). Outside of the prefix, decoding proceeds autoregressively.
+4. Masked Language Modeling (MLM): Mask out some tokens from the input sentences and then train the model to predict the masked tokens using the surrounding context.
+5. Permuted Language Modeling (PLM): Same as LM, but on a random permutation of input sequences. A permutation is randomly sampled from all possible permutations. Then some of the tokens are chosen as the target, and the model is trained to predict these targets.
+6. Denoising Autoencoder (DAE): Take a partially corrupted input and aim to recover the original, undistorted input. Examples of corrupted input include randomly sampling tokens from the input and replacing them with "[MASK]" elements, randomly deleting tokens from the input, or shuffling sentences in random order.
+7. Replaced Token Detection (RTD): Using a "generator" model, randomly replace certain tokens in the text. The "discriminator" is tasked to predict whether a token comes from the original text, or the generator model.
+8. Next Sentence Prediction (NSP): Train the model to distinguish whether two input sentences are continuous segments from the training corpus.
