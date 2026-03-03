@@ -551,10 +551,10 @@ if __name__ == "__main__":
     USE_TEST = True
 
     model_type = "gpt2"         # "gpt2", "llama"
-    tokenizer_type = "gpt2"    # "gpt2", "noomo"
+    tokenizer_type = "noomo"    # "gpt2", "noomo"
 
 
-    train_config = TrainerConfig(epochs=15, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=25, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 

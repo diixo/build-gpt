@@ -4,7 +4,7 @@ Do Transformer Modifications Transfer Across Implementations and Applications?
 Learning Factored Representations in a Deep Mixture of Experts
 Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer
 ST-MoE: Designing Stable and Transferable Sparse Expert Models. Mixture-of-Experts with Expert Choice Routing.
-Your Transformer is Secretly Linear
+
 A Comprehensive Survey on Applications of Transformers for Deep Learning Tasks
 Transformer models: an introduction and catalog. In the past few years we have seen the meteoric appearance of dozens of foundation models of the Transformer family, all of which have memorable and sometimes funny, but not self-explanatory, names.
 
@@ -12,7 +12,6 @@ The goal of this paper is to offer a somewhat comprehensive but simple catalog a
 Advancing Transformer architecture in Long-Context Large Language Models: A Comprehensive Survey
 Reducing the Transformer architecture to a Minimum
 
-Transformer architecture of Large Language Models (LLMs). Transformer have been applied in diverse areas such as knowledge bases, human interfaces, and dynamic agents, and marking a stride towards achieving Artificial General Intelligence (AGI).
 This article offers a comprehensive survey of the recent advancement in Transformer-based LLM architectures aimed at enhancing the long-context capabilities of LLMs throughout the entire model lifecycle.
 We first delineate and analyze the problems of handling long-context input and output with the current Transformer-based models.
 We then provide a taxonomy and the landscape of upgrades on Transformer architecture to solve these problems.
@@ -38,6 +37,7 @@ In early 2023, it formally incorporated as the EleutherAI Institute, a non-profi
 EleutherAI released The Pile, a curated dataset of diverse text for training large language models. While the paper referenced the existence of the GPT-Neo models, the models themselves were not released until March 21, 2021.
 EleutherAI followed this up with GPT-J-6B, a six billion parameter language model that was again the largest open-source GPT-3-like model in the world.
 
+Transformer is neural network architecture of Large Language Models (LLMs), that use self-attention mechanisms to process sequential data in parallel, replacing the need for recurrence. The deep learning field has been experiencing a seismic shift, thanks to the emergence and rapid evolution of Transformer models.
 
 1. Language Modeling (LM): Predict the next token (in the case of unidirectional LM) or the previous and next token (in the case of bidirectional LM).
 2. Causal Language Modeling (Causality-masked LM): Autoregressively (left-to-right, in general) predict a text sequence, similar to unidirectional LM.
@@ -47,3 +47,5 @@ EleutherAI followed this up with GPT-J-6B, a six billion parameter language mode
 6. Denoising Autoencoder (DAE): Take a partially corrupted input and aim to recover the original, undistorted input. Examples of corrupted input include randomly sampling tokens from the input and replacing them with "[MASK]" elements, randomly deleting tokens from the input, or shuffling sentences in random order.
 7. Replaced Token Detection (RTD): Using a "generator" model, randomly replace certain tokens in the text. The "discriminator" is tasked to predict whether a token comes from the original text, or the generator model.
 8. Next Sentence Prediction (NSP): Train the model to distinguish whether two input sentences are continuous segments from the training corpus.
+
+It were first developed to solve the problem of sequence transduction, or neural machine translation, which means they are meant to solve any task that transforms an input sequence to an output sequence. This is why they are called “Transformers”.
