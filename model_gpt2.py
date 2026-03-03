@@ -63,13 +63,13 @@ class CausalSelfAttention(nn.Module):
             # if self.flash_attn and torch.all(attention_mask == 1):
             # but make force solution more universally for both modes
             if torch.all(attention_mask == 1):
-                # force fire-down attention for Flash Attention
+                # force fire-down attention mask for Flash Attention
                 attn_mask = None
             else:
                 # use attention_mask for manual attention implementation
                 assert attention_mask.size(0) == B
                 assert attention_mask.size(1) == T
-                attn_mask = (attention_mask == 0)[:, None, None, :].to(dtype=torch.bool)  # (B,1,1,T)
+                attn_mask = (attention_mask == 0)[:, None, None, :].to(device=x.device, dtype=torch.bool)  # (B,1,1,T)
         else:
             attn_mask = None
 
@@ -108,9 +108,11 @@ class MLP(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd)
+        hidden_dim = 4 * config.n_embd
+
+        self.c_fc    = nn.Linear(config.n_embd, hidden_dim)
         self.gelu    = nn.GELU(approximate='tanh')
-        self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd)
+        self.c_proj  = nn.Linear(hidden_dim, config.n_embd)
         self.c_proj.NANOGPT_SCALE_INIT = 1
 
     def forward(self, x):
