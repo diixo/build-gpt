@@ -45,18 +45,14 @@ MODEL_MAP = {
 
 ### Train tokenizer:
 
-[train_tokenizer.py](train_tokenizer.py): train custom tokenizer
+* [train_tokenizer.py](train_tokenizer.py): train custom tokenizer
+* [compare_tokenizers.py](compare_tokenizers.py): comparing tokenizers by quality
+* [fineweb_statistics.py](fineweb_statistics.py): tokens statistic of dataset **Fineweb-Edu-10BT**
 
-| Tokenizer             |     Tokens      |
-|-----------------------|-----------------|
-| gpt2                  |  9_953_989_344  |
-| gpt-neo-125m          |  9_953_989_333  |
-| pythia-31m            |  9_919_456_391  |
-| noomo                 |  9_707_208_407  |
-
-
-#### TODO:
-
-* Integrate `attention_mask` from GPT-model to another models.
-
+| Tokenizer             |     Tokens      |   size   |
+|-----------------------|-----------------|----------|
+| gpt2                  |  9_953_989_344  |  50_257  |
+| gpt-neo-125m          |  9_953_989_333  |  50_257  |
+| pythia-31m            |  9_919_456_391  |  50_304  |
+| noomo                 |  9_843_922_538  |  40_257  |
 

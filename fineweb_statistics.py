@@ -9,21 +9,21 @@ from datasets import load_dataset
 from transformers import AutoTokenizer
 
 
-enc = tiktoken.get_encoding("gpt2")
-# eot = enc._special_tokens['<|endoftext|>']  # end of text token
+#enc = tiktoken.get_encoding("gpt2")
+#eot = enc._special_tokens['<|endoftext|>']  # end of text token
 
 
-tokenizer = AutoTokenizer.from_pretrained("data/noomo", use_fast=True)
+tokenizer = AutoTokenizer.from_pretrained("data/noomo", use_fast=True, local_files_only=True)
 eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
 
 
 # use for tiktoken tokenizer
-def tt_tokenize_to_len(row):
-    tokens = [eot]
-    tokens.extend(enc.encode_ordinary(row["text"]))
-    tokens_np = np.array(tokens, dtype=np.uint16)
-    #return tokens_np.astype(np.uint16)
-    return len(tokens_np)
+# def tt_tokenize_to_len(row):
+#     tokens = [eot]
+#     tokens.extend(enc.encode_ordinary(row["text"]))
+#     tokens_np = np.array(tokens, dtype=np.uint16)
+#     #return tokens_np.astype(np.uint16)
+#     return len(tokens_np)
 
 
 # use for hugging-face tokenizer
@@ -71,6 +71,6 @@ if __name__ == "__main__":
     plt.xlim(0, 8000)
     plt.xlabel("Length of tokenized rows")
     plt.ylabel("Count of rows")
-    plt.title(f"Tokens(all={total_tokens}) sizes distribution tokenization of dataset: FineWeb-Edu-10BT")
+    plt.title(f"Tokens(all={total_tokens}): FineWeb-Edu-10BT")
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
