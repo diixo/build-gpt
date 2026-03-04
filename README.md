@@ -12,6 +12,21 @@ A PyTorch library with educational re-implementation of GPT-models: LLaMA, [GPT2
 * [main.py](main.py): train model in `single-GPU` mode.
 
 
+### Testing models:
+
+```python
+MODEL_MAP = {
+    "gpt2": GPT,
+    "llama": GPTLlama,
+    "gpt-neo": GPTNeo,
+    "gpt-neox": GPTNeoX,
+    "gpt-neo-hybrid": GPTNeoHybrid,
+}
+```
+
+[test_models.py](test_models.py): testing models functionality (**gpt2**, **llama** with tokenizers **gpt2** or **noomo**).
+
+
 ### Implemented models:
 
 * [**GPT-model**](model_gpt2.py): standard nanoGPT model.
@@ -26,21 +41,6 @@ A PyTorch library with educational re-implementation of GPT-models: LLaMA, [GPT2
 * [train_tokenizer.py](train_tokenizer.py)      : train custom tokenizer
 * [fineweb_gpt.py](fineweb_gpt.py)              : build dataset from trained tokenizer
 * [fineweb_statistics.py](fineweb_statistics.py): create tokens statistic from dataset
-
-
-### Testing models:
-
-```python
-MODEL_MAP = {
-    "gpt": GPT,
-    "gpt-neo": GPTNeo,
-    "gpt-llama": GPTLlama,
-    "gpt-neox": GPTNeoX,
-    "gpt-neo-hybrid": GPTNeoHybrid,
-}
-```
-
-[test_models.py](test_models.py): testing models functionality (**gpt-llama** current model).
 
 
 ### Train tokenizer:
