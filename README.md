@@ -29,11 +29,11 @@ MODEL_MAP = {
 
 ### Implemented models:
 
-* [**GPT-model**](model_gpt2.py): standard nanoGPT model.
-* [**GPTNeo**](model_gpt2.py): GPT model with static sin-cos embeddings, that extended positional embeddings (as in GPT-Neo).
+* [**GPT**](model_gpt2.py): standard nanoGPT model.
 * [**GPTLlama**](model_llama.py): GPT model with simple RoPE, RMSNorm-trainable, SWiGLU.
-* [**GPTNeoX**](model_gptx.py): GPT model, featured: percentage RoPE, QK-normalization, RMSNormFn.
-* [**GPTNeoHybrid**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
+* [**GPTNeo (draft)**](model_gpt2.py): GPT model with static sin-cos embeddings, that extended positional embeddings (as in GPT-Neo).
+* [**GPTNeoX (draft)**](model_gptx.py): GPT model, featured: percentage RoPE, QK-normalization, RMSNormFn.
+* [**GPTNeoHybrid (draft)**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
 
 ### Additionally:
