@@ -13,7 +13,7 @@ from transformers import AutoTokenizer
 #eot = enc._special_tokens['<|endoftext|>']  # end of text token
 
 
-tokenizer = AutoTokenizer.from_pretrained("data/noomo", use_fast=True, local_files_only=True)
+tokenizer = AutoTokenizer.from_pretrained("data/noomo-32k", use_fast=True, local_files_only=True)
 eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
 
 

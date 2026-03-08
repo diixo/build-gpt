@@ -11,7 +11,7 @@ from datasets import Dataset, concatenate_datasets
 
 
 EOT = "<|endoftext|>"
-tokenizer_path = "data/noomo"
+tokenizer_path = "data/noomo-32k"
 
 def read_jsonl(file_path: str) -> list:
     text = []
@@ -62,7 +62,7 @@ tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
 tokenizer.decoder = ByteLevelDecoder()
 
 trainer = BpeTrainer(
-    vocab_size=40_256,
+    vocab_size=32_256,
     min_frequency=5,
     initial_alphabet=ByteLevel.alphabet(),
     special_tokens=[]
@@ -70,7 +70,7 @@ trainer = BpeTrainer(
 
 tokenizer.train_from_iterator(text_iterator(), trainer=trainer)
 
-tokenizer.add_special_tokens([EOT])
+tokenizer.add_special_tokens([EOT, "<|system|>", "<|user|>", "<|assistant|>"])
 
 
 fast_tokenizer = PreTrainedTokenizerFast(
