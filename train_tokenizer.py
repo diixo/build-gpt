@@ -11,6 +11,7 @@ from datasets import Dataset, concatenate_datasets
 
 
 EOT = "<|endoftext|>"
+
 tokenizer_path = "data/noomo-32k"
 
 def read_jsonl(file_path: str) -> list:
@@ -57,9 +58,9 @@ def text_iterator():
 
 ################################################################################################
 
-tokenizer = Tokenizer(BPE())
-tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
-tokenizer.decoder = ByteLevelDecoder()
+raw_tokenizer = Tokenizer(BPE())
+raw_tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
+raw_tokenizer.decoder = ByteLevelDecoder()
 
 trainer = BpeTrainer(
     vocab_size=32_256,
@@ -68,16 +69,43 @@ trainer = BpeTrainer(
     special_tokens=[]
 )
 
-tokenizer.train_from_iterator(text_iterator(), trainer=trainer)
+raw_tokenizer.train_from_iterator(text_iterator(), trainer=trainer)
 
-tokenizer.add_special_tokens([EOT, "<|system|>", "<|user|>", "<|assistant|>"])
+raw_tokenizer.add_special_tokens([EOT])
 
 
 fast_tokenizer = PreTrainedTokenizerFast(
-    tokenizer_object = tokenizer,
+    tokenizer_object = raw_tokenizer,
     eos_token = EOT,
     bos_token = None,
     unk_token = None
 )
 
 fast_tokenizer.save_pretrained(tokenizer_path)
+
+#############################################################################################################
+
+# export to gpt2 format for compatibility
+
+tokenizer = GPT2TokenizerFast.from_pretrained(tokenizer_path, local_files_only=True, add_prefix_space=True)
+
+
+'''
+USER = QUESTION
+ASSISTANT = ANSWER
+KNOWLEDGE = CONTEXT
+'''
+
+tokenizer.add_special_tokens({
+    "eos_token": "<|endoftext|>",
+    "pad_token": "<|pad|>",
+    #"additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|instruction|>", "<|knowledge|>"]
+})
+
+tokenizer.save_pretrained("data/gpt-noomo")
+
+test_text = "<|user|> What is the capital of France? <|assistant|> Paris. <|endoftext|>"
+
+#test_text = "GPT is a type of large language model. GPTs are based on a deep learning architecture called the transformer."
+
+print(f"Tokens: {tokenizer.tokenize(test_text)}")
