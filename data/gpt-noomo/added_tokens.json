@@ -1,4 +1,10 @@
 {
+  "<|assistant|>": 32260,
   "<|endoftext|>": 32256,
-  "<|pad|>": 32257
+  "<|instruction|>": 32261,
+  "<|knowledge|>": 32262,
+  "<|pad|>": 32257,
+  "<|reference|>": 32263,
+  "<|system|>": 32258,
+  "<|user|>": 32259
 }

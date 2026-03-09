@@ -99,13 +99,16 @@ KNOWLEDGE = CONTEXT
 tokenizer.add_special_tokens({
     "eos_token": "<|endoftext|>",
     "pad_token": "<|pad|>",
-    #"additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|instruction|>", "<|knowledge|>"]
+    "additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|instruction|>", "<|knowledge|>", "<|reference|>"]
 })
 
 tokenizer.save_pretrained("data/gpt-noomo")
 
 test_text = "<|user|> What is the capital of France? <|assistant|> Paris. <|endoftext|>"
 
-#test_text = "GPT is a type of large language model. GPTs are based on a deep learning architecture called the transformer."
+test_text = "<|user|> GPT is a type of large language model. <|assistant|> GPTs are based on a deep learning architecture called the transformer. <|endoftext|>"
 
 print(f"Tokens: {tokenizer.tokenize(test_text)}")
+
+print("vocab size:", len(tokenizer))
+
