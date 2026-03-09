@@ -7,30 +7,6 @@
       "rstrip": false,
       "single_word": false,
       "special": true
-    },
-    "32257": {
-      "content": "<|system|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false,
-      "special": true
-    },
-    "32258": {
-      "content": "<|user|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false,
-      "special": true
-    },
-    "32259": {
-      "content": "<|assistant|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false,
-      "special": true
     }
   },
   "bos_token": null,
