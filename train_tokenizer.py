@@ -99,7 +99,7 @@ KNOWLEDGE = CONTEXT
 tokenizer.add_special_tokens({
     "eos_token": "<|endoftext|>",
     "pad_token": "<|pad|>",
-    "additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|instruction|>", "<|knowledge|>", "<|reference|>"]
+    "additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|knowledge|>", "<|instruction|>", "<|reference|>"]
 })
 
 tokenizer.save_pretrained("data/gpt-noomo")

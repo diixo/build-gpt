@@ -22,14 +22,14 @@
       "single_word": false
     },
     {
-      "content": "<|instruction|>",
+      "content": "<|knowledge|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,
       "single_word": false
     },
     {
-      "content": "<|knowledge|>",
+      "content": "<|instruction|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,

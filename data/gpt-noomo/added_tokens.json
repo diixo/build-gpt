@@ -1,8 +1,8 @@
 {
   "<|assistant|>": 32260,
   "<|endoftext|>": 32256,
-  "<|instruction|>": 32261,
-  "<|knowledge|>": 32262,
+  "<|instruction|>": 32262,
+  "<|knowledge|>": 32261,
   "<|pad|>": 32257,
   "<|reference|>": 32263,
   "<|system|>": 32258,

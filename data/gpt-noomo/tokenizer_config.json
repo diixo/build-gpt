@@ -42,7 +42,7 @@
       "special": true
     },
     "32261": {
-      "content": "<|instruction|>",
+      "content": "<|knowledge|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,
@@ -50,7 +50,7 @@
       "special": true
     },
     "32262": {
-      "content": "<|knowledge|>",
+      "content": "<|instruction|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,
@@ -70,8 +70,8 @@
     "<|system|>",
     "<|user|>",
     "<|assistant|>",
-    "<|instruction|>",
     "<|knowledge|>",
+    "<|instruction|>",
     "<|reference|>"
   ],
   "bos_token": null,
