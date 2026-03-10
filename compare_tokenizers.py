@@ -10,8 +10,8 @@ from transformers import AutoTokenizer, GPT2TokenizerFast
 # -------------------------
 # CONFIG
 # -------------------------
-DATA_PATH = "test.txt"
-MY_TOK_PATH = "data/noomo"
+DATA_PATH = "dataset.txt"
+MY_TOK_PATH = "data/gpt-noomo-32k"
 GPT2_TOK_PATH = "data/gpt2"
 MAX_PRINT_TOKENS = 200
 
@@ -71,7 +71,7 @@ def summarize(all_rows: List[Dict[str, Any]]) -> Dict[str, float]:
     avg_bpt = sum(r["bytes_per_token"] for r in all_rows) / max(1, len(all_rows))
     avg_space = sum(r["space_like_ratio"] for r in all_rows) / max(1, len(all_rows))
     return {
-        "lines": float(len(all_rows)),
+        "rows": float(len(all_rows)),
         "total_tokens": float(total_tokens),
         "avg_tokens_per_line": float(total_tokens / max(1, len(all_rows))),
         "avg_bytes_per_token": float(avg_bpt),
