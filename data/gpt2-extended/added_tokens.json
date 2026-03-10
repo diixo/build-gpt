@@ -1,0 +1,9 @@
+{
+  "<|assistant|>": 50260,
+  "<|instruction|>": 50262,
+  "<|knowledge|>": 50261,
+  "<|pad|>": 50257,
+  "<|reference|>": 50263,
+  "<|system|>": 50258,
+  "<|user|>": 50259
+}
