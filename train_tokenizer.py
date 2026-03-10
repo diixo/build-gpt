@@ -102,7 +102,7 @@ tokenizer.add_special_tokens({
     "additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|knowledge|>", "<|instruction|>", "<|reference|>"]
 })
 
-tokenizer.save_pretrained("data/gpt-noomo")
+tokenizer.save_pretrained("data/gpt-noomo-32k")
 
 test_text = "<|user|> What is the capital of France? <|assistant|> Paris. <|endoftext|>"
 
