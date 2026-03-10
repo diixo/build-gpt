@@ -1,37 +1,34 @@
 
 
-About Analytics: analytics technology aggregates and analyzes data sets to find meaningful patterns and information that can improve decision-making.
-About Artificial intelligence: artificial intelligence (AI) is the application of machine learning to build systems that simulate human thought processes. It includes several disciplines such as machine learning, knowledge discovery, natural language processing, vision, and human-computer interaction. Generative AI refers to deep-learning models that can generate novel, high-quality text, images, and other content based on the data with which they were trained.
-About Blockchain: blockchain is a tamper-evident, shared digital ledger that records transactions in a public or private peer-to-peer network. The blockchain acts as a single source of truth, and members in a blockchain network can view only those transactions that are relevant to them.
-About Containers: A containers architecture enables multiple services to run on the same machine, isolated from each other, in the same way as virtual machines, but with much less overhead.
-About Conversational AI: Conversation is interacting and communicating with with a personal assistant using voice recognition, speech-to-text, or text-to-speech services.
-About Data management: Data management is the practice of collecting, accessing, maintaining, and driving value from data in an agile, secure, and cost-effective manner. Key components of a data management strategy include data governance, processing, security, and storage.
-About Data privacy: Data privacy refers to processing, storing, and transmitting personal and sensitive data in compliance with government and industry regulations.
-About Data science: Data science is the process of using algorithms, methods, and systems to extract knowledge and insights from structured and unstructured data. It can be used to make predictions and decisions using analytics and machine learning.
-About Data storage: Data storage refers to magnetic, optical, or mechanical media that records and preserves digital information for ongoing or future operations. Two foundations of data storage are the form in which data takes (file storage, block storage, or object storage) and the device that the data is recorded and stored on (direct area storage or network-based storage).
-About Databases: Capture, store, analyze, and manage collections of data.
-About Deep learning: Deep learning is the ability of a system to learn from unstructured data. Relying on layers of artificial neural networks, the learning can be supervised or unsupervised.
-About Embeddable AI: Embeddable AI at IBM is a set of flexible, enterprise-grade AI products that you can easily embed in your applications to provide an enhanced user experience through powerful AI models.
-About Front-end development: Developing the visual aspects of a website or application that a user can see and experience.
-About Geolocation: Geolocation is the longitudinal and latitudinal location of a connected device. Using geolocation APIs or services, developers can programmatically obtain the relative position of a device that the user has granted permission for.
-About IoT: The IoT - Internet-of-Things is the connection of devices to the Internet and other connected devices. All of these devices share data about the way they are used and about the environment around them.
-About IT Infrastructure: Manage and support computers, servers, storage systems, operating systems, networking, and more.
-About Linux: The open source operating system that runs the world.
-About Machine Learning: Machine learning is giving systems the ability to learn and improve without them being explicitly programmed.
-About Mainframes: Mainframe computers are reliable, scalable, compatible, and secure.
-About Messaging: With messaging software, developers can build communication into their applications using a variety of message exchange patterns and a range of qualities-of-service.
-About Mobile development: Mobile development means developing applications — mobile apps or web apps — for any kind of mobile device that runs some kind of mobile operating system.
-About Natural language processing: Natural language processing (NLP) is the parsing and semantic interpretation of text, which allows systems to learn, analyze, and understand human language.
-About Platform as a service:  Platform as a service (PaaS) is a cloud service model that enables you to focus on developing and managing applications without worrying about the underlying infrastructure. In addition to storage and other computing resources, a service provider also typically offers you access to a suite of prebuilt tools to develop, customize, and test your applications.
-About Predictive analytics: Analyze current and historical data to make predictions.
-About Speech and Empathy: Speech and empathy is the process of modeling speech and emotion in an artificial intelligence system.
-About Web development: Use open-standards technologies to build modern web apps.
-About Zero trust: Zero trust security is a model and plan that uses context to securely connect the right users to the right data at the right time under the right conditions, while also protecting your organization from cyber threats.
+Analytics: analytics technology aggregates and analyzes data sets to find meaningful patterns and information that can improve decision-making.
+Artificial intelligence: artificial intelligence (AI) is the application of machine learning to build systems that simulate human thought processes. It includes several disciplines such as machine learning, knowledge discovery, natural language processing, vision, and human-computer interaction. Generative AI refers to deep-learning models that can generate novel, high-quality text, images, and other content based on the data with which they were trained.
+Blockchain: blockchain is a tamper-evident, shared digital ledger that records transactions in a public or private peer-to-peer network. The blockchain acts as a single source of truth, and members in a blockchain network can view only those transactions that are relevant to them.
+Containers: A containers architecture enables multiple services to run on the same machine, isolated from each other, in the same way as virtual machines, but with much less overhead.
+Conversational AI: Conversation is interacting and communicating with with a personal assistant using voice recognition, speech-to-text, or text-to-speech services.
+Data management: Data management is the practice of collecting, accessing, maintaining, and driving value from data in an agile, secure, and cost-effective manner. Key components of a data management strategy include data governance, processing, security, and storage.
+Data privacy: Data privacy refers to processing, storing, and transmitting personal and sensitive data in compliance with government and industry regulations.
+Data science: Data science is the process of using algorithms, methods, and systems to extract knowledge and insights from structured and unstructured data. It can be used to make predictions and decisions using analytics and machine learning.
+Data storage: Data storage refers to magnetic, optical, or mechanical media that records and preserves digital information for ongoing or future operations. Two foundations of data storage are the form in which data takes (file storage, block storage, or object storage) and the device that the data is recorded and stored on (direct area storage or network-based storage).
+Databases: Capture, store, analyze, and manage collections of data.
+Deep learning: Deep learning is the ability of a system to learn from unstructured data. Relying on layers of artificial neural networks, the learning can be supervised or unsupervised.
+Embeddable AI: Embeddable AI at IBM is a set of flexible, enterprise-grade AI products that you can easily embed in your applications to provide an enhanced user experience through powerful AI models.
+Front-end development: Developing the visual aspects of a website or application that a user can see and experience.
+Geolocation: Geolocation is the longitudinal and latitudinal location of a connected device. Using geolocation APIs or services, developers can programmatically obtain the relative position of a device that the user has granted permission for.
+IoT: The IoT - Internet-of-Things is the connection of devices to the Internet and other connected devices. All of these devices share data about the way they are used and about the environment around them.
+IT Infrastructure: Manage and support computers, servers, storage systems, operating systems, networking, and more.
+Linux: The open source operating system that runs the world.
+Machine Learning: Machine learning is giving systems the ability to learn and improve without them being explicitly programmed.
+Mainframes: Mainframe computers are reliable, scalable, compatible, and secure.
+Messaging: With messaging software, developers can build communication into their applications using a variety of message exchange patterns and a range of qualities-of-service.
+Mobile development: Mobile development means developing applications — mobile apps or web apps — for any kind of mobile device that runs some kind of mobile operating system.
+Natural language processing: Natural language processing (NLP) is the parsing and semantic interpretation of text, which allows systems to learn, analyze, and understand human language.
+Platform as a service:  Platform as a service (PaaS) is a cloud service model that enables you to focus on developing and managing applications without worrying about the underlying infrastructure. In addition to storage and other computing resources, a service provider also typically offers you access to a suite of prebuilt tools to develop, customize, and test your applications.
+Predictive analytics: Analyze current and historical data to make predictions.
+Speech and Empathy: Speech and empathy is the process of modeling speech and emotion in an artificial intelligence system.
+Web development: Use open-standards technologies to build modern web apps.
+Zero trust: Zero trust security is a model and plan that uses context to securely connect the right users to the right data at the right time under the right conditions, while also protecting your organization from cyber threats.
 
 
-Analytics - Uncover insights with data collection, organization, and analysis.
-Artificial intelligence - Next generation resources for AI builders to create trusted solutions
-Blockchain - Start developing with blockchain technologies
 Containers - Automate the deployment, scaling, and management of containerized applications.
 Conversational AI - Build voice and text chatbots that can understand what users are asking.
 Data management - Collect, access, and maintain data to drive value
