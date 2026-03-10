@@ -12,7 +12,7 @@ from datasets import Dataset, concatenate_datasets
 
 EOT = "<|endoftext|>"
 
-tokenizer_path = "data/noomo-32k"
+tokenizer_path = "data/noomo"
 
 def read_jsonl(file_path: str) -> list:
     text = []
@@ -63,7 +63,7 @@ raw_tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
 raw_tokenizer.decoder = ByteLevelDecoder()
 
 trainer = BpeTrainer(
-    vocab_size=32_256,
+    vocab_size=40_256,
     min_frequency=5,
     initial_alphabet=ByteLevel.alphabet(),
     special_tokens=[]
@@ -99,10 +99,10 @@ KNOWLEDGE = CONTEXT
 tokenizer.add_special_tokens({
     "eos_token": "<|endoftext|>",
     "pad_token": "<|pad|>",
-    "additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|knowledge|>", "<|instruction|>", "<|reference|>"]
+    #"additional_special_tokens": ["<|system|>", "<|user|>", "<|assistant|>", "<|knowledge|>", "<|instruction|>", "<|reference|>"]
 })
 
-tokenizer.save_pretrained("data/gpt-noomo-32k")
+tokenizer.save_pretrained("data/gpt-noomo")
 
 test_text = "<|user|> What is the capital of France? <|assistant|> Paris. <|endoftext|>"
 
