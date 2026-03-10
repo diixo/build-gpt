@@ -2,7 +2,7 @@ import os
 from collections import Counter
 import multiprocessing as mp
 import numpy as np
-import tiktoken
+
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from datasets import load_dataset
@@ -12,15 +12,6 @@ from transformers import AutoTokenizer
 
 tokenizer = AutoTokenizer.from_pretrained("data/noomo-32k", use_fast=True, local_files_only=True)
 eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
-
-
-# use for tiktoken tokenizer
-# def tt_tokenize_to_len(row):
-#     tokens = [eot]
-#     tokens.extend(enc.encode_ordinary(row["text"]))
-#     tokens_np = np.array(tokens, dtype=np.uint16)
-#     #return tokens_np.astype(np.uint16)
-#     return len(tokens_np)
 
 
 # use for hugging-face tokenizer
