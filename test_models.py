@@ -3,14 +3,12 @@ import os
 from pathlib import Path
 import torch, math, random, numpy as np
 from dataclasses import dataclass
-from model_gpt2 import GPT, GPTNeo
+from model_gpt2 import GPT
 from model_llama import GPTLlama
-from model_gptx import GPTNeoX
-from model_gpt_hybrid import GPTNeoHybrid
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 
-from transformers import AutoTokenizer, GPT2Tokenizer, AutoModelForCausalLM, GPT2TokenizerFast
+from transformers import GPT2TokenizerFast
 from transformers import set_seed
 from utils import create_hf_llama, plot_loss, save_trained_model, file_path_from_config
 
@@ -41,18 +39,12 @@ class AutoGPTModel:
 
     MODEL_MAP = {
         "gpt2": GPT,
-        "gpt-neo": GPTNeo,
         "llama": GPTLlama,
-        "gpt-neox": GPTNeoX,
-        "gpt-neo-hybrid": GPTNeoHybrid,
     }
 
     CONFIG_MAP = {
         "gpt2": dict(),
-        "gpt-neo": dict(),
         "llama": dict(rope_base=10000.0, use_rope=True),
-        "gpt-neox": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
-        "gpt-neo-hybrid": dict(rope_base=10000.0, use_rope=True, rotary_pct=0.25, tie_word_embeddings=True),
     }
 
 
@@ -62,8 +54,6 @@ class AutoGPTModel:
         if model_type not in AutoGPTModel.MODEL_MAP:
             raise ValueError(f"Unknown model_type: {model_type}")
 
-        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b", local_files_only=True)
-        #tokenizer = AutoTokenizer.from_pretrained("EleutherAI/pythia-31m", local_files_only=True)
         tokenizer = GPT2TokenizerFast.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
 
         # Extract sizes
