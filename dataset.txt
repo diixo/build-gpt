@@ -1,3 +1,54 @@
+Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity
+Breaking the Softmax Bottleneck: A High-Rank RNN Language Model
+Do Transformer Modifications Transfer Across Implementations and Applications?
+Learning Factored Representations in a Deep Mixture of Experts
+Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer
+ST-MoE: Designing Stable and Transferable Sparse Expert Models. Mixture-of-Experts with Expert Choice Routing.
+
+A Comprehensive Survey on Applications of Transformers for Deep Learning Tasks
+Transformer models: an introduction and catalog. In the past few years we have seen the meteoric appearance of dozens of foundation models of the Transformer family, all of which have memorable and sometimes funny, but not self-explanatory, names.
+
+The goal of this paper is to offer a somewhat comprehensive but simple catalog and classification of the most popular Transformer models. The paper also includes an introduction to the most important aspects and innovations in Transformer models.
+Advancing Transformer architecture in Long-Context Large Language Models: A Comprehensive Survey
+Reducing the Transformer architecture to a Minimum
+
+This article offers a comprehensive survey of the recent advancement in Transformer-based LLM architectures aimed at enhancing the long-context capabilities of LLMs throughout the entire model lifecycle.
+We first delineate and analyze the problems of handling long-context input and output with the current Transformer-based models.
+We then provide a taxonomy and the landscape of upgrades on Transformer architecture to solve these problems.
+In practice, no previous work has succeeded in proposing a shared-layer Transformer design that is competitive in parameter count-dominated tasks such as language modeling.
+Here we propose MoEUT (pronounced "moot"), an effective mixture-of-experts (MoE)-based shared-layer Transformer architecture, which combines several recent advances in MoEs for both feedforward and attention layers.
+We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.
+We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.
+
+Dynamic Universal Approximation Theory: The Basic Theory for Transformer-based Large Language Models
+Large-scale Transformer networks have quickly become the leading approach for advancing natural language processing algorithms.
+Built on the Transformer architecture, these models enable interactions that closely mimic human communication and, equipped with extensive knowledge.
+What makes Transformer so effective for powering intelligent language applications, such as translation and coding?
+
+Anthropic PBC is an American artificial intelligence (AI) company headquartered in San Francisco. It has developed a family of large language models (LLMs) named Claude.
+The company researches and develops AI to "study their safety properties at the technological frontier" and use this research to deploy safe models for the public.
+
+Anthropic was founded in 2021 by former members of OpenAI, including siblings Daniela Amodei and Dario Amodei, who serve as president and CEO, respectively. As of February 2026, Anthropic has an estimated value of $380 billion.
+In the summer of 2022, Anthropic finished training the first version of Claude but did not release it, citing the need for further internal safety testing and a desire to avoid initiating a potentially hazardous race to develop increasingly powerful AI systems.
+
+EleutherAI is a grass-roots non-profit artificial intelligence (AI) research group. The group, considered an open-source version of OpenAI, was formed in a Discord server in 2020 to create an open-source version of GPT-3.
+In early 2023, it formally incorporated as the EleutherAI Institute, a non-profit research institute. As of 2025, the nonprofit maintains widely-used training datasets, conducts research, and is involved in public policy, among other activities.
+
+EleutherAI released The Pile, a curated dataset of diverse text for training large language models. While the paper referenced the existence of the GPT-Neo models, the models themselves were not released until March 21, 2021.
+EleutherAI followed this up with GPT-J-6B, a six billion parameter language model that was again the largest open-source GPT-3-like model in the world.
+
+Transformer is neural network architecture of Large Language Models (LLMs), that use self-attention mechanisms to process sequential data in parallel, replacing the need for recurrence. The deep learning field has been experiencing a seismic shift, thanks to the emergence and rapid evolution of Transformer models.
+
+1. Language Modeling (LM): Predict the next token (in the case of unidirectional LM) or the previous and next token (in the case of bidirectional LM).
+2. Causal Language Modeling (Causality-masked LM): Autoregressively (left-to-right, in general) predict a text sequence, similar to unidirectional LM.
+3. Prefix Language Modeling (Prefix LM): In this task, a separate ’prefix’ section is separated from the main sequence. Within the prefix, any token can attend to any other token (non-causal). Outside of the prefix, decoding proceeds autoregressively.
+4. Masked Language Modeling (MLM): Mask out some tokens from the input sentences and then train the model to predict the masked tokens using the surrounding context.
+5. Permuted Language Modeling (PLM): Same as LM, but on a random permutation of input sequences. A permutation is randomly sampled from all possible permutations. Then some of the tokens are chosen as the target, and the model is trained to predict these targets.
+6. Denoising Autoencoder (DAE): Take a partially corrupted input and aim to recover the original, undistorted input. Examples of corrupted input include randomly sampling tokens from the input and replacing them with "[MASK]" elements, randomly deleting tokens from the input, or shuffling sentences in random order.
+7. Replaced Token Detection (RTD): Using a "generator" model, randomly replace certain tokens in the text. The "discriminator" is tasked to predict whether a token comes from the original text, or the generator model.
+8. Next Sentence Prediction (NSP): Train the model to distinguish whether two input sentences are continuous segments from the training corpus.
+
+It were first developed to solve the problem of sequence transduction, or neural machine translation, which means they are meant to solve any task that transforms an input sequence to an output sequence. This is why they are called “Transformers”.
 
 
 Analytics: analytics technology aggregates and analyzes data sets to find meaningful patterns and information that can improve decision-making.
@@ -54,7 +105,6 @@ Predictive analytics Analyze current and historical data to make predictions.
 Speech and Empathy Develop apps that detect feelings and respond accordingly.
 Web development Use open-standards technologies to build modern web apps.
 Zero trust Increased cyber resiliency with threat management and identity management
-
 
 
 Native Protocols: The library implements the native protocols needed to communicate with services running on iOS devices. Due to the reimplemention it does not depend on using or bundling any existing libraries from Apple.
