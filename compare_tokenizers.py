@@ -102,7 +102,7 @@ def main():
         print(f"GPT2: n={g['n']}  bpt={g['bytes_per_token']:.2f}  space_like={g['space_like_ratio']:.2f}  unk={g['unk_cnt']}")
         print("GPT2 tokens:", short_list(g["tokens"]))
         print("-"*80)
-        print(f"MY  : n={m['n']}  bpt={m['bytes_per_token']:.2f}  space_like={m['space_like_ratio']:.2f}  unk={m['unk_cnt']}")
+        print(f"MY: n={m['n']}  bpt={m['bytes_per_token']:.2f}  space_like={m['space_like_ratio']:.2f}  unk={m['unk_cnt']}")
         print("MY tokens  :", short_list(m["tokens"]))
 
         # “где сильнее отличается”

@@ -57,14 +57,14 @@ def plot_loss(losses: list, model_type: str):
     plt.show()
 
 
-def create_hf_llama():
+def create_hf_llama(tokenizer):
 
     from transformers import LlamaConfig, LlamaForCausalLM
 
     # "LLaMA-style" (RMSNorm + RoPE), by size is GPT-2 small:
     # n_layer=12, n_head=12, hidden=768, mlp=3072
     config = LlamaConfig(
-        vocab_size=50257,           # GPT-2
+        vocab_size=len(tokenizer),           # GPT-2
         hidden_size=768,            # n_embd
         intermediate_size=3072,     # usually 4 * hidden
         num_hidden_layers=12,       # n_layer
@@ -80,16 +80,48 @@ def create_hf_llama():
         tie_word_embeddings=True,
 
         # llama specified bos/eos; use default params
-        pad_token_id=0,
-        bos_token_id=1,
-        eos_token_id=2,
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.pad_token_id,
+        #bos_token_id=tokenizer.bos_token_id,
     )
 
     model = LlamaForCausalLM(config)
+    model.config.use_cache = False
+
     params = sum(p.numel() for p in model.parameters())
     print("hf_llama.params:", params)
     # print("dtype:", next(model.parameters()).dtype)
     # print("device:", next(model.parameters()).device)
+    return model
+
+
+def create_hf_gpt2(tokenizer):
+
+    from transformers import GPT2Config, GPT2LMHeadModel
+
+    config = GPT2Config(
+        vocab_size=len(tokenizer),
+        n_positions=1024,
+        n_embd=768,
+        n_layer=12,
+        n_head=12,
+        n_inner=3072,
+        activation_function="gelu_new",
+        resid_pdrop=0.1,
+        embd_pdrop=0.1,
+        attn_pdrop=0.1,
+        layer_norm_epsilon=1e-5,
+        initializer_range=0.02,
+        tie_word_embeddings=True,
+
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.pad_token_id,
+        #bos_token_id=tokenizer.bos_token_id,
+    )
+    #config.loss_type = "cross_entropy"
+
+    model = GPT2LMHeadModel(config)
+    model.config.use_cache = False
     return model
 
 

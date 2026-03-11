@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from transformers import GPT2TokenizerFast
 from transformers import set_seed
-from utils import create_hf_llama, plot_loss, save_trained_model, file_path_from_config
+from utils import create_hf_llama, create_hf_gpt2, plot_loss, save_trained_model, file_path_from_config
 
 
 MAX_LEN = 1024
@@ -40,6 +40,11 @@ class AutoGPTModel:
     MODEL_MAP = {
         "gpt2": GPT,
         "llama": GPTLlama,
+    }
+
+    MODEL_FACTORY_MAP = {
+        "gpt2": create_hf_gpt2,
+        "llama": create_hf_llama,
     }
 
     CONFIG_MAP = {
@@ -85,7 +90,10 @@ class AutoGPTModel:
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
 
         if USE_HF:
-            model = create_hf_llama()
+            if model_type not in AutoGPTModel.MODEL_FACTORY_MAP:
+                raise ValueError(f"Unknown model_type: {model_type}")
+
+            model = AutoGPTModel.MODEL_FACTORY_MAP[model_type](tokenizer)
         else:
             # get the model class
             model_cls = AutoGPTModel.MODEL_MAP[model_type]
@@ -544,7 +552,7 @@ if __name__ == "__main__":
     tokenizer_type = "gpt-noomo-32k"    # "gpt2", "gpt-noomo"
 
 
-    train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=25, batch_size=32, grad_accum_steps=1)
 
     model, tokenizer = load_pretrained_model(model_type, file_path_from_config(model_type, train_config, SAVE_DIRECTORY))
 
