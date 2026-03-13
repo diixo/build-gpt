@@ -5,7 +5,7 @@ from transformers import GPT2TokenizerFast
 
 
 #tokenizer = GPT2TokenizerFast.from_pretrained("data/noomo", local_files_only=True)
-tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt2", local_files_only=True)
+tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-noomo-32k", local_files_only=True)
 
 paths = [
     "data/dictionary.cambridge.org-00.jsonl",
@@ -58,4 +58,4 @@ for path_str in paths:
 print(f"Items: {n}, bad json lines: {bad}")
 print(f"MAX_tokens: {max_len}, line_id={max_id}, total_tokens={total_len}")
 
-#print("Winner preview:", (max_text[:300] + "…") if max_text and len(max_text) > 300 else max_text)
+print("### Max-tokens line preview:", (max_text[:100] + "…") if max_text and len(max_text) > 100 else max_text)
