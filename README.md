@@ -2,7 +2,7 @@
 
 * Based on: https://github.com/karpathy/build-nanogpt
 
-A PyTorch library with educational re-implementation of GPT-models: LLaMA, [GPT2](https://github.com/openai/gpt-2), GPTNeo, GPTNeoX, included both training and inference. Code tries to be small, clean and interpretable, as most of the currently available GPT model implementations can a bit sprawling. Code focused on implementation of [GPTLlama](model_llama.py), that is not a complicated model and this implementation is appropriately about 350 lines of code.
+A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, **GPT** included both training and inference. Code tries to be small, clean and interpretable, as most of the currently available [GPT](model_gpt2.py) model implementations can a bit sprawling. Code focused on implementation of [GPTLlama](model_llama.py), that is not a complicated model and this implementation is appropriately about 350 lines of code.
 
 
 ### Demos:
@@ -18,9 +18,6 @@ A PyTorch library with educational re-implementation of GPT-models: LLaMA, [GPT2
 MODEL_MAP = {
     "gpt2": GPT,
     "llama": GPTLlama,
-    "gpt-neo": GPTNeo,
-    "gpt-neox": GPTNeoX,
-    "gpt-neo-hybrid": GPTNeoHybrid,
 }
 ```
 
@@ -31,9 +28,6 @@ MODEL_MAP = {
 
 * [**GPT**](model_gpt2.py): standard nanoGPT model.
 * [**GPTLlama**](model_llama.py): GPT model with simple RoPE, RMSNorm-trainable, SWiGLU.
-* [**GPTNeo (draft)**](model_gpt2.py): GPT model with static sin-cos embeddings, that extended positional embeddings (as in GPT-Neo).
-* [**GPTNeoX (draft)**](model_gptx.py): GPT model, featured: percentage RoPE, QK-normalization, RMSNormFn.
-* [**GPTNeoHybrid (draft)**](model_gpt_hybrid.py): GPT model (based on GPTNeoX), featured: percentage RoPE, QK-normalization, RMSNormFn.
 
 
 ### Additionally:
