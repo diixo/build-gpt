@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 
 
 
-tokenizer = AutoTokenizer.from_pretrained("data/noomo-32k", use_fast=True, local_files_only=True)
+tokenizer = AutoTokenizer.from_pretrained("data/gpt-noomo-32k", use_fast=True, local_files_only=True)
 eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
 
 
@@ -28,9 +28,10 @@ def hf_tokenize_to_len(row):
 
 if __name__ == "__main__":
 
+    # 9_672_101
     fw = load_dataset("HuggingFaceFW/fineweb-edu", name="sample-10BT", split="train")
 
-    total_docs = len(fw)  # 9_672_101
+    total_docs = len(fw)
 
     size_map_counter = Counter()
     nprocs = min(4, os.cpu_count())
