@@ -20,60 +20,6 @@
       "rstrip": false,
       "normalized": false,
       "special": true
-    },
-    {
-      "id": 32258,
-      "content": "<|system|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 32259,
-      "content": "<|user|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 32260,
-      "content": "<|assistant|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 32261,
-      "content": "<|knowledge|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 32262,
-      "content": "<|instruction|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 32263,
-      "content": "<|reference|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
     }
   ],
   "normalizer": null,

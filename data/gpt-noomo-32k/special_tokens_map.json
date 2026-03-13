@@ -1,48 +1,4 @@
 {
-  "additional_special_tokens": [
-    {
-      "content": "<|system|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
-    },
-    {
-      "content": "<|user|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
-    },
-    {
-      "content": "<|assistant|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
-    },
-    {
-      "content": "<|knowledge|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
-    },
-    {
-      "content": "<|instruction|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
-    },
-    {
-      "content": "<|reference|>",
-      "lstrip": false,
-      "normalized": false,
-      "rstrip": false,
-      "single_word": false
-    }
-  ],
   "eos_token": {
     "content": "<|endoftext|>",
     "lstrip": false,

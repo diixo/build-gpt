@@ -12,7 +12,7 @@ from datasets import Dataset, concatenate_datasets
 
 EOT = "<|endoftext|>"
 
-tokenizer_path = "data/noomo"
+tokenizer_path = "data/noomo-32k"
 
 def read_jsonl(file_path: str) -> list:
     text = []
@@ -42,6 +42,7 @@ fw_extended = concatenate_datasets([
     fw,
     Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2015_2020.jsonl") }),
     Dataset.from_dict({ "text": read_jsonl("datasets/arxiv-corpus/arxiv_cs_2021_2024.jsonl") }),
+
     ])
 
 total_rows = len(fw_extended)
@@ -63,7 +64,7 @@ raw_tokenizer.pre_tokenizer = ByteLevel(add_prefix_space=True)
 raw_tokenizer.decoder = ByteLevelDecoder()
 
 trainer = BpeTrainer(
-    vocab_size=40_256,
+    vocab_size=32_256,
     min_frequency=5,
     initial_alphabet=ByteLevel.alphabet(),
     special_tokens=[]
@@ -99,23 +100,24 @@ KNOWLEDGE = CONTEXT
 added = tokenizer.add_special_tokens({
     "eos_token": "<|endoftext|>",
     "pad_token": "<|pad|>",
-    "additional_special_tokens": [
-        "<|system|>",
-        "<|user|>",
-        "<|assistant|>",
-        "<|knowledge|>",
-        "<|instruction|>",
-        "<|reference|>",
-        ]
+    # "additional_special_tokens": [
+    #     "<|system|>",
+    #     "<|user|>",
+    #     "<|assistant|>",
+    #     "<|knowledge|>",
+    #     "<|instruction|>",
+    #     "<|reference|>",
+    #     ]
 })
 
 print(f"added: {added}, vocab_size: {len(tokenizer)}")
 
-tokenizer.save_pretrained("data/gpt-noomo")
+tokenizer.save_pretrained("data/gpt-noomo-32k")
 
 test_text = "<|user|> What is the capital of France? <|assistant|> Paris. <|endoftext|>"
 
-test_text = "<|user|> GPT is a type of large language model. <|assistant|> GPTs are based on a deep learning architecture called the transformer. <|endoftext|>"
+test_text = "<|user|> GPT is a type of large language model. <|assistant|> The chatGPT and other GPTs are based on a deep learning architecture called the transformer. <|endoftext|>"
 
 print(f"Tokens: {tokenizer.tokenize(test_text)}")
 
+print(f"Tokens: {tokenizer.tokenize('User: ###What is Wikipedia? Assistant: ### Wikipedia is a free online encyclopedia.')}")
