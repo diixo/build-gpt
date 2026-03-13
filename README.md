@@ -71,3 +71,7 @@ Additional special tokens to **gpt-noomo-32k**:
     <|instruction|>
     ###
 ```
+
+* USER = QUESTION
+* ASSISTANT = ANSWER
+* KNOWLEDGE = CONTEXT

@@ -95,12 +95,6 @@ if TRAIN:
 tokenizer = GPT2TokenizerFast.from_pretrained(tokenizer_path, local_files_only=True, add_prefix_space=True)
 
 
-'''
-USER = QUESTION
-ASSISTANT = ANSWER
-KNOWLEDGE = CONTEXT
-'''
-
 added = tokenizer.add_special_tokens({
     "eos_token": "<|endoftext|>",
     "pad_token": "<|pad|>",
@@ -124,4 +118,4 @@ test_text = "<|user|> GPT is a type of large language model. <|assistant|> The c
 
 print(f"Tokens: {tokenizer.tokenize(test_text)}")
 
-print(f"Tokens: {tokenizer.tokenize('User: ###What is Wikipedia? Assistant: ### Wikipedia is a free online encyclopedia.')}")
+print(f"Tokens: {tokenizer.tokenize('###What is Wikipedia? Assistant: ### Wikipedia is a free online encyclopedia.')}")
