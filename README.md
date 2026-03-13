@@ -55,5 +55,19 @@ MODEL_MAP = {
 | gpt-neo-125m          |  9_953_989_333  |  50_257  |
 | noomo                 |  9_843_922_538  |  40_260  |
 | gpt-noomo             |  9_842_205_029  |  40_264  |
-| noomo-32k             | 10_006_603_852  |  32_257  |
+| noomo-32k             | 10_006_603_852  |  32_258  |
 | gpt-noomo-32k         | 10_004_611_259  |  32_264  |
+
+### Tokenizers
+
+The **gpt-noomo-32k** tokenizer is eztention from **noomo-32k**.
+
+Additional special tokens to **gpt-noomo-32k**:
+```
+    <|system|>
+    <|user|>
+    <|assistant|>
+    <|knowledge|>
+    <|instruction|>
+    ###
+```
