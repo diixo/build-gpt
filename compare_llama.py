@@ -305,7 +305,7 @@ class Trainer:
             f"steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}"
         )
 
-        return self.step_losses
+        return self.losses, self.step_losses
 
 
     def train(self):
@@ -403,7 +403,7 @@ class Trainer:
         print("✅ Training completed,",
             f"steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}")
 
-        return self.step_losses
+        return self.losses, self.step_losses
 
 
 def plot_losses(losses1: list, label1: str, losses2: list, label2: str, x_label: str):
@@ -427,7 +427,7 @@ if __name__ == "__main__":
     tokenizer_type = "gpt-noomo-32k"    # "gpt2"
 
 
-    train_config = TrainerConfig(epochs=20, batch_size=32, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=25, batch_size=32, grad_accum_steps=1)
 
     ################################################################################################################
     model, tokenizer = AutoGPTModel.from_config(model_type=model_type, use_hf=False, tokenizer_type=tokenizer_type)
@@ -445,11 +445,12 @@ if __name__ == "__main__":
 
     ################################################################################################################
 
-    step_losses_hf = trainer_hf.train_hf()
+    epoch_losses_hf, step_losses_hf = trainer_hf.train_hf()
 
-    step_losses = trainer.train()
+    epoch_losses, step_losses = trainer.train()
 
     ################################################################################################################
 
-    plot_losses(step_losses, type(model), step_losses_hf, type(model_hf), "Steps")
+    plot_losses(epoch_losses_hf, type(model_hf), epoch_losses, type(model), "Epochs")
 
+    plot_losses(step_losses_hf, type(model_hf), step_losses, type(model), "Steps")
