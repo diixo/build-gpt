@@ -8,20 +8,17 @@ A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, *
 ### Demos:
 
 * [fineweb.py](fineweb.py): build tokenized `edu_fineweb10B` dataset.
-* [main_ddp.py](main_ddp.py]): train model in `ddp` mode.
-* [main.py](main.py): train model in `single-GPU` mode.
+* [main_ddp.py](main_ddp.py]): train model `edu_fineweb10B` (`ddp` mode).
+* [main.py](main.py): train model on `edu_fineweb10B` (`single-GPU` mode).
+* [compare_llama.py]: compare llama models and build graph
+
+
+![llama-epochs](assets/llama-epochs.png)
 
 
 ### Testing models:
 
-```python
-MODEL_MAP = {
-    "gpt2": GPT,
-    "llama": GPTLlama,
-}
-```
-
-[test_models.py](test_models.py): testing models functionality (**gpt2**, **llama** with tokenizers **gpt2** or **noomo**).
+* [test_models.py](test_models.py): testing models functionality (**gpt2**, **llama** with tokenizers **gpt2** or **noomo**).
 
 
 ### Implemented models:
@@ -30,18 +27,13 @@ MODEL_MAP = {
 * [**GPTLlama**](model_llama.py): GPT model with simple RoPE, RMSNorm-trainable, SWiGLU.
 
 
+
 ### Additionally:
-
-* [train_tokenizer.py](train_tokenizer.py)      : train custom tokenizer
 * [fineweb_gpt.py](fineweb_gpt.py)              : build dataset from trained tokenizer
-* [fineweb_statistics.py](fineweb_statistics.py): create tokens statistic from dataset
-
-
-### Train tokenizer:
-
-* [train_tokenizer.py](train_tokenizer.py): train custom tokenizer
-* [compare_tokenizers.py](compare_tokenizers.py): comparing tokenizers by quality
 * [fineweb_statistics.py](fineweb_statistics.py): tokens statistic of dataset **Fineweb-Edu-10BT**
+* [train_tokenizer.py](train_tokenizer.py)      : train custom tokenizer
+* [compare_tokenizers.py](compare_tokenizers.py): comparing tokenizers by quality
+
 
 | Tokenizer             |     Tokens      |   size   |
 |-----------------------|-----------------|----------|
