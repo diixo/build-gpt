@@ -10,7 +10,7 @@ A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, *
 * [fineweb.py](fineweb.py): build tokenized `edu_fineweb10B` dataset.
 * [main_ddp.py](main_ddp.py]): train model `edu_fineweb10B` (`ddp` mode).
 * [main.py](main.py): train model on `edu_fineweb10B` (`single-GPU` mode).
-* [compare_llama.py]: compare llama models and build graph
+* [compare_llama.py](compare_llama.py): compare llama models and build graph
 
 
 ![llama-epochs](assets/llama-epochs.png)
@@ -33,7 +33,7 @@ A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, *
 * [fineweb_statistics.py](fineweb_statistics.py): tokens statistic of dataset **Fineweb-Edu-10BT**
 * [train_tokenizer.py](train_tokenizer.py)      : train custom tokenizer
 * [compare_tokenizers.py](compare_tokenizers.py): comparing tokenizers by quality
-
+<br>
 
 | Tokenizer             |     Tokens      |   size   |
 |-----------------------|-----------------|----------|
@@ -43,6 +43,7 @@ A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, *
 | gpt-noomo             |  9_842_205_029  |  40_264  |
 | noomo-32k             | 10_006_603_852  |  32_258  |
 | gpt-noomo-32k         | 10_004_601_430  |  32_264  |
+<br>
 
 ### Tokenizers
 
