@@ -6478,3 +6478,723 @@ Assistant: Data science is the practice of extracting useful insights from data 
 User: What is attention in a transformer?
 Assistant: Attention is a mechanism that lets a model weigh the importance of different tokens when processing or generating a sequence.
 
+User: In one sentence, explain GPT.
+Assistant: In one sentence, GPT is a transformer-based language model that predicts tokens from context.
+
+User: Give a concise technical meaning of GPT.
+Assistant: A concise technical meaning of GPT is a transformer-based language model that predicts tokens from context.
+
+User: What does GPT refer to in machine learning?
+Assistant: In machine learning, GPT refers to a transformer-based language model that predicts tokens from context.
+
+User: State the role or meaning of GPT.
+Assistant: The role or meaning of GPT is a transformer-based language model that predicts tokens from context.
+
+User: In one sentence, explain transformer.
+Assistant: In one sentence, transformer is a neural architecture that models relationships in sequences using attention.
+
+User: Give a concise technical meaning of transformer.
+Assistant: A concise technical meaning of transformer is a neural architecture that models relationships in sequences using attention.
+
+User: What does transformer refer to in machine learning?
+Assistant: In machine learning, transformer refers to a neural architecture that models relationships in sequences using attention.
+
+User: State the role or meaning of transformer.
+Assistant: The role or meaning of transformer is a neural architecture that models relationships in sequences using attention.
+
+User: In one sentence, explain encoder.
+Assistant: In one sentence, encoder is the model part that converts an input sequence into contextual representations.
+
+User: Give a concise technical meaning of encoder.
+Assistant: A concise technical meaning of encoder is the model part that converts an input sequence into contextual representations.
+
+User: What does encoder refer to in machine learning?
+Assistant: In machine learning, encoder refers to the model part that converts an input sequence into contextual representations.
+
+User: State the role or meaning of encoder.
+Assistant: The role or meaning of encoder is the model part that converts an input sequence into contextual representations.
+
+User: In one sentence, explain decoder.
+Assistant: In one sentence, decoder is the model part that generates an output sequence token by token.
+
+User: Give a concise technical meaning of decoder.
+Assistant: A concise technical meaning of decoder is the model part that generates an output sequence token by token.
+
+User: What does decoder refer to in machine learning?
+Assistant: In machine learning, decoder refers to the model part that generates an output sequence token by token.
+
+User: State the role or meaning of decoder.
+Assistant: The role or meaning of decoder is the model part that generates an output sequence token by token.
+
+User: In one sentence, explain machine learning.
+Assistant: In one sentence, machine learning is the study of systems that learn patterns from data.
+
+User: Give a concise technical meaning of machine learning.
+Assistant: A concise technical meaning of machine learning is the study of systems that learn patterns from data.
+
+User: What does machine learning refer to in machine learning?
+Assistant: In machine learning, machine learning refers to the study of systems that learn patterns from data.
+
+User: State the role or meaning of machine learning.
+Assistant: The role or meaning of machine learning is the study of systems that learn patterns from data.
+
+User: In one sentence, explain deep learning.
+Assistant: In one sentence, deep learning is a branch of machine learning based on multi-layer neural networks.
+
+User: Give a concise technical meaning of deep learning.
+Assistant: A concise technical meaning of deep learning is a branch of machine learning based on multi-layer neural networks.
+
+User: What does deep learning refer to in machine learning?
+Assistant: In machine learning, deep learning refers to a branch of machine learning based on multi-layer neural networks.
+
+User: State the role or meaning of deep learning.
+Assistant: The role or meaning of deep learning is a branch of machine learning based on multi-layer neural networks.
+
+User: In one sentence, explain dataset.
+Assistant: In one sentence, dataset is a structured collection of examples used for analysis or modeling.
+
+User: Give a concise technical meaning of dataset.
+Assistant: A concise technical meaning of dataset is a structured collection of examples used for analysis or modeling.
+
+User: What does dataset refer to in machine learning?
+Assistant: In machine learning, dataset refers to a structured collection of examples used for analysis or modeling.
+
+User: State the role or meaning of dataset.
+Assistant: The role or meaning of dataset is a structured collection of examples used for analysis or modeling.
+
+User: In one sentence, explain data science.
+Assistant: In one sentence, data science is the practice of extracting useful insight from data.
+
+User: Give a concise technical meaning of data science.
+Assistant: A concise technical meaning of data science is the practice of extracting useful insight from data.
+
+User: What does data science refer to in machine learning?
+Assistant: In machine learning, data science refers to the practice of extracting useful insight from data.
+
+User: State the role or meaning of data science.
+Assistant: The role or meaning of data science is the practice of extracting useful insight from data.
+
+User: In one sentence, explain token.
+Assistant: In one sentence, token is a unit of text handled by a model or tokenizer.
+
+User: Give a concise technical meaning of token.
+Assistant: A concise technical meaning of token is a unit of text handled by a model or tokenizer.
+
+User: What does token refer to in machine learning?
+Assistant: In machine learning, token refers to a unit of text handled by a model or tokenizer.
+
+User: State the role or meaning of token.
+Assistant: The role or meaning of token is a unit of text handled by a model or tokenizer.
+
+User: In one sentence, explain tokenizer.
+Assistant: In one sentence, tokenizer is a tool that converts text into token units.
+
+User: Give a concise technical meaning of tokenizer.
+Assistant: A concise technical meaning of tokenizer is a tool that converts text into token units.
+
+User: What does tokenizer refer to in machine learning?
+Assistant: In machine learning, tokenizer refers to a tool that converts text into token units.
+
+User: State the role or meaning of tokenizer.
+Assistant: The role or meaning of tokenizer is a tool that converts text into token units.
+
+User: In one sentence, explain embedding.
+Assistant: In one sentence, embedding is a dense vector representation of a token or item.
+
+User: Give a concise technical meaning of embedding.
+Assistant: A concise technical meaning of embedding is a dense vector representation of a token or item.
+
+User: What does embedding refer to in machine learning?
+Assistant: In machine learning, embedding refers to a dense vector representation of a token or item.
+
+User: State the role or meaning of embedding.
+Assistant: The role or meaning of embedding is a dense vector representation of a token or item.
+
+User: In one sentence, explain attention.
+Assistant: In one sentence, attention is a mechanism that weights the relevance of different positions in a sequence.
+
+User: Give a concise technical meaning of attention.
+Assistant: A concise technical meaning of attention is a mechanism that weights the relevance of different positions in a sequence.
+
+User: What does attention refer to in machine learning?
+Assistant: In machine learning, attention refers to a mechanism that weights the relevance of different positions in a sequence.
+
+User: State the role or meaning of attention.
+Assistant: The role or meaning of attention is a mechanism that weights the relevance of different positions in a sequence.
+
+User: In one sentence, explain self-attention.
+Assistant: In one sentence, self-attention is attention applied within the same sequence.
+
+User: Give a concise technical meaning of self-attention.
+Assistant: A concise technical meaning of self-attention is attention applied within the same sequence.
+
+User: What does self-attention refer to in machine learning?
+Assistant: In machine learning, self-attention refers to attention applied within the same sequence.
+
+User: State the role or meaning of self-attention.
+Assistant: The role or meaning of self-attention is attention applied within the same sequence.
+
+User: In one sentence, explain cross-attention.
+Assistant: In one sentence, cross-attention is attention in which one sequence uses information from another sequence.
+
+User: Give a concise technical meaning of cross-attention.
+Assistant: A concise technical meaning of cross-attention is attention in which one sequence uses information from another sequence.
+
+User: What does cross-attention refer to in machine learning?
+Assistant: In machine learning, cross-attention refers to attention in which one sequence uses information from another sequence.
+
+User: State the role or meaning of cross-attention.
+Assistant: The role or meaning of cross-attention is attention in which one sequence uses information from another sequence.
+
+User: In one sentence, explain context window.
+Assistant: In one sentence, context window is the maximum number of tokens the model can consider at one time.
+
+User: Give a concise technical meaning of context window.
+Assistant: A concise technical meaning of context window is the maximum number of tokens the model can consider at one time.
+
+User: What does context window refer to in machine learning?
+Assistant: In machine learning, context window refers to the maximum number of tokens the model can consider at one time.
+
+User: State the role or meaning of context window.
+Assistant: The role or meaning of context window is the maximum number of tokens the model can consider at one time.
+
+User: In one sentence, explain language model.
+Assistant: In one sentence, language model is a model that estimates probabilities over token sequences.
+
+User: Give a concise technical meaning of language model.
+Assistant: A concise technical meaning of language model is a model that estimates probabilities over token sequences.
+
+User: What does language model refer to in machine learning?
+Assistant: In machine learning, language model refers to a model that estimates probabilities over token sequences.
+
+User: State the role or meaning of language model.
+Assistant: The role or meaning of language model is a model that estimates probabilities over token sequences.
+
+User: In one sentence, explain fine-tuning.
+Assistant: In one sentence, fine-tuning is additional training that adapts a model to a narrower task.
+
+User: Give a concise technical meaning of fine-tuning.
+Assistant: A concise technical meaning of fine-tuning is additional training that adapts a model to a narrower task.
+
+User: What does fine-tuning refer to in machine learning?
+Assistant: In machine learning, fine-tuning refers to additional training that adapts a model to a narrower task.
+
+User: State the role or meaning of fine-tuning.
+Assistant: The role or meaning of fine-tuning is additional training that adapts a model to a narrower task.
+
+User: In one sentence, explain pretraining.
+Assistant: In one sentence, pretraining is broad initial training on large data before task adaptation.
+
+User: Give a concise technical meaning of pretraining.
+Assistant: A concise technical meaning of pretraining is broad initial training on large data before task adaptation.
+
+User: What does pretraining refer to in machine learning?
+Assistant: In machine learning, pretraining refers to broad initial training on large data before task adaptation.
+
+User: State the role or meaning of pretraining.
+Assistant: The role or meaning of pretraining is broad initial training on large data before task adaptation.
+
+User: In one sentence, explain supervised learning.
+Assistant: In one sentence, supervised learning is learning from labeled input-output examples.
+
+User: Give a concise technical meaning of supervised learning.
+Assistant: A concise technical meaning of supervised learning is learning from labeled input-output examples.
+
+User: What does supervised learning refer to in machine learning?
+Assistant: In machine learning, supervised learning refers to learning from labeled input-output examples.
+
+User: State the role or meaning of supervised learning.
+Assistant: The role or meaning of supervised learning is learning from labeled input-output examples.
+
+User: In one sentence, explain unsupervised learning.
+Assistant: In one sentence, unsupervised learning is learning patterns without explicit target labels.
+
+User: Give a concise technical meaning of unsupervised learning.
+Assistant: A concise technical meaning of unsupervised learning is learning patterns without explicit target labels.
+
+User: What does unsupervised learning refer to in machine learning?
+Assistant: In machine learning, unsupervised learning refers to learning patterns without explicit target labels.
+
+User: State the role or meaning of unsupervised learning.
+Assistant: The role or meaning of unsupervised learning is learning patterns without explicit target labels.
+
+User: In one sentence, explain label.
+Assistant: In one sentence, label is the target value a model is meant to predict.
+
+User: Give a concise technical meaning of label.
+Assistant: A concise technical meaning of label is the target value a model is meant to predict.
+
+User: What does label refer to in machine learning?
+Assistant: In machine learning, label refers to the target value a model is meant to predict.
+
+User: State the role or meaning of label.
+Assistant: The role or meaning of label is the target value a model is meant to predict.
+
+User: In one sentence, explain feature.
+Assistant: In one sentence, feature is an input variable or representation used by a model.
+
+User: Give a concise technical meaning of feature.
+Assistant: A concise technical meaning of feature is an input variable or representation used by a model.
+
+User: What does feature refer to in machine learning?
+Assistant: In machine learning, feature refers to an input variable or representation used by a model.
+
+User: State the role or meaning of feature.
+Assistant: The role or meaning of feature is an input variable or representation used by a model.
+
+User: In one sentence, explain inference.
+Assistant: In one sentence, inference is the stage where a trained model produces outputs on new inputs.
+
+User: Give a concise technical meaning of inference.
+Assistant: A concise technical meaning of inference is the stage where a trained model produces outputs on new inputs.
+
+User: What does inference refer to in machine learning?
+Assistant: In machine learning, inference refers to the stage where a trained model produces outputs on new inputs.
+
+User: State the role or meaning of inference.
+Assistant: The role or meaning of inference is the stage where a trained model produces outputs on new inputs.
+
+User: In one sentence, explain training.
+Assistant: In one sentence, training is the stage where model parameters are updated to reduce error.
+
+User: Give a concise technical meaning of training.
+Assistant: A concise technical meaning of training is the stage where model parameters are updated to reduce error.
+
+User: What does training refer to in machine learning?
+Assistant: In machine learning, training refers to the stage where model parameters are updated to reduce error.
+
+User: State the role or meaning of training.
+Assistant: The role or meaning of training is the stage where model parameters are updated to reduce error.
+
+User: In one sentence, explain epoch.
+Assistant: In one sentence, epoch is one complete pass through the training data.
+
+User: Give a concise technical meaning of epoch.
+Assistant: A concise technical meaning of epoch is one complete pass through the training data.
+
+User: What does epoch refer to in machine learning?
+Assistant: In machine learning, epoch refers to one complete pass through the training data.
+
+User: State the role or meaning of epoch.
+Assistant: The role or meaning of epoch is one complete pass through the training data.
+
+User: In one sentence, explain batch.
+Assistant: In one sentence, batch is a group of examples processed together in one step.
+
+User: Give a concise technical meaning of batch.
+Assistant: A concise technical meaning of batch is a group of examples processed together in one step.
+
+User: What does batch refer to in machine learning?
+Assistant: In machine learning, batch refers to a group of examples processed together in one step.
+
+User: State the role or meaning of batch.
+Assistant: The role or meaning of batch is a group of examples processed together in one step.
+
+User: In one sentence, explain gradient.
+Assistant: In one sentence, gradient is the signal that indicates how parameters should change to reduce loss.
+
+User: Give a concise technical meaning of gradient.
+Assistant: A concise technical meaning of gradient is the signal that indicates how parameters should change to reduce loss.
+
+User: What does gradient refer to in machine learning?
+Assistant: In machine learning, gradient refers to the signal that indicates how parameters should change to reduce loss.
+
+User: State the role or meaning of gradient.
+Assistant: The role or meaning of gradient is the signal that indicates how parameters should change to reduce loss.
+
+User: In one sentence, explain optimizer.
+Assistant: In one sentence, optimizer is the algorithm that updates model parameters from gradients.
+
+User: Give a concise technical meaning of optimizer.
+Assistant: A concise technical meaning of optimizer is the algorithm that updates model parameters from gradients.
+
+User: What does optimizer refer to in machine learning?
+Assistant: In machine learning, optimizer refers to the algorithm that updates model parameters from gradients.
+
+User: State the role or meaning of optimizer.
+Assistant: The role or meaning of optimizer is the algorithm that updates model parameters from gradients.
+
+User: In one sentence, explain learning rate.
+Assistant: In one sentence, learning rate is the setting that controls update size during optimization.
+
+User: Give a concise technical meaning of learning rate.
+Assistant: A concise technical meaning of learning rate is the setting that controls update size during optimization.
+
+User: What does learning rate refer to in machine learning?
+Assistant: In machine learning, learning rate refers to the setting that controls update size during optimization.
+
+User: State the role or meaning of learning rate.
+Assistant: The role or meaning of learning rate is the setting that controls update size during optimization.
+
+User: In one sentence, explain loss.
+Assistant: In one sentence, loss is the value that measures prediction error.
+
+User: Give a concise technical meaning of loss.
+Assistant: A concise technical meaning of loss is the value that measures prediction error.
+
+User: What does loss refer to in machine learning?
+Assistant: In machine learning, loss refers to the value that measures prediction error.
+
+User: State the role or meaning of loss.
+Assistant: The role or meaning of loss is the value that measures prediction error.
+
+User: In one sentence, explain cross-entropy.
+Assistant: In one sentence, cross-entropy is a common loss used for classification and language modeling.
+
+User: Give a concise technical meaning of cross-entropy.
+Assistant: A concise technical meaning of cross-entropy is a common loss used for classification and language modeling.
+
+User: What does cross-entropy refer to in machine learning?
+Assistant: In machine learning, cross-entropy refers to a common loss used for classification and language modeling.
+
+User: State the role or meaning of cross-entropy.
+Assistant: The role or meaning of cross-entropy is a common loss used for classification and language modeling.
+
+User: In one sentence, explain dropout.
+Assistant: In one sentence, dropout is a regularization method that randomly disables some activations during training.
+
+User: Give a concise technical meaning of dropout.
+Assistant: A concise technical meaning of dropout is a regularization method that randomly disables some activations during training.
+
+User: What does dropout refer to in machine learning?
+Assistant: In machine learning, dropout refers to a regularization method that randomly disables some activations during training.
+
+User: State the role or meaning of dropout.
+Assistant: The role or meaning of dropout is a regularization method that randomly disables some activations during training.
+
+User: In one sentence, explain regularization.
+Assistant: In one sentence, regularization is methods used to improve generalization and reduce overfitting.
+
+User: Give a concise technical meaning of regularization.
+Assistant: A concise technical meaning of regularization is methods used to improve generalization and reduce overfitting.
+
+User: What does regularization refer to in machine learning?
+Assistant: In machine learning, regularization refers to methods used to improve generalization and reduce overfitting.
+
+User: State the role or meaning of regularization.
+Assistant: The role or meaning of regularization is methods used to improve generalization and reduce overfitting.
+
+User: In one sentence, explain overfitting.
+Assistant: In one sentence, overfitting is learning the training data too specifically and failing to generalize well.
+
+User: Give a concise technical meaning of overfitting.
+Assistant: A concise technical meaning of overfitting is learning the training data too specifically and failing to generalize well.
+
+User: What does overfitting refer to in machine learning?
+Assistant: In machine learning, overfitting refers to learning the training data too specifically and failing to generalize well.
+
+User: State the role or meaning of overfitting.
+Assistant: The role or meaning of overfitting is learning the training data too specifically and failing to generalize well.
+
+User: In one sentence, explain underfitting.
+Assistant: In one sentence, underfitting is failing to learn the task structure well enough.
+
+User: Give a concise technical meaning of underfitting.
+Assistant: A concise technical meaning of underfitting is failing to learn the task structure well enough.
+
+User: What does underfitting refer to in machine learning?
+Assistant: In machine learning, underfitting refers to failing to learn the task structure well enough.
+
+User: State the role or meaning of underfitting.
+Assistant: The role or meaning of underfitting is failing to learn the task structure well enough.
+
+User: In one sentence, explain validation set.
+Assistant: In one sentence, validation set is held-out data used to monitor training progress.
+
+User: Give a concise technical meaning of validation set.
+Assistant: A concise technical meaning of validation set is held-out data used to monitor training progress.
+
+User: What does validation set refer to in machine learning?
+Assistant: In machine learning, validation set refers to held-out data used to monitor training progress.
+
+User: State the role or meaning of validation set.
+Assistant: The role or meaning of validation set is held-out data used to monitor training progress.
+
+User: In one sentence, explain test set.
+Assistant: In one sentence, test set is held-out data used for final evaluation.
+
+User: Give a concise technical meaning of test set.
+Assistant: A concise technical meaning of test set is held-out data used for final evaluation.
+
+User: What does test set refer to in machine learning?
+Assistant: In machine learning, test set refers to held-out data used for final evaluation.
+
+User: State the role or meaning of test set.
+Assistant: The role or meaning of test set is held-out data used for final evaluation.
+
+User: In one sentence, explain hyperparameter.
+Assistant: In one sentence, hyperparameter is a training or model setting chosen by the practitioner.
+
+User: Give a concise technical meaning of hyperparameter.
+Assistant: A concise technical meaning of hyperparameter is a training or model setting chosen by the practitioner.
+
+User: What does hyperparameter refer to in machine learning?
+Assistant: In machine learning, hyperparameter refers to a training or model setting chosen by the practitioner.
+
+User: State the role or meaning of hyperparameter.
+Assistant: The role or meaning of hyperparameter is a training or model setting chosen by the practitioner.
+
+User: In one sentence, explain parameter.
+Assistant: In one sentence, parameter is a learned weight inside a model.
+
+User: Give a concise technical meaning of parameter.
+Assistant: A concise technical meaning of parameter is a learned weight inside a model.
+
+User: What does parameter refer to in machine learning?
+Assistant: In machine learning, parameter refers to a learned weight inside a model.
+
+User: State the role or meaning of parameter.
+Assistant: The role or meaning of parameter is a learned weight inside a model.
+
+User: In one sentence, explain checkpoint.
+Assistant: In one sentence, checkpoint is a saved state of a model during or after training.
+
+User: Give a concise technical meaning of checkpoint.
+Assistant: A concise technical meaning of checkpoint is a saved state of a model during or after training.
+
+User: What does checkpoint refer to in machine learning?
+Assistant: In machine learning, checkpoint refers to a saved state of a model during or after training.
+
+User: State the role or meaning of checkpoint.
+Assistant: The role or meaning of checkpoint is a saved state of a model during or after training.
+
+User: In one sentence, explain beam search.
+Assistant: In one sentence, beam search is a decoding method that keeps several candidate sequences at each step.
+
+User: Give a concise technical meaning of beam search.
+Assistant: A concise technical meaning of beam search is a decoding method that keeps several candidate sequences at each step.
+
+User: What does beam search refer to in machine learning?
+Assistant: In machine learning, beam search refers to a decoding method that keeps several candidate sequences at each step.
+
+User: State the role or meaning of beam search.
+Assistant: The role or meaning of beam search is a decoding method that keeps several candidate sequences at each step.
+
+User: In one sentence, explain greedy decoding.
+Assistant: In one sentence, greedy decoding is a decoding method that always picks the most likely next token.
+
+User: Give a concise technical meaning of greedy decoding.
+Assistant: A concise technical meaning of greedy decoding is a decoding method that always picks the most likely next token.
+
+User: What does greedy decoding refer to in machine learning?
+Assistant: In machine learning, greedy decoding refers to a decoding method that always picks the most likely next token.
+
+User: State the role or meaning of greedy decoding.
+Assistant: The role or meaning of greedy decoding is a decoding method that always picks the most likely next token.
+
+User: In one sentence, explain sampling.
+Assistant: In one sentence, sampling is a decoding method that chooses the next token probabilistically.
+
+User: Give a concise technical meaning of sampling.
+Assistant: A concise technical meaning of sampling is a decoding method that chooses the next token probabilistically.
+
+User: What does sampling refer to in machine learning?
+Assistant: In machine learning, sampling refers to a decoding method that chooses the next token probabilistically.
+
+User: State the role or meaning of sampling.
+Assistant: The role or meaning of sampling is a decoding method that chooses the next token probabilistically.
+
+User: In one sentence, explain temperature.
+Assistant: In one sentence, temperature is a decoding control that changes how sharp the token distribution is.
+
+User: Give a concise technical meaning of temperature.
+Assistant: A concise technical meaning of temperature is a decoding control that changes how sharp the token distribution is.
+
+User: What does temperature refer to in machine learning?
+Assistant: In machine learning, temperature refers to a decoding control that changes how sharp the token distribution is.
+
+User: State the role or meaning of temperature.
+Assistant: The role or meaning of temperature is a decoding control that changes how sharp the token distribution is.
+
+User: In one sentence, explain top-k sampling.
+Assistant: In one sentence, top-k sampling is sampling restricted to the k most likely next tokens.
+
+User: Give a concise technical meaning of top-k sampling.
+Assistant: A concise technical meaning of top-k sampling is sampling restricted to the k most likely next tokens.
+
+User: What does top-k sampling refer to in machine learning?
+Assistant: In machine learning, top-k sampling refers to sampling restricted to the k most likely next tokens.
+
+User: State the role or meaning of top-k sampling.
+Assistant: The role or meaning of top-k sampling is sampling restricted to the k most likely next tokens.
+
+User: In one sentence, explain top-p sampling.
+Assistant: In one sentence, top-p sampling is sampling restricted to a set whose cumulative probability reaches a threshold.
+
+User: Give a concise technical meaning of top-p sampling.
+Assistant: A concise technical meaning of top-p sampling is sampling restricted to a set whose cumulative probability reaches a threshold.
+
+User: What does top-p sampling refer to in machine learning?
+Assistant: In machine learning, top-p sampling refers to sampling restricted to a set whose cumulative probability reaches a threshold.
+
+User: State the role or meaning of top-p sampling.
+Assistant: The role or meaning of top-p sampling is sampling restricted to a set whose cumulative probability reaches a threshold.
+
+User: In one sentence, explain RAG.
+Assistant: In one sentence, RAG is a generation approach that combines retrieval with text generation.
+
+User: Give a concise technical meaning of RAG.
+Assistant: A concise technical meaning of RAG is a generation approach that combines retrieval with text generation.
+
+User: What does RAG refer to in machine learning?
+Assistant: In machine learning, RAG refers to a generation approach that combines retrieval with text generation.
+
+User: State the role or meaning of RAG.
+Assistant: The role or meaning of RAG is a generation approach that combines retrieval with text generation.
+
+User: In one sentence, explain vector database.
+Assistant: In one sentence, vector database is a database optimized for storing and searching vector representations.
+
+User: Give a concise technical meaning of vector database.
+Assistant: A concise technical meaning of vector database is a database optimized for storing and searching vector representations.
+
+User: What does vector database refer to in machine learning?
+Assistant: In machine learning, vector database refers to a database optimized for storing and searching vector representations.
+
+User: State the role or meaning of vector database.
+Assistant: The role or meaning of vector database is a database optimized for storing and searching vector representations.
+
+User: In one sentence, explain similarity search.
+Assistant: In one sentence, similarity search is retrieval based on closeness between vector representations.
+
+User: Give a concise technical meaning of similarity search.
+Assistant: A concise technical meaning of similarity search is retrieval based on closeness between vector representations.
+
+User: What does similarity search refer to in machine learning?
+Assistant: In machine learning, similarity search refers to retrieval based on closeness between vector representations.
+
+User: State the role or meaning of similarity search.
+Assistant: The role or meaning of similarity search is retrieval based on closeness between vector representations.
+
+User: In one sentence, explain classification.
+Assistant: In one sentence, classification is predicting which category an input belongs to.
+
+User: Give a concise technical meaning of classification.
+Assistant: A concise technical meaning of classification is predicting which category an input belongs to.
+
+User: What does classification refer to in machine learning?
+Assistant: In machine learning, classification refers to predicting which category an input belongs to.
+
+User: State the role or meaning of classification.
+Assistant: The role or meaning of classification is predicting which category an input belongs to.
+
+User: In one sentence, explain regression.
+Assistant: In one sentence, regression is predicting a continuous numeric value.
+
+User: Give a concise technical meaning of regression.
+Assistant: A concise technical meaning of regression is predicting a continuous numeric value.
+
+User: What does regression refer to in machine learning?
+Assistant: In machine learning, regression refers to predicting a continuous numeric value.
+
+User: State the role or meaning of regression.
+Assistant: The role or meaning of regression is predicting a continuous numeric value.
+
+User: In one sentence, explain clustering.
+Assistant: In one sentence, clustering is grouping similar items without predefined labels.
+
+User: Give a concise technical meaning of clustering.
+Assistant: A concise technical meaning of clustering is grouping similar items without predefined labels.
+
+User: What does clustering refer to in machine learning?
+Assistant: In machine learning, clustering refers to grouping similar items without predefined labels.
+
+User: State the role or meaning of clustering.
+Assistant: The role or meaning of clustering is grouping similar items without predefined labels.
+
+User: In one sentence, explain normalization.
+Assistant: In one sentence, normalization is transforming values into a more consistent scale or range.
+
+User: Give a concise technical meaning of normalization.
+Assistant: A concise technical meaning of normalization is transforming values into a more consistent scale or range.
+
+User: What does normalization refer to in machine learning?
+Assistant: In machine learning, normalization refers to transforming values into a more consistent scale or range.
+
+User: State the role or meaning of normalization.
+Assistant: The role or meaning of normalization is transforming values into a more consistent scale or range.
+
+User: In one sentence, explain standardization.
+Assistant: In one sentence, standardization is transforming data to have zero mean and unit-scale variance.
+
+User: Give a concise technical meaning of standardization.
+Assistant: A concise technical meaning of standardization is transforming data to have zero mean and unit-scale variance.
+
+User: What does standardization refer to in machine learning?
+Assistant: In machine learning, standardization refers to transforming data to have zero mean and unit-scale variance.
+
+User: State the role or meaning of standardization.
+Assistant: The role or meaning of standardization is transforming data to have zero mean and unit-scale variance.
+
+User: In one sentence, explain precision.
+Assistant: In one sentence, precision is the fraction of predicted positives that are correct.
+
+User: Give a concise technical meaning of precision.
+Assistant: A concise technical meaning of precision is the fraction of predicted positives that are correct.
+
+User: What does precision refer to in machine learning?
+Assistant: In machine learning, precision refers to the fraction of predicted positives that are correct.
+
+User: State the role or meaning of precision.
+Assistant: The role or meaning of precision is the fraction of predicted positives that are correct.
+
+User: In one sentence, explain recall.
+Assistant: In one sentence, recall is the fraction of actual positives that are successfully found.
+
+User: Give a concise technical meaning of recall.
+Assistant: A concise technical meaning of recall is the fraction of actual positives that are successfully found.
+
+User: What does recall refer to in machine learning?
+Assistant: In machine learning, recall refers to the fraction of actual positives that are successfully found.
+
+User: State the role or meaning of recall.
+Assistant: The role or meaning of recall is the fraction of actual positives that are successfully found.
+
+User: In one sentence, explain F1 score.
+Assistant: In one sentence, F1 score is a metric that combines precision and recall.
+
+User: Give a concise technical meaning of F1 score.
+Assistant: A concise technical meaning of F1 score is a metric that combines precision and recall.
+
+User: What does F1 score refer to in machine learning?
+Assistant: In machine learning, F1 score refers to a metric that combines precision and recall.
+
+User: State the role or meaning of F1 score.
+Assistant: The role or meaning of F1 score is a metric that combines precision and recall.
+
+User: In one sentence, explain accuracy.
+Assistant: In one sentence, accuracy is the fraction of predictions that are correct.
+
+User: Give a concise technical meaning of accuracy.
+Assistant: A concise technical meaning of accuracy is the fraction of predictions that are correct.
+
+User: What does accuracy refer to in machine learning?
+Assistant: In machine learning, accuracy refers to the fraction of predictions that are correct.
+
+User: State the role or meaning of accuracy.
+Assistant: The role or meaning of accuracy is the fraction of predictions that are correct.
+
+User: In one sentence, explain prompt.
+Assistant: In one sentence, prompt is the text input used to guide a language model.
+
+User: Give a concise technical meaning of prompt.
+Assistant: A concise technical meaning of prompt is the text input used to guide a language model.
+
+User: What does prompt refer to in machine learning?
+Assistant: In machine learning, prompt refers to the text input used to guide a language model.
+
+User: State the role or meaning of prompt.
+Assistant: The role or meaning of prompt is the text input used to guide a language model.
+
+User: In one sentence, explain teacher forcing.
+Assistant: In one sentence, teacher forcing is training a decoder with the true previous target token as input.
+
+User: Give a concise technical meaning of teacher forcing.
+Assistant: A concise technical meaning of teacher forcing is training a decoder with the true previous target token as input.
+
+User: What does teacher forcing refer to in machine learning?
+Assistant: In machine learning, teacher forcing refers to training a decoder with the true previous target token as input.
+
+User: State the role or meaning of teacher forcing.
+Assistant: The role or meaning of teacher forcing is training a decoder with the true previous target token as input.
+
