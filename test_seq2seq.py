@@ -132,12 +132,14 @@ def collate_seq2seq_batch(batch, pad_token_id: int):
 
 if __name__ == "__main__":
 
-    EPOCHS = 5
+    EPOCHS = 20
+    learning_rate = 5e-5
+    BATCH_SIZE = 16
 
     tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-noomo-32k", local_files_only=True)
 
     config = Seq2SeqConfig(
-        block_size=128,
+        block_size=100,
         vocab_size=len(tokenizer.get_vocab()),  # size include special tokens
         n_layer=12,
         n_head=12,
@@ -148,13 +150,14 @@ if __name__ == "__main__":
 
     train_dataset = PairSeq2SeqDataset(
         files = [
-            "data/household/household_definitions_v3.txt",
-            "data/household/household_definitions_v6_tails.txt"
+            "data/seq2seq_general_test_pairs_2k.txt",
         ],
         tokenizer=tokenizer,
         max_encoder_len=config.block_size,
         max_decoder_len=config.block_size,
     )
+
+    print(f"train_dataset.size: {len(train_dataset)}")
 
     pad_token_id = tokenizer.pad_token_id
     if pad_token_id is None:
@@ -162,7 +165,7 @@ if __name__ == "__main__":
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=8,
+        batch_size=BATCH_SIZE,
         shuffle=True,
         collate_fn=lambda batch: collate_seq2seq_batch(
             batch,
@@ -174,7 +177,7 @@ if __name__ == "__main__":
 
     model = model.to(device)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
     ### train loop
     losses = []
