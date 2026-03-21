@@ -364,3 +364,116 @@ class Seq2SeqTransformer(nn.Module):
             loss=loss,
             encoder_hidden_states=encoder_hidden_states
         )
+
+
+    @torch.no_grad()
+    def generate(
+        self,
+        encoder_input_ids: torch.Tensor,
+        encoder_attention_mask: Optional[torch.Tensor] = None,
+        decoder_input_ids: Optional[torch.Tensor] = None,
+        max_new_tokens: int = 64,
+        bos_token_id: Optional[int] = None,
+        eos_token_id: Optional[int] = None,
+        pad_token_id: Optional[int] = None,
+        do_sample: bool = False,
+        temperature: float = 1.0,
+        top_k: Optional[int] = None,
+    ):
+        """
+        Seq2Seq generation.
+
+        Args:
+            encoder_input_ids: (B, T_enc)
+            encoder_attention_mask: (B, T_enc), 1=real token, 0=pad
+            decoder_input_ids: optional initial decoder prompt, shape (B, T_dec0)
+            max_new_tokens: number of tokens to generate
+            bos_token_id: required if decoder_input_ids is None
+            eos_token_id: optional stop token
+            pad_token_id: used to pad finished sequences if eos_token_id is reached
+            do_sample: if False => greedy argmax
+            temperature: sampling temperature
+            top_k: optional top-k sampling
+
+        Returns:
+            generated_ids: (B, T_dec0 + generated_len)
+        """
+        self.eval()
+
+        device = encoder_input_ids.device
+        B = encoder_input_ids.size(0)
+
+        # 1) Encode source once
+        encoder_hidden_states = self.encode(
+            encoder_input_ids=encoder_input_ids,
+            encoder_attention_mask=encoder_attention_mask,
+        )
+
+        # 2) Prepare decoder start
+        if decoder_input_ids is None:
+            assert bos_token_id is not None, "bos_token_id must be provided when decoder_input_ids is None"
+            decoder_input_ids = torch.full(
+                (B, 1),
+                bos_token_id,
+                dtype=torch.long,
+                device=device
+            )
+        else:
+            decoder_input_ids = decoder_input_ids.to(device)
+
+        # finished flags for batch items
+        finished = torch.zeros(B, dtype=torch.bool, device=device)
+
+        for _ in range(max_new_tokens):
+            T_dec = decoder_input_ids.size(1)
+            if T_dec > self.config.block_size:
+                decoder_input_ids = decoder_input_ids[:, -self.config.block_size:]
+                T_dec = decoder_input_ids.size(1)
+
+            # decoder attention mask: everything generated so far is valid
+            decoder_attention_mask = torch.ones(
+                (B, T_dec),
+                dtype=torch.long,
+                device=device
+            )
+
+            logits = self.decode(
+                decoder_input_ids=decoder_input_ids,
+                encoder_hidden_states=encoder_hidden_states,
+                decoder_attention_mask=decoder_attention_mask,
+                encoder_attention_mask=encoder_attention_mask,
+            )
+
+            # take logits of last token
+            logits = logits[:, -1, :]  # (B, vocab)
+
+            if do_sample:
+                assert temperature > 0.0, "temperature must be > 0 when do_sample=True"
+                logits = logits / temperature
+
+                if top_k is not None:
+                    k = min(top_k, logits.size(-1))
+                    v, _ = torch.topk(logits, k)
+                    logits[logits < v[:, [-1]]] = -float("inf")
+
+                probs = F.softmax(logits, dim=-1)
+                next_token = torch.multinomial(probs, num_samples=1).squeeze(1)  # (B,)
+            else:
+                if temperature != 1.0:
+                    logits = logits / max(temperature, 1e-8)
+                next_token = torch.argmax(logits, dim=-1)  # (B,)
+
+            # if already finished, keep them padded / frozen
+            if eos_token_id is not None and pad_token_id is not None:
+                next_token = torch.where(finished, torch.tensor(pad_token_id, device=device), next_token)
+
+            # append
+            decoder_input_ids = torch.cat([decoder_input_ids, next_token.unsqueeze(1)], dim=1)
+
+            # update finished
+            if eos_token_id is not None:
+                finished = finished | (next_token == eos_token_id)
+                if torch.all(finished):
+                    break
+
+        return decoder_input_ids
