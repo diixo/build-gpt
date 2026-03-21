@@ -259,7 +259,7 @@ if __name__ == "__main__":
 
             pbar.set_postfix(
                 batch_loss=f"{batch_item:.4f}",
-                epoch_loss=f"{running_avg_loss:.4f}"
+                avg_loss=f"{running_avg_loss:.4f}"
             )
 
         avg_loss = epoch_loss / len(train_loader)
