@@ -1,3 +1,12 @@
+'''
+Use RoPE:
+
+* in encoder self-attention
+* in decoder self-attention
+
+CrossAttention without RoPE
+'''
+
 import math
 from dataclasses import dataclass
 from typing import Optional
@@ -6,6 +15,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from model_llama import RMSNorm, RotaryEmbedding, CausalSelfAttention
 
 @dataclass
 class Seq2SeqConfig:
@@ -21,58 +31,6 @@ class Seq2SeqConfig:
     use_rope: bool = True
 
     mlp_bias: bool = False
-
-
-class RMSNorm(nn.Module):
-    def __init__(self, dim: int, eps: float = 1e-6):
-        super().__init__()
-        self.eps = eps
-        self.weight = nn.Parameter(torch.ones(dim))
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        orig_dtype = x.dtype
-        acc_dtype = torch.float32 if x.dtype in (torch.float16, torch.bfloat16) else x.dtype
-
-        x_acc = x.to(acc_dtype)
-        rms = torch.sqrt((x_acc * x_acc).mean(dim=-1, keepdim=True) + self.eps)
-        y = x_acc / rms
-        y = y * self.weight.to(acc_dtype)
-        return y.to(orig_dtype)
-
-
-class RotaryEmbedding(nn.Module):
-    def __init__(self, dim: int, base: float = 10000.0, max_seq_len: int = 2048):
-        super().__init__()
-        assert dim % 2 == 0, "Head dimension must be even for RoPE"
-
-        self.dim = dim
-        self.base = base
-        self.max_seq_len = max_seq_len
-
-        half_dim = dim // 2
-        channel_range = 2 * torch.arange(0, half_dim, dtype=torch.float32)
-        inv_freq = 1.0 / (base ** (channel_range / dim))
-
-        t = torch.arange(max_seq_len, dtype=torch.float32)
-        freqs = torch.outer(t, inv_freq)
-
-        freqs_cos = torch.cos(freqs)[None, None, :, :]
-        freqs_sin = torch.sin(freqs)[None, None, :, :]
-
-        self.register_buffer("freqs_cos", freqs_cos, persistent=False)
-        self.register_buffer("freqs_sin", freqs_sin, persistent=False)
-
-
-    def apply_rotary(self, x: torch.Tensor, seq_len: int):
-        assert x.ndim == 4, f"Expected 4D tensor (B, nH, T, d), got: {x.shape}"
-        cos = self.freqs_cos[:, :, :seq_len, :].to(device=x.device, dtype=x.dtype)
-        sin = self.freqs_sin[:, :, :seq_len, :].to(device=x.device, dtype=x.dtype)
-
-        d = x.shape[-1] // 2
-        x1, x2 = x[..., :d], x[..., d:]
-        y1 = x1 * cos + x2 * sin
-        y2 = -x1 * sin + x2 * cos
-        return torch.cat([y1, y2], dim=-1)
 
 
 class MLP(nn.Module):
@@ -152,80 +110,6 @@ class SelfAttention(nn.Module):
             if attn_mask is not None:
                 attn = attn.masked_fill(attn_mask, float("-inf"))
 
-            attn = F.softmax(attn, dim=-1)
-            y = attn @ v
-
-        y = y.transpose(1, 2).contiguous().view(B, T, C)
-        y = self.c_proj(y)
-        return y
-
-
-class CausalSelfAttention(nn.Module):
-    """
-    Causal self-attention for decoder.
-    """
-    def __init__(self, config):
-        super().__init__()
-        assert config.n_embd % config.n_head == 0
-
-        self.flash_attn = config.flash_attn
-        self.n_head = config.n_head
-        self.n_embd = config.n_embd
-        self.head_dim = config.n_embd // config.n_head
-
-        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd)
-        self.c_proj = nn.Linear(config.n_embd, config.n_embd)
-        self.c_proj.NANOGPT_SCALE_INIT = 1
-
-        self.use_rope = config.use_rope
-        if self.use_rope:
-            self.rope = RotaryEmbedding(
-                dim=self.head_dim,
-                base=config.rope_base,
-                max_seq_len=config.block_size
-            )
-
-        causal = torch.tril(torch.ones(config.block_size, config.block_size, dtype=torch.bool))
-        self.register_buffer("causal_mask", causal.view(1, 1, config.block_size, config.block_size), persistent=False)
-
-
-    def forward(self, x, attention_mask=None):
-        B, T, C = x.size()
-
-        qkv = self.c_attn(x)
-        q, k, v = qkv.split(self.n_embd, dim=2)
-
-        q = q.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
-        k = k.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
-        v = v.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
-
-        if self.use_rope:
-            q = self.rope.apply_rotary(q, T)
-            k = self.rope.apply_rotary(k, T)
-
-        if attention_mask is not None:
-            assert attention_mask.shape == (B, T)
-            pad_mask = (attention_mask == 0)[:, None, None, :].to(device=x.device, dtype=torch.bool)
-        else:
-            pad_mask = None
-
-        if self.flash_attn:
-            # В SDPA можно одновременно дать attn_mask и is_causal=True
-            y = F.scaled_dot_product_attention(
-                q, k, v,
-                attn_mask=pad_mask,
-                is_causal=True
-            )
-        else:
-            attn = (q @ k.transpose(-2, -1)) / math.sqrt(self.head_dim)  # (B, nh, T, T)
-
-            causal_mask = ~self.causal_mask[:, :, :T, :T]  # True = masked
-            full_mask = causal_mask
-
-            if pad_mask is not None:
-                full_mask = full_mask | pad_mask
-
-            attn = attn.masked_fill(full_mask, float("-inf"))
             attn = F.softmax(attn, dim=-1)
             y = attn @ v
 
