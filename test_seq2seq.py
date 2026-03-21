@@ -1,4 +1,5 @@
-
+from typing import List, Dict, Any, Optional, Tuple, Union
+from pathlib import Path
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -10,13 +11,60 @@ from utils import plot_loss
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
+def load_text_pairs(path: str) -> List[Dict[str, str]]:
+
+    items: List[Tuple[str, str]] = []
+
+    user_text = None
+
+    with open(path, "r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+
+            if not line:
+                continue
+
+            if line.startswith("User:"):
+                user_text = line[len("User:"):].strip()
+
+            elif line.startswith("Assistant:"):
+                assistant_text = line[len("Assistant:"):].strip()
+
+                if user_text is not None:
+                    items.append(tuple([user_text, assistant_text]))
+
+                user_text = None
+            else:
+                # any single line = separated knowledge-item
+                items.append({
+                    "knowledge": line,
+                })
+
+                # release current turn
+                user_text = None
+    return items
+
+
 class PairSeq2SeqDataset(Dataset):
 
-    def __init__(self, pairs, tokenizer, max_encoder_len=64, max_decoder_len=64):
-        self.pairs = pairs
+    def __init__(self,
+        files: Union[str, Path, List[Union[str, Path]]],
+        tokenizer,
+        max_encoder_len=64,
+        max_decoder_len=64
+    ):
         self.tokenizer = tokenizer
         self.max_encoder_len = max_encoder_len
         self.max_decoder_len = max_decoder_len
+
+        if isinstance(files, (str, Path)):
+            files = [files]
+        self.files = [Path(x) for x in files]
+
+        self.pairs: List[Tuple[str, str]] = []
+        for file_path in self.files:
+            self.pairs.extend(load_text_pairs(str(file_path)))
+
 
     def __len__(self):
         return len(self.pairs)
@@ -84,20 +132,28 @@ def collate_seq2seq_batch(batch, pad_token_id: int):
 
 if __name__ == "__main__":
 
-    pairs = [
-        ("question: what is 2 plus 2", "4"),
-        ("question: what color is the sky", "blue"),
-        ("User: hello", "Assistant: hi"),
-        ("User: how are you", "Assistant: i am fine"),
-    ]
+    EPOCHS = 20
 
-    tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt2", local_files_only=True)
+    tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-noomo-32k", local_files_only=True)
+
+    config = Seq2SeqConfig(
+        block_size=128,
+        vocab_size=len(tokenizer.get_vocab()),  # size include special tokens
+        n_layer=12,
+        n_head=12,
+        n_embd=576,
+        flash_attn=True,
+        use_rope=True,
+    )
 
     train_dataset = PairSeq2SeqDataset(
-        pairs=pairs,
+        files = [
+            "data/household/household_definitions_v3.txt",
+            "data/household/household_definitions_v6_tails.txt"
+        ],
         tokenizer=tokenizer,
-        max_encoder_len=64,
-        max_decoder_len=64,
+        max_encoder_len=config.block_size,
+        max_decoder_len=config.block_size,
     )
 
     pad_token_id = tokenizer.pad_token_id
@@ -106,22 +162,12 @@ if __name__ == "__main__":
 
     train_loader = DataLoader(
         train_dataset,
-        batch_size=2,
+        batch_size=8,
         shuffle=True,
         collate_fn=lambda batch: collate_seq2seq_batch(
             batch,
             pad_token_id=pad_token_id
         )
-    )
-
-    config = Seq2SeqConfig(
-        block_size=128,
-        vocab_size=tokenizer.vocab_size,
-        n_layer=8,
-        n_head=8,
-        n_embd=128,
-        flash_attn=True,
-        use_rope=True,
     )
 
     model = Seq2SeqTransformer(config)
@@ -135,8 +181,8 @@ if __name__ == "__main__":
 
     model.train()
 
-    for epoch in range(20):
-        total_loss = 0.0
+    for epoch in range(EPOCHS):
+        epoch_loss = 0.0
 
         for batch in train_loader:
             encoder_input_ids = batch["encoder_input_ids"].to(device)
@@ -161,9 +207,9 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            total_loss += loss.item()
+            epoch_loss += loss.item()
 
-        avg_loss = total_loss / len(train_loader)
+        avg_loss = epoch_loss / len(train_loader)
         losses.append(avg_loss)
 
         print(f"epoch={epoch+1} loss={avg_loss:.4f}")
@@ -171,23 +217,23 @@ if __name__ == "__main__":
     ### validation
     model.eval()
 
-    src_text = "User: hello"
-    src_ids = tokenizer.encode(src_text)
+    # src_text = "User: hello"
+    # src_ids = tokenizer.encode(src_text)
 
-    encoder_input_ids = torch.tensor([src_ids], dtype=torch.long, device=device)
-    encoder_attention_mask = torch.ones_like(encoder_input_ids, device=device)
+    # encoder_input_ids = torch.tensor([src_ids], dtype=torch.long, device=device)
+    # encoder_attention_mask = torch.ones_like(encoder_input_ids, device=device)
 
-    generated = model.generate(
-        encoder_input_ids=encoder_input_ids,
-        encoder_attention_mask=encoder_attention_mask,
-        max_new_tokens=10,
-        bos_token_id=tokenizer.bos_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-        pad_token_id=pad_token_id,
-        do_sample=False,
-    )
+    # generated = model.generate(
+    #     encoder_input_ids=encoder_input_ids,
+    #     encoder_attention_mask=encoder_attention_mask,
+    #     max_new_tokens=10,
+    #     bos_token_id=tokenizer.bos_token_id,
+    #     eos_token_id=tokenizer.eos_token_id,
+    #     pad_token_id=pad_token_id,
+    #     do_sample=False,
+    # )
 
-    print(generated)
-    print(tokenizer.decode(generated[0].tolist(), skip_special_tokens=True))
+    # print(generated)
+    # print(tokenizer.decode(generated[0].tolist(), skip_special_tokens=True))
 
     plot_loss(losses, type(model))
