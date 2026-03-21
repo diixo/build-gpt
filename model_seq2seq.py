@@ -30,7 +30,8 @@ class Seq2SeqConfig:
     rope_base: float = 10000.0
     use_rope: bool = True
 
-    mlp_bias: bool = False
+    mlp_bias: bool = True
+    dropout: float = 0.1
 
 
 class MLP(nn.Module):
@@ -43,12 +44,15 @@ class MLP(nn.Module):
         self.silu = nn.SiLU()
         self.c_proj = nn.Linear(hidden_dim, config.n_embd, bias=config.mlp_bias)
         self.c_proj.NANOGPT_SCALE_INIT = 1
+        self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, x):
         x1 = self.c_fc1(x)
         x2 = self.c_fc2(x)
         hidden = self.silu(x1) * x2
-        return self.c_proj(hidden)
+        x = self.c_proj(hidden)
+        x = self.dropout(x)
+        return x
 
 
 class SelfAttention(nn.Module):
@@ -67,6 +71,7 @@ class SelfAttention(nn.Module):
         self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd)
         self.c_proj = nn.Linear(config.n_embd, config.n_embd)
         self.c_proj.NANOGPT_SCALE_INIT = 1
+        self.resid_dropout = nn.Dropout(config.dropout)
 
         self.use_rope = config.use_rope
         if self.use_rope:
@@ -115,6 +120,7 @@ class SelfAttention(nn.Module):
 
         y = y.transpose(1, 2).contiguous().view(B, T, C)
         y = self.c_proj(y)
+        y = self.resid_dropout(y)
         return y
 
 
@@ -265,6 +271,7 @@ class Seq2SeqTransformer(nn.Module):
         self.shared_wte.weight = self.lm_head.weight
 
         self.apply(self._init_weights)
+        #self._init_cross_attention_xavier()
 
 
     def _init_weights(self, module):
@@ -278,6 +285,15 @@ class Seq2SeqTransformer(nn.Module):
 
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
+
+    # def _init_cross_attention_xavier(self):
+    #     for module in self.modules():
+    #         if isinstance(module, CrossAttention):
+    #             for layer in [module.q_proj, module.k_proj, module.v_proj]:
+    #                 nn.init.xavier_uniform_(layer.weight)
+    #                 if layer.bias is not None:
+    #                     nn.init.zeros_(layer.bias)
 
 
     def encode(self, encoder_input_ids, encoder_attention_mask=None):
