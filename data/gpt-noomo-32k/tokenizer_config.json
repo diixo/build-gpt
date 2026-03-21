@@ -74,7 +74,7 @@
     "<|instruction|>",
     "###"
   ],
-  "bos_token": null,
+  "bos_token": "<|endoftext|>",
   "clean_up_tokenization_spaces": false,
   "eos_token": "<|endoftext|>",
   "extra_special_tokens": {},

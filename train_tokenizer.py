@@ -98,6 +98,7 @@ tokenizer = GPT2TokenizerFast.from_pretrained(tokenizer_path, local_files_only=T
 added = tokenizer.add_special_tokens({
     "eos_token": "<|endoftext|>",
     "pad_token": "<|pad|>",
+    "bos_token": "<|endoftext|>",
     "additional_special_tokens": [
         "<|system|>",
         "<|user|>",
