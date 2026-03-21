@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from model_seq2seq import Seq2SeqTransformer, Seq2SeqConfig
 from transformers import GPT2TokenizerFast
+from utils import plot_loss
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -83,7 +84,6 @@ def collate_seq2seq_batch(batch, pad_token_id: int):
 
 if __name__ == "__main__":
 
-
     pairs = [
         ("question: what is 2 plus 2", "4"),
         ("question: what color is the sky", "blue"),
@@ -100,13 +100,17 @@ if __name__ == "__main__":
         max_decoder_len=64,
     )
 
+    pad_token_id = tokenizer.pad_token_id
+    if pad_token_id is None:
+        pad_token_id = tokenizer.eos_token_id
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=2,
         shuffle=True,
         collate_fn=lambda batch: collate_seq2seq_batch(
             batch,
-            pad_token_id=tokenizer.pad_token_id
+            pad_token_id=pad_token_id
         )
     )
 
@@ -126,7 +130,9 @@ if __name__ == "__main__":
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
 
-    # train loop
+    ### train loop
+    losses = []
+
     model.train()
 
     for epoch in range(20):
@@ -158,9 +164,11 @@ if __name__ == "__main__":
             total_loss += loss.item()
 
         avg_loss = total_loss / len(train_loader)
+        losses.append(avg_loss)
+
         print(f"epoch={epoch+1} loss={avg_loss:.4f}")
 
-    # validation
+    ### validation
     model.eval()
 
     src_text = "User: hello"
@@ -175,9 +183,11 @@ if __name__ == "__main__":
         max_new_tokens=10,
         bos_token_id=tokenizer.bos_token_id,
         eos_token_id=tokenizer.eos_token_id,
-        pad_token_id=tokenizer.pad_token_id,
+        pad_token_id=pad_token_id,
         do_sample=False,
     )
 
     print(generated)
     print(tokenizer.decode(generated[0].tolist(), skip_special_tokens=True))
+
+    plot_loss(losses, type(model))

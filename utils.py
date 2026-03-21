@@ -45,7 +45,7 @@ def generate_text(prompt: str, model, enc, device, device_type, ddp_rank):
 def plot_loss(losses: list, model_type: str):
     import matplotlib.pyplot as plt
 
-    plt.plot(list(range(len(losses))), losses, label="Training Loss")
+    plt.plot(range(1, len(losses) + 1), losses, marker='o', label="Training Loss")
     plt.xlabel("Steps")
     plt.ylabel("Loss")
     plt.title(f"Trained on: {model_type}")
