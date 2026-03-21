@@ -93,11 +93,11 @@ class RotaryEmbedding(nn.Module):
         cos = self.freqs_cos[:, :, :seq_len, :].to(x.device)
         sin = self.freqs_sin[:, :, :seq_len, :].to(x.device)
 
-        d = x.shape[3] // 2
+        d = x.shape[3] // 2             # = x.shape[-1] // 2
         x1, x2 = x[..., :d], x[..., d:] # split up last time into two halves
         y1 = x1 * cos + x2 * sin        # rotate pairs of dims
         y2 = x1 * (-sin) + x2 * cos
-        out = torch.cat([y1, y2], 3)    # re-assemble
+        out = torch.cat([y1, y2], dim=3)  # re-assemble, = torch.cat([y1, y2], dim=-1)
         out = out.to(x.dtype)           # ensure input/output dtypes match
         return out
 
@@ -109,18 +109,17 @@ class CausalSelfAttention(nn.Module):
         assert config.n_embd % config.n_head == 0
 
         self.flash_attn = config.flash_attn
+        self.n_head = config.n_head
+        self.n_embd = config.n_embd
+
+        self.use_rope = config.use_rope
+        self.rope_base = config.rope_base
 
         # key, query, value projections for all heads, but in a batch
         self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd)
         # output projection
         self.c_proj = nn.Linear(config.n_embd, config.n_embd)
         self.c_proj.NANOGPT_SCALE_INIT = 1
-        # regularization
-        self.n_head = config.n_head
-        self.n_embd = config.n_embd
-
-        self.use_rope = config.use_rope
-        self.rope_base = config.rope_base
 
         if self.use_rope:
             head_dim = config.n_embd // config.n_head
