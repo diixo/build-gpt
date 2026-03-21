@@ -2,7 +2,7 @@ from typing import List, Dict, Any, Optional, Tuple, Union
 from pathlib import Path
 import torch
 from torch.utils.data import Dataset, DataLoader
-
+from tqdm import tqdm
 from model_seq2seq import Seq2SeqTransformer, Seq2SeqConfig
 from transformers import GPT2TokenizerFast
 from utils import plot_loss
@@ -132,7 +132,7 @@ def collate_seq2seq_batch(batch, pad_token_id: int):
 
 if __name__ == "__main__":
 
-    EPOCHS = 20
+    EPOCHS = 5
 
     tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-noomo-32k", local_files_only=True)
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     model = model.to(device)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
 
     ### train loop
     losses = []
@@ -184,7 +184,9 @@ if __name__ == "__main__":
     for epoch in range(EPOCHS):
         epoch_loss = 0.0
 
-        for batch in train_loader:
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS}", leave=True)
+
+        for step, batch in enumerate(pbar, start=1):
             encoder_input_ids = batch["encoder_input_ids"].to(device)
             encoder_attention_mask = batch["encoder_attention_mask"].to(device)
 
@@ -207,12 +209,19 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            epoch_loss += loss.item()
+            batch_item = loss.item()
+            epoch_loss += batch_item
+            running_avg_loss = epoch_loss / step
+
+            pbar.set_postfix(
+                batch_loss=f"{batch_item:.4f}",
+                epoch_loss=f"{running_avg_loss:.4f}"
+            )
 
         avg_loss = epoch_loss / len(train_loader)
         losses.append(avg_loss)
 
-        print(f"epoch={epoch+1} loss={avg_loss:.4f}")
+        print(f"...epoch={epoch+1}, avg_loss={avg_loss:.4f}")
 
     ### validation
     model.eval()
