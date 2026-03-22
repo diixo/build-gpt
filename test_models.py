@@ -372,7 +372,7 @@ class Trainer:
                 ppl = math.exp(epoch_avg_loss) if epoch_avg_loss < 50 else float("inf")
 
             self.losses.append(epoch_avg_loss)
-            print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.2f}")
+            print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.4f}")
 
         print(
             "✅ Training completed,",
@@ -473,7 +473,7 @@ class Trainer:
                 ppl = math.exp(epoch_avg_loss) if epoch_avg_loss < 50 else float("inf")
 
             self.losses.append(epoch_avg_loss)
-            print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.2f}")
+            print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.4f}")
 
         print("✅ Training completed,",
             f"params: {_fmt(self.model.get_num_params())}, steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}")
