@@ -1,5 +1,4 @@
 
-
 import math
 from typing import Optional, Dict, Any, Iterable
 
@@ -13,6 +12,7 @@ import torch
 from torch.nn import functional as F
 from transformers import GPT2TokenizerFast
 from model_gpt2 import GPT, GPTConfig
+
 
 torch.set_float32_matmul_precision('high') # use tf32
 
@@ -34,38 +34,43 @@ class WikiText103PerplexityDataset(Dataset):
         split: str = "test",
         block_size: int = 1024,
         stride: int = None,
-        add_special_tokens: bool = False,
     ):
-
         self.block_size = block_size
         self.stride = stride if stride is not None else block_size
+        self.examples = []
+
+        token_buffer = []
 
         ds = load_dataset("Salesforce/wikitext", "wikitext-103-raw-v1", split=split)
+        pbar = tqdm(ds, desc=f"Tokenizing WikiText-103, part=\"{split}\"")
 
-        texts = [x["text"] for x in ds if x["text"].strip()]
-        full_text = "\n\n".join(texts)
+        for item in pbar:
+            text = item["text"].strip()
+            if not text:
+                continue
 
-        # Tokenization
-        try:
-            token_ids = tokenizer(
-                full_text,
-                add_special_tokens=add_special_tokens
-            )["input_ids"]
-        except Exception:
-            token_ids = tokenizer.encode(full_text)
+            ids = tokenizer.encode(text, add_special_tokens=False)
 
-        if len(token_ids) < block_size:
-            raise ValueError(
-                f"Tokenized text is shorter than block_size: {len(token_ids)} < {block_size}"
-            )
+            if len(ids) == 0:
+                continue
 
-        self.examples = []
-        for start in range(0, len(token_ids) - block_size + 1, self.stride):
-            chunk = token_ids[start:start + block_size]
-            self.examples.append(torch.tensor(chunk, dtype=torch.long))
+            # добавляем разделитель между кусками текста
+            token_buffer.extend(ids)
+
+            # режем готовые блоки из буфера
+            while len(token_buffer) >= block_size:
+                chunk = token_buffer[:block_size]
+                self.examples.append(torch.tensor(chunk, dtype=torch.long))
+
+                if self.stride == block_size:
+                    token_buffer = token_buffer[block_size:]
+                else:
+                    token_buffer = token_buffer[self.stride:]
+
 
     def __len__(self):
         return len(self.examples)
+
 
     def __getitem__(self, idx):
         input_ids = self.examples[idx]
@@ -112,6 +117,7 @@ def evaluate_perplexity(
     pad_token_id: Optional[int] = None,
     max_batches: Optional[int] = None,
     use_attention_mask: bool = True,
+    show_progress: bool = True,
 ) -> Dict[str, float]:
     """
     Computes perplexity for a causal language model (decoder-only, nanoGPT-style).
@@ -146,12 +152,18 @@ def evaluate_perplexity(
             - perplexity: exp(avg_nll)
             - total_loss_tokens: number of tokens used in loss
     """
+
     model.eval()
 
     total_nll = 0.0
     total_loss_tokens = 0
 
-    for batch_idx, batch in enumerate(dataloader):
+    iterator = dataloader
+    if show_progress:
+        total = max_batches if max_batches is not None else None
+        iterator = tqdm(dataloader, total=total, desc="Evaluating PPL")
+
+    for batch_idx, batch in enumerate(iterator):
         if max_batches is not None and batch_idx >= max_batches:
             print("<<<<")
             break
@@ -199,7 +211,8 @@ def evaluate_perplexity(
         flat_labels = shift_labels.view(-1)
         flat_mask = valid_mask.view(-1)
 
-        if flat_mask.sum().item() == 0:
+        valid_tokens = flat_mask.sum().item()
+        if valid_tokens == 0:
             continue
 
         # Per-token NLL
@@ -212,7 +225,15 @@ def evaluate_perplexity(
         per_token_nll = per_token_nll[flat_mask]
 
         total_nll += per_token_nll.sum().item()
-        total_loss_tokens += flat_mask.sum().item()
+        total_loss_tokens += valid_tokens
+
+        if show_progress and hasattr(iterator, "set_postfix"):
+            avg_nll = total_nll / total_loss_tokens
+            ppl = math.exp(avg_nll) if avg_nll < 20 else float("inf")
+            iterator.set_postfix({
+                "avg_nll": f"{avg_nll:.4f}",
+                "ppl": f"{ppl:.2f}",
+            })
 
     if total_loss_tokens == 0:
         raise ValueError("No valid tokens were found for perplexity computation.")
@@ -255,7 +276,7 @@ if __name__ == "__main__":
 
     test_loader = get_wikitext103_perplexity_loader(
         tokenizer=tokenizer,
-        split="test",
+        split="train",
         block_size=1024,
         batch_size=8,
     )
@@ -270,9 +291,9 @@ if __name__ == "__main__":
     val_ds   = nonempty_texts("validation")
     test_ds  = nonempty_texts("test")
 
-    print(train_ds[:3])
+    #print(train_ds[:3])
 
-    print(train_ds[0])
+    #print(train_ds[0])
     print(len(train_ds), len(val_ds), len(test_ds))
 
     metrics = evaluate_perplexity(
