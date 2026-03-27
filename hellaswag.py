@@ -9,8 +9,13 @@ from torch.nn import functional as F
 from transformers import GPT2TokenizerFast
 from model_gpt2 import GPT, GPTConfig
 
+torch.set_float32_matmul_precision('high') # use tf32
+
 # -----------------------------------------------------------------------------
 DATA_CACHE_DIR = os.path.join(os.path.dirname(__file__), "hellaswag")
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 
 def download_file(url: str, fname: str, chunk_size=1024):
     """Helper function to download a file from a given url"""
@@ -180,10 +185,6 @@ if __name__ == "__main__":
 
     file_path = "models/nano-gpt/model_19072.pt"
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
-
-    torch.set_float32_matmul_precision('high') # use tf32
     config = GPTConfig(
         block_size=1024,
         vocab_size=50304,
