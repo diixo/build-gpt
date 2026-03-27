@@ -610,10 +610,7 @@ if __name__ == "__main__":
 
     input_ids = enc["input_ids"]
 
-    if USE_TEST:
-        attention_mask = enc["attention_mask"]
-    else:
-        attention_mask = None
+    attention_mask = enc["attention_mask"]
 
     gen_ids = model.generate(
                 input_ids=input_ids.to(train_config.device),
