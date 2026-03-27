@@ -10,7 +10,7 @@ import os
 from tqdm import tqdm
 import torch
 from torch.nn import functional as F
-from transformers import GPT2TokenizerFast
+from transformers import GPT2TokenizerFast, AutoModelForCausalLM
 from model_gpt2 import GPT, GPTConfig
 
 
@@ -96,7 +96,6 @@ def get_wikitext103_perplexity_loader(
         split=split,
         block_size=block_size,
         stride=stride,
-        add_special_tokens=False,
     )
 
     loader = DataLoader(
@@ -248,17 +247,11 @@ def evaluate_perplexity(
     }
 
 
-if __name__ == "__main__":
+def load_saved_model():
 
     file_path = "models/nano-gpt/model_19072.pt"
 
-    config = GPTConfig(
-        block_size=1024,
-        vocab_size=50304,
-        n_layer=12,
-        n_head=12,
-        n_embd=768
-    )
+    config = GPTConfig(block_size=1024, vocab_size=50304, n_layer=12, n_head=12, n_embd=768)
 
     ckpt = torch.load(file_path, map_location=device, weights_only=False)
 
@@ -267,6 +260,14 @@ if __name__ == "__main__":
     model = GPT(**config) if isinstance(config, dict) else GPT(config)
 
     model.load_state_dict(ckpt['model'])
+    return model
+
+
+if __name__ == "__main__":
+
+    #model = load_saved_model()
+    model = AutoModelForCausalLM.from_pretrained("gpt2")
+
     model.to(device)
     model.eval()
 
