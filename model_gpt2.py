@@ -85,7 +85,7 @@ class CausalSelfAttention(nn.Module):
             # combine both masks
             if attn_mask is not None:
                 # invert: True = masked
-                full_mask = causal_mask | (~attn_mask)
+                full_mask = causal_mask | attn_mask
             else:
                 full_mask = causal_mask
 
