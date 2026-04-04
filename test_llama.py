@@ -128,19 +128,24 @@ def test_full_mask_semantics():
 @torch.no_grad()
 @pytest.mark.parametrize("flash_attn", [False, True])
 def test_padding_does_not_change_real_outputs_both_paths(flash_attn):
+
+    if flash_attn and not torch.cuda.is_available():
+            pytest.skip("Flash Attention requires CUDA")
+    device = "cuda" if flash_attn and torch.cuda.is_available() else "cpu"
+
     torch.manual_seed(7)
 
-    attn = make_attn(flash_attn=flash_attn, block_size=8)
+    attn = make_attn(flash_attn=flash_attn, block_size=8).to(device)
     B, T_real, T_pad, C = 1, 3, 5, attn.n_embd
 
-    x_real = torch.randn(B, T_real, C)
+    x_real = torch.randn(B, T_real, C).to(device)
+    x_padded = torch.randn(B, T_pad, C).to(device)
 
-    x_padded = torch.randn(B, T_pad, C)
     x_padded[:, :T_real, :] = x_real
     x_padded[:, T_real:, :] = torch.randn(B, T_pad - T_real, C) * 100.0
 
-    mask_real = torch.tensor([[1, 1, 1]], dtype=torch.long)
-    mask_padded = torch.tensor([[1, 1, 1, 0, 0]], dtype=torch.long)
+    mask_real = torch.tensor([[1, 1, 1]], dtype=torch.long).to(device)
+    mask_padded = torch.tensor([[1, 1, 1, 0, 0]], dtype=torch.long).to(device)
 
     y_real = attn(x_real, attention_mask=mask_real)
     y_padded = attn(x_padded, attention_mask=mask_padded)
