@@ -400,8 +400,10 @@ class Trainer:
             self.losses.append(epoch_avg_loss)
             print(f"Epoch {epoch+1}: epoch_avg_loss={epoch_avg_loss:.4f}, PPL={ppl:.4f}")
 
-        print("✅ Training completed,",
-            f"steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}")
+        print(
+            "✅ Training completed,",
+            f"steps: {len(self.step_losses)}, final_avg_loss: {self.losses[-1]:.4f}"
+        )
 
         return self.losses, self.step_losses
 
@@ -453,6 +455,6 @@ if __name__ == "__main__":
 
     ################################################################################################################
 
-    plot_losses(epoch_losses_hf, type(model_hf), epoch_losses, type(model), "Epochs")
+    plot_losses(epoch_losses_hf, type(model_hf).__name__, epoch_losses, type(model).__name__, "Epochs")
 
-    plot_losses(step_losses_hf, type(model_hf), step_losses, type(model), "Steps")
+    plot_losses(step_losses_hf, type(model_hf).__name__, step_losses, type(model).__name__, "Steps")
