@@ -1,6 +1,6 @@
 import torch
 import pytest
-
+import torch.nn.functional as F
 from model_llama import GPTConfig, CausalSelfAttention, GPTLlama
 
 
@@ -187,6 +187,21 @@ def test_model_logits_invariant_to_right_padding():
     ), "Logits на реальных токенах изменились из-за pad-хвоста."
 
 
+@torch.no_grad()
+def test_sdpa_bool_mask_uses_true_as_keep():
+    q = torch.randn(1, 2, 3, 4)
+    k = torch.randn(1, 2, 3, 4)
+    v = torch.randn(1, 2, 3, 4)
+
+    keep_all = torch.ones(1, 1, 1, 3, dtype=torch.bool)
+    keep_last_only = torch.tensor([[[[False, False, True]]]], dtype=torch.bool)
+
+    y1 = F.scaled_dot_product_attention(q, k, v, attn_mask=keep_all, is_causal=False)
+    y2 = F.scaled_dot_product_attention(q, k, v, attn_mask=keep_last_only, is_causal=False)
+
+    assert not torch.allclose(y1, y2)
+
+
 if __name__ == "__main__":
 
     # test-1
@@ -205,3 +220,5 @@ if __name__ == "__main__":
 
     # test-5
     test_model_logits_invariant_to_right_padding()
+
+    test_sdpa_bool_mask_uses_true_as_keep()
