@@ -148,11 +148,13 @@ def test_padding_does_not_change_real_outputs_both_paths(flash_attn):
     mask_padded = torch.tensor([[1, 1, 1, 0, 0]], dtype=torch.long).to(device)
 
     y_real = attn(x_real, attention_mask=mask_real)
+
     y_padded = attn(x_padded, attention_mask=mask_padded)
+    y_result = y_padded[:, :T_real, :]
 
     assert torch.allclose(
         y_real,
-        y_padded[:, :T_real, :],
+        y_result,
         atol=1e-5,
         rtol=1e-5,
     )
@@ -219,11 +221,12 @@ if __name__ == "__main__":
     test_full_mask_semantics()
 
     # test-4
-    #test_padding_does_not_change_real_outputs_both_paths(flash_attn=True)
+    test_padding_does_not_change_real_outputs_both_paths(flash_attn=True)
 
     test_padding_does_not_change_real_outputs_both_paths(flash_attn=False)
 
     # test-5
     test_model_logits_invariant_to_right_padding()
 
+    # test-6
     test_sdpa_bool_mask_uses_true_as_keep()

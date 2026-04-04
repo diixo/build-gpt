@@ -187,8 +187,26 @@ class CausalSelfAttention(nn.Module):
             attn = F.softmax(attn, dim=-1)
             y = attn @ v  # (B, nh, T, hs)
         else:
-            # use PyTorch flash attention (scaled_dot_product_attention)
-            y = F.scaled_dot_product_attention(q, k, v,  attn_mask=attn_mask, is_causal=True) # flash attention
+            # For Flash Attention, we need to combine the causal mask
+            # and the padding mask into a single mask.
+            # SDPA with Flash Attention works efficiently with boolean masks.
+
+            # 1. Create the causal mask (lower triangular)
+            # We can either use self.bias or build it on the fly
+            causal_mask = torch.tril(torch.ones(T, T, device=x.device, dtype=torch.bool)).view(1, 1, T, T)
+
+            # 2. Combine it with the padding mask
+            # padding_keep_mask has True where tokens are real (not padding)
+            if attention_mask is not None:
+                padding_keep_mask = (attention_mask == 1)[:, None, None, :].to(device=x.device, dtype=torch.bool)
+                full_mask = causal_mask & padding_keep_mask
+            else:
+                full_mask = causal_mask
+
+            # Use SDPA with the combined mask
+            # Set is_causal=False because causality is already included in full_mask
+            y = F.scaled_dot_product_attention(q, k, v, attn_mask=full_mask, is_causal=False)
+
 
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
         # output projection
