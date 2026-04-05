@@ -229,23 +229,25 @@ if __name__ == "__main__":
     ### validation
     model.eval()
 
-    # src_text = "User: hello"
-    # src_ids = tokenizer.encode(src_text)
+    ############################################################################
+    src_text = "User: hello"
+    src_ids = tokenizer.encode(src_text)
 
-    # encoder_input_ids = torch.tensor([src_ids], dtype=torch.long, device=device)
-    # encoder_attention_mask = torch.ones_like(encoder_input_ids, device=device)
+    encoder_input_ids = torch.tensor([src_ids], dtype=torch.long, device=device)
+    encoder_attention_mask = torch.ones_like(encoder_input_ids, device=device)
 
-    # generated = model.generate(
-    #     encoder_input_ids=encoder_input_ids,
-    #     encoder_attention_mask=encoder_attention_mask,
-    #     max_new_tokens=10,
-    #     bos_token_id=tokenizer.bos_token_id,
-    #     eos_token_id=tokenizer.eos_token_id,
-    #     pad_token_id=pad_token_id,
-    #     do_sample=False,
-    # )
+    generated = model.generate(
+        encoder_input_ids=encoder_input_ids,
+        encoder_attention_mask=encoder_attention_mask,
+        max_new_tokens=10,
+        bos_token_id=tokenizer.bos_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=pad_token_id,
+        do_sample=False,
+    )
 
-    # print(generated)
-    # print(tokenizer.decode(generated[0].tolist(), skip_special_tokens=True))
+    print(generated)
+    print("Output text:", tokenizer.decode(generated[0].tolist(), skip_special_tokens=True))
+    ############################################################################
 
     plot_loss(losses, type(model))
