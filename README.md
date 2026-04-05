@@ -47,7 +47,7 @@ A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, *
 
 ### Tokenizers
 
-The **gpt-noomo-32k** tokenizer is eztention from **noomo-32k**.
+The **gpt-noomo-32k** tokenizer is extention of **noomo-32k**.
 
 Additional special tokens to **gpt-noomo-32k**:
 ```
