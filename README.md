@@ -18,7 +18,7 @@ A PyTorch library with educational re-implementation of GPT-models: **LLaMA**, *
 
 ### Testing models:
 
-* [test_models.py](test_models.py): testing models functionality (**gpt2**, **llama** with tokenizers **gpt2** or **noomo**).
+* [test_models.py](compare_llama.py): testing models functionality (**gpt2**, **llama** with tokenizers **gpt2** or **noomo**).
 
 
 ### Implemented models:
