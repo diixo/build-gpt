@@ -131,65 +131,24 @@ def collate_seq2seq_batch(batch, pad_token_id: int):
     }
 
 
-class AutoSeq2SeqModel:
-
-    @staticmethod
-    def from_config(model_type: str, tokenizer):
-
-        config = Seq2SeqConfig(
-            block_size=100,
-            vocab_size=len(tokenizer.get_vocab()),  # size include special tokens
-            n_layer=12,
-            n_head=12,
-            n_embd=576,
-            flash_attn=True,
-            use_rope=True,
-        )
-
-        if model_type == "seq2seq":
-            model = Seq2SeqTransformer(config)
-        elif model_type == "bart":
-            hf_config = BartConfig(
-
-                vocab_size = len(tokenizer.get_vocab()),
-                max_position_embeddings = config.block_size,
-
-                d_model = config.n_embd,
-
-                encoder_layers = config.n_layer,
-                decoder_layers = config.n_layer,
-
-                encoder_attention_heads = config.n_head,
-                decoder_attention_heads = config.n_head,
-
-                # обычно берут 4 * d_model
-                encoder_ffn_dim = 4 * config.n_embd,
-                decoder_ffn_dim = 4 * config.n_embd,
-
-                pad_token_id = tokenizer.pad_token_id,
-                bos_token_id = tokenizer.bos_token_id,
-                eos_token_id = tokenizer.eos_token_id,
-
-                # полезно для обучения с labels
-                decoder_start_token_id = tokenizer.bos_token_id,
-            )
-
-            model = BartForConditionalGeneration(hf_config)
-        else:
-            raise ValueError(f"Unknown model_type: {model_type}")
-
-        return model, config
-
 
 if __name__ == "__main__":
 
-    EPOCHS = 30
+    EPOCHS = 20
     learning_rate = 5e-5
     BATCH_SIZE = 16
 
     tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-noomo-32k", local_files_only=True)
 
-    model, config = AutoSeq2SeqModel.from_config("seq2seq", tokenizer)
+    config = Seq2SeqConfig(
+        block_size=100,
+        vocab_size=len(tokenizer.get_vocab()),  # size include special tokens
+        n_layer=12,
+        n_head=12,
+        n_embd=576,
+        flash_attn=True,
+        use_rope=True,
+    )
 
     train_dataset = PairSeq2SeqDataset(
         files = [
