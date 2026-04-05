@@ -13,7 +13,7 @@ def make_attn(flash_attn=False, n_head=2, n_embd=8, block_size=8):
         n_head=n_head,
         n_embd=n_embd,
         flash_attn=flash_attn,
-        use_rope=False,
+        use_rope=True,
     )
     attn = CausalSelfAttention(config)
     attn.eval()
@@ -172,7 +172,7 @@ def test_model_logits_invariant_to_right_padding():
         n_head=2,
         n_embd=8,
         flash_attn=False,
-        use_rope=False,
+        use_rope=True,
     )
     model = GPTLlama(config)
     model.eval()
