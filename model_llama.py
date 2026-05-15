@@ -258,6 +258,7 @@ class GPTOutput:
     logits: torch.Tensor
     loss: Optional[torch.Tensor] = None
 
+
 class GPTLlama(nn.Module):
     def __init__(self, config: GPTConfig=None, **kwargs):
         super().__init__()
