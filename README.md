@@ -62,3 +62,9 @@ Additional special tokens to **gpt-noomo-32k**:
 * USER = QUESTION
 * ASSISTANT = ANSWER
 * KNOWLEDGE = CONTEXT
+
+
+## Train GPTLlama
+`
+hf download legacy-datasets/wikipedia --repo-type dataset --include "data/20220301.en/*" --local-dir ./datasets/wikipedia_20220301_en
+`
