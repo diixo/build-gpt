@@ -30,7 +30,7 @@ A PyTorch library with educational re-implementation of models: **LLaMA**, **GPT
 
 ### Additionally:
 * [fineweb_gpt.py](fineweb_gpt.py)              : build dataset from trained tokenizer
-* [fineweb_statistics.py](fineweb_statistics.py): tokens statistic of dataset **Fineweb-Edu-10BT**
+* [fineweb_statistics.py](fineweb_statistics.py): tokens statistic of local dataset **Wikipedia 20220301.en** (`parquet` shards)
 * [train_tokenizer.py](train_tokenizer.py)      : train custom tokenizer
 * [compare_tokenizers.py](compare_tokenizers.py): comparing tokenizers by quality
 <br>
@@ -64,7 +64,12 @@ Additional special tokens to **gpt-noomo-32k**:
 * KNOWLEDGE = CONTEXT
 
 
-## Train GPTLlama
-`
+## Wikipedia dataset
+Download **20220301.en** shard of [legacy-datasets/wikipedia](https://huggingface.co/datasets/legacy-datasets/wikipedia) dataset:
+```bash
 hf download legacy-datasets/wikipedia --repo-type dataset --include "data/20220301.en/*" --local-dir ./datasets/wikipedia_20220301_en
-`
+```
+
+* Rows: 6_458_670
+* GPT2 full tokens: 4_640_971_626
+* GPT2 tokens(CLAMP=1023): 2_878_960_514

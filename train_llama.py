@@ -1,11 +1,14 @@
 import json
 import os
+import re
 from pathlib import Path
 import torch, math, random, numpy as np
+import pyarrow.parquet as pq
 from dataclasses import dataclass
+from itertools import islice
 from model_gpt2 import GPT
 from model_llama import GPTLlama
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, IterableDataset
 from tqdm import tqdm
 
 from transformers import GPT2TokenizerFast
@@ -14,14 +17,22 @@ from transformers import set_seed
 import matplotlib.pyplot as plt
 
 
-MAX_LEN = 4096
+MAX_LEN = 1024
+BLOCK_SIZE = 4096
+
+WIKIPEDIA_PARQUET_DIR = Path("datasets/wikipedia_20220301_en/data/20220301.en")
+# hf download legacy-datasets/wikipedia --repo-type dataset --include "data/20220301.en/*" --local-dir ./datasets/wikipedia_20220301_en
+
+DEFAULT_SMOKE_ROWS = 608
+TRAIN_MODE = "smoke-train"
+SMOKE_ROWS = DEFAULT_SMOKE_ROWS
 
 
 @dataclass
 class TrainerConfig:
     epochs: int = 1
     batch_size: int = 4
-    learning_rate: float = 1e-4
+    learning_rate: float = 8e-5
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     grad_accum_steps: int = 1
 
@@ -64,11 +75,11 @@ class AutoGPTModel:
         config_kwargs = AutoGPTModel.CONFIG_MAP[model_type]
 
         config_kwargs.update({
-            "block_size": MAX_LEN,
+            "block_size": BLOCK_SIZE,
             "vocab_size": vocab_sz,
-            "n_layer": 12,
-            "n_head": 12,
-            "n_embd": 768,
+            "n_layer": 16,
+            "n_head": 16,
+            "n_embd": 1024,
             "flash_attn": True,
             "model_type": model_type,
         })
@@ -87,18 +98,18 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
     Custom collate function for variable-length text samples.
 
     Args:
-        batch: list of tuples (input_ids, target_ids)
-        eos_token_id: int, used for padding
+        batch: list of tokenized samples
+        eos_token_id: int, used for padding termination
         device: torch.device
-        allow_max_length: optional int, if set — limit max length of batch sequences
 
     Returns:
         inputs_tensor: [batch_size, seq_len]
         targets_tensor: [batch_size, seq_len]
+        attention_mask: [batch_size, seq_len]
     """
 
     # Find the longest sequence in the batch
-    batch_max_length = max(len(item)+1 for item in batch)
+    batch_max_length = max(len(item) + 1 for item in batch)
 
     # Pad and prepare inputs and targets
     inputs_lst, targets_lst = [], []
@@ -115,60 +126,99 @@ def custom_collate_fn(batch, max_seq_length, pad_token_id, eos_token_id, device,
         # build attention mask from real_len (NOT from token values)
         attn = [1] * real_len + [0] * (batch_max_length - real_len)
 
-        inputs = torch.tensor(padded[:-1])  # Truncate the last token for inputs
-        targets = torch.tensor(padded[1:])  # Shift +1 to the right for targets
-        am  = torch.tensor(attn[:-1], dtype=torch.long)
+        inputs = torch.tensor(padded[:-1])
+        targets = torch.tensor(padded[1:])
+        am = torch.tensor(attn[:-1], dtype=torch.long)
 
-        # New: Replace all but the first padding tokens in targets by ignore_index
+        # Replace all but the first padding tokens in targets by ignore_index
         mask = targets == pad_token_id
-        # removes dimensions of size 1.
         indices = torch.nonzero(mask).squeeze()
         if indices.numel() > 1:
             targets[indices[1:]] = ignore_index
 
-        # New: Optionally truncate to maximum sequence length
         if max_seq_length is not None:
             inputs = inputs[:max_seq_length]
             targets = targets[:max_seq_length]
-            am  = am[:max_seq_length]
+            am = am[:max_seq_length]
 
         inputs_lst.append(inputs)
         targets_lst.append(targets)
         attn_lst.append(am)
 
-
-    # Convert list of inputs and targets to tensors and transfer to target device
     inputs_tensor = torch.stack(inputs_lst).to(device)
     targets_tensor = torch.stack(targets_lst).to(device)
     attention_mask = torch.stack(attn_lst).to(device)
     return inputs_tensor, targets_tensor, attention_mask
 
 
-class TextDataset(Dataset):
 
-    def __init__(self, file_path, tokenizer, max_seq_length=MAX_LEN-1):
+def get_wikipedia_parquet_files(parquet_dir=WIKIPEDIA_PARQUET_DIR):
+    parquet_files = sorted(Path(parquet_dir).glob("*.parquet"))
+    if not parquet_files:
+        return []
 
-        texts = []
-        with open(file_path, "r", encoding="utf-8") as f:
-            texts = [line.strip() for line in f if line.strip()]
+    match = re.search(r"-of-(\d+)\.parquet$", parquet_files[0].name)
+    if match:
+        expected_parquet_files_count = int(match.group(1))
+        if len(parquet_files) < expected_parquet_files_count:
+            return []
 
-        print(f"TextDataset::loaded items.sz={len(texts)}")
+    return parquet_files
 
-        # tokenize each line separately and store the input_ids, with only truncation, without padding
-        self.data_idx = [
-            tokenizer(t, truncation=True, add_special_tokens=False, max_length=max_seq_length, padding=False, return_tensors="pt"
-            )["input_ids"].squeeze(0)   # sizes: [seq_len <= max_seq_length]
-            for t in texts
-        ]
+
+def count_wikipedia_rows(parquet_files):
+    return sum(pq.ParquetFile(parquet_file).metadata.num_rows for parquet_file in parquet_files)
+
+
+class WikipediaParquetDataset(IterableDataset):
+
+    def __init__(self, tokenizer, max_seq_length=MAX_LEN-1, parquet_dir=WIKIPEDIA_PARQUET_DIR, batch_size=1024, max_rows=None):
+        self.tokenizer = tokenizer
         self.max_seq_length = max_seq_length
+        self.batch_size = batch_size
+        self.max_rows = max_rows
+        self.parquet_files = get_wikipedia_parquet_files(parquet_dir)
+        total_rows = count_wikipedia_rows(self.parquet_files) if self.parquet_files else 0
+        self.total_rows = min(total_rows, max_rows) if max_rows is not None else total_rows
 
+        print(
+            f"WikipediaParquetDataset::loaded files.sz={len(self.parquet_files)}, rows.sz={self.total_rows}, max_rows={self.max_rows}"
+        )
 
     def __len__(self):
-        return len(self.data_idx)
+        return self.total_rows
 
-    def __getitem__(self, idx):
-        return self.data_idx[idx]
+    def __iter__(self):
+        worker_info = torch.utils.data.get_worker_info()
+        parquet_files = self.parquet_files
+        if worker_info is not None:
+            parquet_files = parquet_files[worker_info.id::worker_info.num_workers]
 
+        texts_iter = self._iter_texts(parquet_files)
+        if self.max_rows is not None:
+            texts_iter = islice(texts_iter, self.max_rows)
+
+        for text in texts_iter:
+            yield self.tokenizer(
+                text,
+                truncation=True,
+                add_special_tokens=False,
+                max_length=self.max_seq_length,
+                padding=False,
+                return_tensors="pt",
+            )["input_ids"].squeeze(0)
+
+    def _iter_texts(self, parquet_files):
+        for parquet_file in parquet_files:
+            parquet = pq.ParquetFile(parquet_file)
+            for batch in parquet.iter_batches(batch_size=self.batch_size, columns=["text"]):
+                for text in batch.column(0).to_pylist():
+                    if text is None:
+                        yield ""
+                    elif isinstance(text, str):
+                        yield text
+                    else:
+                        yield str(text)
 
 
 class Trainer:
@@ -294,10 +344,9 @@ class Trainer:
         return self.losses, self.step_losses
 
 
-def plot_losses(losses1: list, label1: str, losses2: list, label2: str, x_label: str):
+def plot_losses(losses1: list, label1: str, x_label: str):
 
     plt.plot(range(len(losses1)), losses1, label=label1, color="blue")
-    plt.plot(range(len(losses2)), losses2, label=label2, color="red")
 
     plt.xlabel(x_label)
     plt.ylabel("Loss")
@@ -314,15 +363,21 @@ if __name__ == "__main__":
     model_type = "llama"
     tokenizer_type = "gpt-noomo-32k"
 
+    model: GPTLlama = None
 
-    train_config = TrainerConfig(epochs=1, batch_size=4, grad_accum_steps=1)
+    train_config = TrainerConfig(epochs=1, batch_size=1, grad_accum_steps=4)
 
     model, tokenizer = AutoGPTModel.from_config(model_type=model_type, tokenizer_type=tokenizer_type)
 
-    dataset = TextDataset("dataset.txt", tokenizer, max_seq_length=MAX_LEN)
+    smoke_rows = SMOKE_ROWS if TRAIN_MODE == "smoke-train" else None
+    print(f"model.sz={model.get_num_params()}, train_mode={TRAIN_MODE}, smoke_rows={smoke_rows}")
 
-    train_config.learning_rate = 8e-5
+    dataset = WikipediaParquetDataset(tokenizer, max_seq_length=MAX_LEN - 1, max_rows=smoke_rows)
+    if len(dataset) == 0:
+        raise SystemExit(0)
+
     trainer = Trainer(model, dataset, train_config)
 
     epoch_losses, step_losses = trainer.train()
 
+    plot_losses(step_losses, type(model).__name__, "Steps")
