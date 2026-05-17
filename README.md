@@ -63,13 +63,3 @@ Additional special tokens to **gpt-noomo-32k**:
 * ASSISTANT = ANSWER
 * KNOWLEDGE = CONTEXT
 
-
-## Wikipedia dataset
-Download **20220301.en** shard of [legacy-datasets/wikipedia](https://huggingface.co/datasets/legacy-datasets/wikipedia) dataset:
-```bash
-hf download legacy-datasets/wikipedia --repo-type dataset --include "data/20220301.en/*" --local-dir ./datasets/wikipedia_20220301_en
-```
-
-* Rows: 6_458_670
-* GPT2 full tokens: 4_640_971_626
-* GPT2 tokens(CLAMP=1023): 2_878_960_514
