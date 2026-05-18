@@ -6,7 +6,6 @@ import torch, math, random, numpy as np
 import pyarrow.parquet as pq
 from dataclasses import dataclass
 from itertools import islice
-from model_gpt2 import GPT
 from model_llama import GPTLlama
 from torch.utils.data import Dataset, DataLoader, IterableDataset
 from tqdm import tqdm
@@ -17,15 +16,15 @@ from transformers import set_seed
 import matplotlib.pyplot as plt
 
 
-MAX_LEN = 1024
-BLOCK_SIZE = 4096
-
 WIKIPEDIA_PARQUET_DIR = Path("datasets/wikipedia_20220301_en/data/20220301.en")
 # hf download legacy-datasets/wikipedia --repo-type dataset --include "data/20220301.en/*" --local-dir ./datasets/wikipedia_20220301_en
 
 DEFAULT_SMOKE_ROWS = 608
 TRAIN_MODE = "smoke-train"
 SMOKE_ROWS = DEFAULT_SMOKE_ROWS
+
+MAX_LEN = 1024
+BLOCK_SIZE = 4096
 
 
 @dataclass
@@ -37,24 +36,18 @@ class TrainerConfig:
     grad_accum_steps: int = 1
 
 
-class AutoGPTModel:
+class AutoConfigModel:
 
     MODEL_MAP = {
-        "gpt2": GPT,
-        "llama": GPTLlama,
+        "gpt2",
+        "mini",
     }
-
-    CONFIG_MAP = {
-        "gpt2": dict(),
-        "llama": dict(rope_base=10000.0, use_rope=True),
-    }
-
 
     @staticmethod
-    def from_config(model_type: str, tokenizer_type="gpt2"):
+    def from_config(size_type: str, tokenizer_type="gpt2"):
 
-        if model_type not in AutoGPTModel.MODEL_MAP:
-            raise ValueError(f"Unknown model_type: {model_type}")
+        if size_type not in AutoConfigModel.MODEL_MAP:
+            raise ValueError(f"Unknown size_type: {size_type}")
 
         tokenizer = GPT2TokenizerFast.from_pretrained(f"data/{tokenizer_type}", local_files_only=True)
 
@@ -72,23 +65,34 @@ class AutoGPTModel:
         print("EOS token string:", repr(tokenizer.convert_ids_to_tokens(tokenizer.eos_token_id)))
 
 
-        config_kwargs = AutoGPTModel.CONFIG_MAP[model_type]
+        config_kwargs = dict(rope_base=10000.0, use_rope=True)
 
-        config_kwargs.update({
-            "block_size": BLOCK_SIZE,
-            "vocab_size": vocab_sz,
-            "n_layer": 16,
-            "n_head": 16,
-            "n_embd": 1024,
-            "flash_attn": True,
-            "model_type": model_type,
-        })
+        if size_type == "gpt2":
+            config_kwargs.update({
+                "block_size": BLOCK_SIZE,
+                "vocab_size": vocab_sz,
+                "n_layer": 12,
+                "n_head": 12,
+                "n_embd": 768,
+                "flash_attn": True,
+                "model_type": size_type,
+            })
+
+        elif size_type == "mini":
+            config_kwargs.update({
+                "block_size": BLOCK_SIZE,
+                "vocab_size": vocab_sz,
+                "n_layer": 16,
+                "n_head": 16,
+                "n_embd": 1024,
+                "flash_attn": True,
+                "model_type": size_type,
+            })
 
         print(f"config_kwargs =\n{json.dumps(config_kwargs, indent=2)}")
 
         # get the model class
-        model_cls = AutoGPTModel.MODEL_MAP[model_type]
-        model = model_cls(**config_kwargs)
+        model = GPTLlama(**config_kwargs)
 
         return model, tokenizer
 
@@ -360,14 +364,13 @@ def plot_losses(losses1: list, label1: str, x_label: str):
 
 if __name__ == "__main__":
 
-    model_type = "llama"
     tokenizer_type = "gpt-noomo-32k"
 
     model: GPTLlama = None
 
     train_config = TrainerConfig(epochs=1, batch_size=1, grad_accum_steps=4)
 
-    model, tokenizer = AutoGPTModel.from_config(model_type=model_type, tokenizer_type=tokenizer_type)
+    model, tokenizer = AutoConfigModel.from_config(size_type="mini", tokenizer_type=tokenizer_type)
 
     smoke_rows = SMOKE_ROWS if TRAIN_MODE == "smoke-train" else None
     print(f"model.sz={model.get_num_params()}, train_mode={TRAIN_MODE}, smoke_rows={smoke_rows}")
