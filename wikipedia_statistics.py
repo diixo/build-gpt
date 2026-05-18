@@ -11,22 +11,24 @@ from tqdm import tqdm
 from transformers import GPT2TokenizerFast
 
 
-tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt2", local_files_only=True)
+tokenizer = GPT2TokenizerFast.from_pretrained("data/gpt-noomo-32k", local_files_only=True)
 
-MAX_LEN = 1023
+MAX_LEN = 0
 SPLIT_COUNTER = 0
-WIKIPEDIA_PARQUET_DIR = Path("datasets/wikipedia_20220301_en/data/20220301.en")
-# hf download legacy-datasets/wikipedia --repo-type dataset --include "data/20220301.en/*" --local-dir ./datasets/wikipedia_20220301_en
+WIKIPEDIA_PARQUET_DIR = Path("datasets/wikipedia/20220301.en")
+# hf download aitetic/wikipedia --repo-type dataset --include "20220301.en/*" --local-dir ./datasets/wikipedia
 
 
 # use for hugging-face tokenizer
 def hf_tokenize_to_len(text):
     # tokenizes a single document and returns a numpy array of uint16 tokens
     ids = tokenizer.encode(text, add_special_tokens=False)
-    if len(ids) > MAX_LEN:
-        global SPLIT_COUNTER
-        SPLIT_COUNTER += 1
-    return min(len(ids), MAX_LEN)
+    if MAX_LEN > 0:
+        if len(ids) > MAX_LEN:
+            global SPLIT_COUNTER
+            SPLIT_COUNTER += 1
+        return min(len(ids), MAX_LEN)
+    return len(ids)
 
 
 
